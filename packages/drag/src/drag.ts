@@ -19,7 +19,7 @@ function defaultSubject(event: any, d: any): any {
 }
 
 function defaultTouchable(this: any): boolean {
-  return navigator.maxTouchPoints || ('ontouchstart' in this)
+  return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
 export default function drag(): any {
@@ -152,7 +152,7 @@ export default function drag(): any {
       let n: number
       switch (type) {
         case 'start': gestures[identifier] = gesture, n = active++; break
-        case 'end': delete gestures[identifier], --active; // falls through
+        case 'end': delete gestures[identifier], --active; p = pointer(touch || event, container), n = active; break
         case 'drag': p = pointer(touch || event, container), n = active; break
       }
       disp.call(
@@ -192,7 +192,7 @@ export default function drag(): any {
   }
 
   dragFn.on = function (...args: any[]): any {
-    const value = listeners.on.apply(listeners, args)
+    const value = listeners.on.apply(listeners, args as [string, ((...args: unknown[]) => void)?])
     return value === listeners ? dragFn : value
   }
 

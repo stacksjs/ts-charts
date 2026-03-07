@@ -6,7 +6,7 @@ export default clip(
   clipAntimeridianLine,
   clipAntimeridianInterpolate,
   [-pi, -halfPi]
-)
+) as (sink: any) => any
 
 // Takes a line and cuts into visible segments. Return values: 0 - there were
 // intersections or the line was empty; 1 - no intersections; 2 - there were

@@ -12,8 +12,8 @@ export default function resampleProjection(project: any, delta2: number): any {
 function resampleNone(project: any): any {
   return transformer({
     point: function (this: any, x: number, y: number): void {
-      x = project(x, y)
-      this.stream.point(x[0], x[1])
+      const p = project(x, y)
+      this.stream.point(p[0], p[1])
     }
   })
 }
@@ -60,8 +60,8 @@ function resample(project: any, delta2: number): any {
     }
 
     function point(x: number, y: number): void {
-      x = project(x, y)
-      stream.point(x[0], x[1])
+      const p = project(x, y)
+      stream.point(p[0], p[1])
     }
 
     function lineStart(): void {

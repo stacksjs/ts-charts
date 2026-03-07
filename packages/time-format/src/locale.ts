@@ -567,7 +567,7 @@ function formatHour12(d: Date, p: string): string {
 }
 
 function formatDayOfYear(d: Date, p: string): string {
-  return pad(1 + timeDay.count(timeYear(d), d), p, 3)
+  return pad(1 + timeDay.count!(timeYear(d), d), p, 3)
 }
 
 function formatMilliseconds(d: Date, p: string): string {
@@ -596,7 +596,7 @@ function formatWeekdayNumberMonday(d: Date): number {
 }
 
 function formatWeekNumberSunday(d: Date, p: string): string {
-  return pad(timeSunday.count((timeYear(d) as any) - 1, d), p, 2)
+  return pad(timeSunday.count!((timeYear(d) as any) - 1, d), p, 2)
 }
 
 function dISO(d: Date): Date {
@@ -606,7 +606,7 @@ function dISO(d: Date): Date {
 
 function formatWeekNumberISO(d: Date, p: string): string {
   d = dISO(d)
-  return pad(timeThursday.count(timeYear(d), d) + (timeYear(d).getDay() === 4 ? 1 : 0), p, 2)
+  return pad(timeThursday.count!(timeYear(d), d) + (timeYear(d).getDay() === 4 ? 1 : 0), p, 2)
 }
 
 function formatWeekdayNumberSunday(d: Date): number {
@@ -614,7 +614,7 @@ function formatWeekdayNumberSunday(d: Date): number {
 }
 
 function formatWeekNumberMonday(d: Date, p: string): string {
-  return pad(timeMonday.count((timeYear(d) as any) - 1, d), p, 2)
+  return pad(timeMonday.count!((timeYear(d) as any) - 1, d), p, 2)
 }
 
 function formatYear(d: Date, p: string): string {
@@ -656,7 +656,7 @@ function formatUTCHour12(d: Date, p: string): string {
 }
 
 function formatUTCDayOfYear(d: Date, p: string): string {
-  return pad(1 + utcDay.count(utcYear(d), d), p, 3)
+  return pad(1 + utcDay.count!(utcYear(d), d), p, 3)
 }
 
 function formatUTCMilliseconds(d: Date, p: string): string {
@@ -685,7 +685,7 @@ function formatUTCWeekdayNumberMonday(d: Date): number {
 }
 
 function formatUTCWeekNumberSunday(d: Date, p: string): string {
-  return pad(utcSunday.count((utcYear(d) as any) - 1, d), p, 2)
+  return pad(utcSunday.count!((utcYear(d) as any) - 1, d), p, 2)
 }
 
 function UTCdISO(d: Date): Date {
@@ -695,7 +695,7 @@ function UTCdISO(d: Date): Date {
 
 function formatUTCWeekNumberISO(d: Date, p: string): string {
   d = UTCdISO(d)
-  return pad(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4 ? 1 : 0), p, 2)
+  return pad(utcThursday.count!(utcYear(d), d) + (utcYear(d).getUTCDay() === 4 ? 1 : 0), p, 2)
 }
 
 function formatUTCWeekdayNumberSunday(d: Date): number {
@@ -703,7 +703,7 @@ function formatUTCWeekdayNumberSunday(d: Date): number {
 }
 
 function formatUTCWeekNumberMonday(d: Date, p: string): string {
-  return pad(utcMonday.count((utcYear(d) as any) - 1, d), p, 2)
+  return pad(utcMonday.count!((utcYear(d) as any) - 1, d), p, 2)
 }
 
 function formatUTCYear(d: Date, p: string): string {

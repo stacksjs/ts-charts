@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { filter } from '../src/index.ts'
 
 it('filter(values, test) returns the filtered values', () => {
-  expect(filter([1, 2, 3, 2, 1], (x: any) => x & 1)).toEqual([1, 3, 1])
+  expect(filter([1, 2, 3, 2, 1], ((x: any) => x & 1) as any)).toEqual([1, 3, 1])
 })
 
 it('filter(values, test) accepts an iterable', () => {

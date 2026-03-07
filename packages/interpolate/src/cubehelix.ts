@@ -32,5 +32,5 @@ function cubehelix(hueFn: (a: number, b: number) => (t: number) => number): Cube
   })(1)
 }
 
-export default cubehelix(hue)
+export default cubehelix(hue) as CubehelixInterpolator
 export const cubehelixLong: CubehelixInterpolator = cubehelix(color)

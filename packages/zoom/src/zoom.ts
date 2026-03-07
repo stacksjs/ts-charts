@@ -36,7 +36,7 @@ function defaultWheelDelta(event: any): number {
 }
 
 function defaultTouchable(this: any): boolean {
-  return navigator.maxTouchPoints || ('ontouchstart' in this)
+  return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
 function defaultConstrain(transform: any, extent: any, translateExtent: any): any {
@@ -176,7 +176,7 @@ export default function zoomBehavior(): any {
   }
 
   function gesture(that: any, args: any, clean?: boolean): any {
-    return (!clean && that.__zooming) || new Gesture(that, args)
+    return (!clean && that.__zooming) || new (Gesture as any)(that, args)
   }
 
   function Gesture(this: any, that: any, args: any): void {
@@ -325,7 +325,7 @@ export default function zoomBehavior(): any {
     for (i = 0; i < n; ++i) {
       t = touches[i], p = pointer(t, this)
       p = [p, this.__zoom.invert(p), t.identifier]
-      if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting
+      if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + +!!touchstarting
       else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0
     }
 
@@ -355,8 +355,8 @@ export default function zoomBehavior(): any {
     if (g.touch1) {
       const p0 = g.touch0[0], l0 = g.touch0[1]
       const p1 = g.touch1[0], l1 = g.touch1[1]
-      let dp: any = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp
-      let dl: any = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl
+      var dp: any = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp
+      var dl: any = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl
       t = scale(t, Math.sqrt(dp / dl))
       p = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
       l = [(l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2]

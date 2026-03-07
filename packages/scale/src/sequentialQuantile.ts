@@ -2,7 +2,7 @@ import { ascending, bisect, quantile } from '@ts-charts/array'
 import { identity } from './continuous.ts'
 import { initInterpolator } from './init.ts'
 
-export default function sequentialQuantile(): any {
+export default function sequentialQuantile(..._args: any[]): any {
   let domain: number[] = []
   let interpolator: any = identity
 

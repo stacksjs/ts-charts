@@ -66,11 +66,19 @@ export class Transition {
   [Symbol.iterator](): Iterator<any> { return Selection.prototype[Symbol.iterator].call(this) }
 }
 
-export default function transition(name?: string | Transition): Transition {
-  return selection().transition(name as any)
+interface TransitionFunction {
+  (name?: string | Transition): Transition
+  prototype: typeof Transition.prototype
 }
 
-transition.prototype = Transition.prototype
+const transition: TransitionFunction = Object.assign(
+  function transition(name?: string | Transition): Transition {
+    return selection().transition(name as any)
+  },
+  { prototype: Transition.prototype }
+)
+
+export default transition
 
 export function newId(): number {
   return ++id

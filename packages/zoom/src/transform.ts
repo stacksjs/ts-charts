@@ -43,9 +43,17 @@ Transform.prototype = {
 
 export const identity: any = new (Transform as any)(1, 0, 0)
 
-transform.prototype = Transform.prototype
-
-export default function transform(node: any): any {
-  while (!node.__zoom) if (!(node = node.parentNode)) return identity
-  return node.__zoom
+interface TransformFunction {
+  (node: any): any
+  prototype: typeof Transform.prototype
 }
+
+const transform: TransformFunction = Object.assign(
+  function transform(node: any): any {
+    while (!node.__zoom) if (!(node = node.parentNode)) return identity
+    return node.__zoom
+  },
+  { prototype: Transform.prototype }
+)
+
+export default transform

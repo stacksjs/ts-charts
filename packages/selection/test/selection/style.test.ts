@@ -21,8 +21,8 @@ describe('selection.style', () => {
 
   it('selection.style(name, value) sets the value of the style property with the specified name on the selected elements', () => {
     document.body.innerHTML = '<h1 id="one" class="c1 c2">hello</h1><h1 id="two" class="c3"></h1>'
-    const one = document.querySelector('#one')!
-    const two = document.querySelector('#two')!
+    const one = document.querySelector('#one') as HTMLElement
+    const two = document.querySelector('#two') as HTMLElement
     const s = selectAll([one, two])
     expect(s.style('color', 'red')).toBe(s)
     expect(one.style.getPropertyValue('color')).toBe('red')
@@ -34,8 +34,8 @@ describe('selection.style', () => {
 
   it('selection.style(name, value, priority) sets the value and priority of the style property', () => {
     document.body.innerHTML = '<h1 id="one" class="c1 c2">hello</h1><h1 id="two" class="c3"></h1>'
-    const one = document.querySelector('#one')!
-    const two = document.querySelector('#two')!
+    const one = document.querySelector('#one') as HTMLElement
+    const two = document.querySelector('#two') as HTMLElement
     const s = selectAll([one, two])
     expect(s.style('color', 'red', 'important')).toBe(s)
     expect(one.style.getPropertyValue('color')).toBe('red')
@@ -47,8 +47,8 @@ describe('selection.style', () => {
 
   it('selection.style(name, null) removes the style property with the specified name', () => {
     document.body.innerHTML = '<h1 id="one" style="color:red;" class="c1 c2">hello</h1><h1 id="two" style="color:red;" class="c3"></h1>'
-    const one = document.querySelector('#one')!
-    const two = document.querySelector('#two')!
+    const one = document.querySelector('#one') as HTMLElement
+    const two = document.querySelector('#two') as HTMLElement
     const s = selectAll([one, two])
     expect(s.style('color', null)).toBe(s)
     expect(one.style.getPropertyValue('color')).toBe('')
@@ -58,8 +58,8 @@ describe('selection.style', () => {
 
   it('selection.style(name, function) sets the value of the style property', () => {
     document.body.innerHTML = '<h1 id="one" class="c1 c2">hello</h1><h1 id="two" class="c3"></h1>'
-    const one = document.querySelector('#one')!
-    const two = document.querySelector('#two')!
+    const one = document.querySelector('#one') as HTMLElement
+    const two = document.querySelector('#two') as HTMLElement
     const s = selectAll([one, two])
     expect(s.style('color', function (_d: any, i: number) { return i ? 'red' : null })).toBe(s)
     expect(one.style.getPropertyValue('color')).toBe('')

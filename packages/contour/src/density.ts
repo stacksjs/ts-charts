@@ -49,7 +49,7 @@ export default function contourDensity(): any {
       }
     }
 
-    blur2({ data: values, width: n, height: m }, r * pow2k)
+    blur2({ data: values as unknown as number[], width: n, height: m }, r * pow2k)
     return values
   }
 

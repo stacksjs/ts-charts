@@ -106,7 +106,7 @@ export class Dispatch {
     if (!this._.hasOwnProperty(type)) throw new Error('unknown type: ' + type)
     const t = this._[type]
     for (let i = 0, n = t.length; i < n; ++i) {
-      t[i].value.apply(that, args)
+      t[i].value.apply(that, args as unknown[])
     }
   }
 

@@ -3,7 +3,7 @@ import min from './min.ts'
 export default function transpose(matrix: ArrayLike<ArrayLike<any>>): any[][] {
   const n = matrix.length
   if (!n) return []
-  const m = min(matrix, length)
+  const m = min(Array.from(matrix), length)
   const result: any[][] = new Array(m)
   for (let i = 0; i < m; ++i) {
     const row: any[] = result[i] = new Array(n)

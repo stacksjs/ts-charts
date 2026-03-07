@@ -28,7 +28,7 @@ export default function polygonHull(points: [number, number][]): [number, number
   const flippedPoints: [number, number][] = new Array(n)
 
   for (let i = 0; i < n; ++i) sortedPoints[i] = [+points[i][0], +points[i][1], i]
-  sortedPoints.sort(lexicographicOrder as (a: [number, number, number], b: [number, number, number]) => number)
+  sortedPoints.sort(lexicographicOrder as unknown as (a: [number, number, number], b: [number, number, number]) => number)
   for (let i = 0; i < n; ++i) flippedPoints[i] = [sortedPoints[i][0], -sortedPoints[i][1]]
 
   const upperIndexes = computeUpperHullIndexes(sortedPoints as unknown as [number, number][])

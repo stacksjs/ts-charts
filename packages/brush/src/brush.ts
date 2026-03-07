@@ -130,7 +130,7 @@ function defaultExtent(this: any): [[number, number], [number, number]] {
 }
 
 function defaultTouchable(this: any): boolean {
-  return navigator.maxTouchPoints || ('ontouchstart' in this)
+  return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
 // Like d3.local, but with the name "__brush" rather than auto-generated.
@@ -295,7 +295,7 @@ function brush(dim: BrushDim): any {
 
   function emitter(that: any, args: any, clean?: boolean): any {
     const emit = that.__brush.emitter
-    return emit && (!clean || !emit.clean) ? emit : new Emitter(that, args, clean)
+    return emit && (!clean || !emit.clean) ? emit : new (Emitter as any)(that, args, clean)
   }
 
   function Emitter(this: any, that: any, args: any, clean?: boolean): void {
@@ -407,11 +407,12 @@ function brush(dim: BrushDim): any {
     const overlay = group.selectAll('.overlay')
       .attr('cursor', cursors[type])
 
+    let view: any
     if (event.touches) {
       emit.moved = moved
       emit.ended = ended
     } else {
-      const view = select(event.view)
+      view = select(event.view)
         .on('mousemove.brush', moved, true)
         .on('mouseup.brush', ended, true)
       if (keys) view

@@ -6,7 +6,7 @@ export default function geoTransform(methods: any): any {
 
 export function transformer(methods: any): (stream: any) => any {
   return function (stream: any): any {
-    const s: any = new TransformStream()
+    const s: any = new (TransformStream as any)()
     for (const key in methods) s[key] = methods[key]
     s.stream = stream
     return s

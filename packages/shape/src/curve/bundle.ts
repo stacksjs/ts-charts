@@ -58,4 +58,4 @@ export default (function custom(beta: number): BundleCurveFactory {
   }
 
   return bundle as BundleCurveFactory
-})(0.85)
+})(0.85) as BundleCurveFactory

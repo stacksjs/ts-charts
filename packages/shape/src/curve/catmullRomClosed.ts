@@ -76,4 +76,4 @@ export default (function custom(alpha: number): CatmullRomClosedCurveFactory {
   }
 
   return catmullRom as CatmullRomClosedCurveFactory
-})(0.5)
+})(0.5) as CatmullRomClosedCurveFactory

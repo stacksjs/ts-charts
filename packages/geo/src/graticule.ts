@@ -46,12 +46,12 @@ export default function geoGraticule(): any {
     }
   }
 
-  graticule.extent = function (_: any): any {
+  graticule.extent = function (_?: any): any {
     if (!arguments.length) return graticule.extentMinor()
     return graticule.extentMajor(_).extentMinor(_)
   }
 
-  graticule.extentMajor = function (_: any): any {
+  graticule.extentMajor = function (_?: any): any {
     if (!arguments.length) return [[X0, Y0], [X1, Y1]]
     X0 = +_[0][0], X1 = +_[1][0]
     Y0 = +_[0][1], Y1 = +_[1][1]
@@ -60,7 +60,7 @@ export default function geoGraticule(): any {
     return graticule.precision(precision)
   }
 
-  graticule.extentMinor = function (_: any): any {
+  graticule.extentMinor = function (_?: any): any {
     if (!arguments.length) return [[x0, y0], [x1, y1]]
     x0 = +_[0][0], x1 = +_[1][0]
     y0 = +_[0][1], y1 = +_[1][1]
@@ -69,24 +69,24 @@ export default function geoGraticule(): any {
     return graticule.precision(precision)
   }
 
-  graticule.step = function (_: any): any {
+  graticule.step = function (_?: any): any {
     if (!arguments.length) return graticule.stepMinor()
     return graticule.stepMajor(_).stepMinor(_)
   }
 
-  graticule.stepMajor = function (_: any): any {
+  graticule.stepMajor = function (_?: any): any {
     if (!arguments.length) return [DX, DY]
     DX = +_[0], DY = +_[1]
     return graticule
   }
 
-  graticule.stepMinor = function (_: any): any {
+  graticule.stepMinor = function (_?: any): any {
     if (!arguments.length) return [dx, dy]
     dx = +_[0], dy = +_[1]
     return graticule
   }
 
-  graticule.precision = function (_: any): any {
+  graticule.precision = function (_?: any): any {
     if (!arguments.length) return precision
     precision = +_
     x = graticuleX(y0, y1, 90)

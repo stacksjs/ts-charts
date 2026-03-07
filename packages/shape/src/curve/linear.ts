@@ -41,7 +41,7 @@ Linear.prototype = {
     x = +x, y = +y
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
-      case 1: this._point = 2; // falls through
+      case 1: this._point = 2; this._context.lineTo(x, y); break
       default: this._context.lineTo(x, y); break
     }
   },

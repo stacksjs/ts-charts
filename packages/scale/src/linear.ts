@@ -57,7 +57,7 @@ export function linearish(scale: any): any {
   return scale
 }
 
-export default function linear(): any {
+export default function linear(..._args: any[]): any {
   const scale = continuous()
 
   scale.copy = function (): any {

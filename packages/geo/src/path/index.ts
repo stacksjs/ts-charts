@@ -13,7 +13,7 @@ export default function geoPath(projection?: any, context?: any): any {
       projectionStream: any,
       contextStream: any
 
-  function path(object: any): any {
+  function path(this: any, object: any): any {
     if (object) {
       if (typeof pointRadius === 'function') contextStream.pointRadius(+pointRadius.apply(this, arguments))
       stream(object, projectionStream(contextStream))

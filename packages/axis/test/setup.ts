@@ -1,10 +1,10 @@
 import { Window } from 'very-happy-dom'
-const win = new Window({ url: 'http://localhost' })
-globalThis.window = win as any
-globalThis.document = win.document as any
-globalThis.Element = win.Element as any
-globalThis.HTMLElement = win.HTMLElement as any
-globalThis.Node = win.Node as any
-globalThis.Text = win.Text as any
-globalThis.Event = win.Event as any
-globalThis.CustomEvent = win.CustomEvent as any
+const win: any = new Window({ url: 'http://localhost' })
+globalThis.window = win
+globalThis.document = win.document
+globalThis.Element = win.Element
+globalThis.HTMLElement = win.HTMLElement
+globalThis.Node = win.Node
+globalThis.Text = win.Text
+globalThis.Event = win.Event
+globalThis.CustomEvent = win.CustomEvent

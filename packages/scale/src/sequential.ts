@@ -62,7 +62,7 @@ export function copy(source: any, target: any): any {
     .unknown(source.unknown())
 }
 
-export default function sequential(): any {
+export default function sequential(..._args: any[]): any {
   const scale = linearish(transformer()(identity))
 
   scale.copy = function (): any {

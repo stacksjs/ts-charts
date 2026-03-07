@@ -19,5 +19,5 @@ function hsl(hueFn: (a: number, b: number) => (t: number) => number): (start: an
   }
 }
 
-export default hsl(hue)
+export default hsl(hue) as (start: any, end: any) => (t: number) => string
 export const hslLong: (start: any, end: any) => (t: number) => string = hsl(color)

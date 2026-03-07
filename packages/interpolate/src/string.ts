@@ -31,8 +31,8 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
   // Interpolate pairs of numbers in a & b.
   while ((am = reA.exec(sa))
       && (bm = reB.exec(sb))) {
-    if ((bs = bm.index as number) > bi) { // a string precedes the next number in b
-      bs = sb.slice(bi, bs as unknown as number) as unknown as string
+    if ((bs = bm.index as any) > bi) { // a string precedes the next number in b
+      bs = sb.slice(bi, bs as unknown as number)
       if (s[i]) s[i] += bs // coalesce with previous string
       else s[++i] = bs
     }
@@ -59,7 +59,7 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
       ? one(q[0].x)
       : zero(sb))
       : (sb = q.length as unknown as string, function (t: number): string {
-          for (let i = 0, o; i < (sb as unknown as number); ++i) s[(o = q[i]).i] = o.x(t) as unknown as string
+          for (let i = 0, o: { i: number, x: (t: number) => number }; i < (sb as unknown as number); ++i) s[(o = q[i]).i] = o.x(t) as unknown as string
           return s.join('')
         })
 }

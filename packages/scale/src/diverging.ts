@@ -59,7 +59,7 @@ function transformer(): any {
   }
 }
 
-export default function diverging(): any {
+export default function diverging(..._args: any[]): any {
   const scale = linearish(transformer()(identity))
 
   scale.copy = function (): any {

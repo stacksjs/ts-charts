@@ -63,4 +63,4 @@ export default (function custom(tension: number): CardinalClosedCurveFactory {
   }
 
   return cardinal as CardinalClosedCurveFactory
-})(0)
+})(0) as CardinalClosedCurveFactory

@@ -13,4 +13,4 @@ export const scheme: readonly (readonly string[])[] = new Array(3).concat(
   '67001fb2182bd6604df4a582fddbc7ffffffe0e0e0bababa8787874d4d4d1a1a1a',
 ).map(colors)
 
-export default ramp(scheme)
+export default ramp(scheme) as (t: number) => string

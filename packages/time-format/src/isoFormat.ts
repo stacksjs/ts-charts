@@ -6,7 +6,7 @@ function formatIsoNative(date: Date): string {
   return date.toISOString()
 }
 
-const formatIso: (date: Date) => string = Date.prototype.toISOString
+const formatIso: (date: Date) => string = typeof Date.prototype.toISOString === 'function'
     ? formatIsoNative
     : utcFormat(isoSpecifier) as unknown as (date: Date) => string
 

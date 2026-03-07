@@ -62,10 +62,10 @@ it('time.nice(interval) can nice a polylinear domain, only affecting its extent'
 
 it('time.nice(interval.every(step)) nices using the specified time interval and step', () => {
   const x = scaleTime().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1, 23, 48)])
-  expect(x.nice(timeDay.every(3)).domain()).toEqual([local(2009, 0, 1), local(2009, 0, 4)])
-  expect(x.nice(timeWeek.every(2)).domain()).toEqual([local(2008, 11, 21), local(2009, 0, 4)])
-  expect(x.nice(timeMonth.every(3)).domain()).toEqual([local(2008, 9, 1), local(2009, 3, 1)])
-  expect(x.nice(timeYear.every(10)).domain()).toEqual([local(2000, 0, 1), local(2010, 0, 1)])
+  expect(x.nice(timeDay.every!(3)).domain()).toEqual([local(2009, 0, 1), local(2009, 0, 4)])
+  expect(x.nice(timeWeek.every!(2)).domain()).toEqual([local(2008, 11, 21), local(2009, 0, 4)])
+  expect(x.nice(timeMonth.every!(3)).domain()).toEqual([local(2008, 9, 1), local(2009, 3, 1)])
+  expect(x.nice(timeYear.every!(10)).domain()).toEqual([local(2000, 0, 1), local(2010, 0, 1)])
 })
 
 it('time.copy() isolates changes to the domain', () => {
@@ -138,7 +138,7 @@ it('time.ticks(interval) observes the specified tick interval', () => {
 
 it('time.ticks(interval.every(step)) observes the specified tick interval and step', () => {
   const x = scaleTime().domain([local(2011, 0, 1, 12, 0, 0), local(2011, 0, 1, 12, 33, 4)])
-  expect(x.ticks(timeMinute.every(10))).toEqual([
+  expect(x.ticks(timeMinute.every!(10))).toEqual([
     local(2011, 0, 1, 12, 0),
     local(2011, 0, 1, 12, 10),
     local(2011, 0, 1, 12, 20),

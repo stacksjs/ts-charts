@@ -3,7 +3,7 @@ import { atan2, cos, quarterPi, radians, sin, tau } from './math.ts'
 import noop from './noop.ts'
 import stream from './stream.ts'
 
-export let areaRingSum = new Adder()
+export let areaRingSum: Adder = new Adder()
 
 let areaSum = new Adder()
 let lambda00: number

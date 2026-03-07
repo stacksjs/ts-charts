@@ -38,11 +38,12 @@ export default function geoCircle(): any {
       stream: any = { point: point }
 
   function point(x: number, y: number): void {
-    ring.push(x = rotate(x, y))
-    x[0] *= degrees, x[1] *= degrees
+    const p = rotate(x, y)
+    ring.push(p)
+    p[0] *= degrees, p[1] *= degrees
   }
 
-  function circle(): any {
+  function circle(this: any): any {
     const c = center.apply(this, arguments),
         r = radius.apply(this, arguments) * radians,
         p = precision.apply(this, arguments) * radians

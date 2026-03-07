@@ -122,7 +122,7 @@ export default function(): any {
       let da0 = da
       let da1 = da
       const ap = padAngle.apply(this, arguments) / 2
-      const rp = (ap > epsilon) && (padRadius ? +padRadius.apply(this, arguments) : sqrt(r0 * r0 + r1 * r1))
+      const rp = (ap > epsilon) ? (padRadius ? +padRadius.apply(this, arguments) : sqrt(r0 * r0 + r1 * r1)) : 0
       let rc = min(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments))
       let rc0 = rc
       let rc1 = rc
@@ -143,13 +143,13 @@ export default function(): any {
       const y01 = r1 * sin(a01)
       const x10 = r0 * cos(a10)
       const y10 = r0 * sin(a10)
+      let x11 = r1 * cos(a11)
+      let y11 = r1 * sin(a11)
+      let x00 = r0 * cos(a00)
+      let y00 = r0 * sin(a00)
 
       // Apply rounded corners?
       if (rc > epsilon) {
-        const x11 = r1 * cos(a11)
-        const y11 = r1 * sin(a11)
-        const x00 = r0 * cos(a00)
-        const y00 = r0 * sin(a00)
         let oc: [number, number] | undefined
 
         // Restrict the corner radius according to the sector angle. If this

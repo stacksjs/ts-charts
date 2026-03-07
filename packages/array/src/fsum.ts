@@ -68,7 +68,7 @@ export function fcumsum(values: Iterable<any>, valueof?: (value: any, index: num
   const adder = new Adder()
   let index = -1
   return Float64Array.from(values as any, valueof === undefined
-    ? (v: any) => adder.add(+v || 0)
-    : (v: any) => adder.add(+valueof(v, ++index, values) || 0)
+    ? (v: any) => +adder.add(+v || 0)
+    : (v: any) => +adder.add(+valueof(v, ++index, values) || 0)
   )
 }

@@ -17,9 +17,9 @@ it('histogram is a deprecated alias for bin', () => {
 
 it('bin() returns a default bin generator', () => {
   const h = bin()
-  expect(h.value()(42)).toBe(42)
-  expect(h.domain()).toBe(extent)
-  expect(h.thresholds()).toBe(thresholdSturges)
+  expect((h.value() as any)(42)).toBe(42)
+  expect(h.domain()).toBe(extent as any)
+  expect(h.thresholds()).toBe(thresholdSturges as any)
 })
 
 it('bin(data) computes bins of the specified array of data', () => {
@@ -78,7 +78,7 @@ it('bin.value(function) sets the value accessor', () => {
 
 it('bin.domain(array) sets the domain', () => {
   const h = bin().domain([0, 20])
-  expect(h.domain()()).toEqual([0, 20])
+  expect((h.domain() as any)()).toEqual([0, 20])
   expect(h([1, 2, 2, 10, 18, 18])).toEqual([
     box([1, 2, 2], 0, 5),
     box([], 5, 10),
@@ -169,7 +169,7 @@ it('bin(data) does not mutate user-supplied thresholds as an array', () => {
   const b = bin().domain([4, 5]).thresholds(thresholds)
   expect(b([5])).toEqual([box([], 4, 5), box([5], 5, 5)])
   expect(thresholds).toEqual([3, 4, 5, 6])
-  expect(b.thresholds()()).toEqual([3, 4, 5, 6])
+  expect((b.thresholds() as any)()).toEqual([3, 4, 5, 6])
 })
 
 it('bin(data) does not mutate user-supplied thresholds as a function', () => {
@@ -177,5 +177,5 @@ it('bin(data) does not mutate user-supplied thresholds as a function', () => {
   const b = bin().domain([4, 5]).thresholds(() => thresholds)
   expect(b([5])).toEqual([box([], 4, 5), box([5], 5, 5)])
   expect(thresholds).toEqual([3, 4, 5, 6])
-  expect(b.thresholds()()).toEqual([3, 4, 5, 6])
+  expect((b.thresholds() as any)()).toEqual([3, 4, 5, 6])
 })

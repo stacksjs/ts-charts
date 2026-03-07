@@ -11,7 +11,7 @@ export default function quantile(): any {
     let i = 0
     const n = Math.max(1, range.length)
     thresholds = new Array(n - 1)
-    while (++i < n) thresholds[i - 1] = threshold(domain, i / n)
+    while (++i < n) thresholds[i - 1] = threshold(domain, i / n) as number
     return scale
   }
 

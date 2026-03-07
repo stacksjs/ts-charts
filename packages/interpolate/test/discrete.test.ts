@@ -21,6 +21,6 @@ it('interpolateDiscrete([0, 1]) is equivalent to similar to Math.round', () => {
 })
 
 it('interpolateDiscrete(...)(NaN) returned undefined', () => {
-  const i = interpolateDiscrete([0, 1])
+  const i = interpolateDiscrete([0, 1]) as any
   expect(i(NaN)).toBe(undefined)
 })

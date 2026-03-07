@@ -1,3 +1,3 @@
-const array = Array.prototype
+const array: any[] = Array.prototype as any
 
-export const slice = array.slice
+export const slice: (...args: any[]) => any[] = array.slice

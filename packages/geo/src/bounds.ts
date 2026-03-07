@@ -28,7 +28,7 @@ const boundsStream: any = {
     boundsStream.point = boundsPoint
     boundsStream.lineStart = boundsLineStart
     boundsStream.lineEnd = boundsLineEnd
-    if (areaRingSum < 0 as any) lambda0 = -(lambda1 = 180), phi0 = -(phi1 = 90)
+    if (+areaRingSum < 0) lambda0 = -(lambda1 = 180), phi0 = -(phi1 = 90)
     else if (deltaSum > epsilon) phi1 = 90
     else if (deltaSum < -epsilon) phi0 = -90
     range[0] = lambda0, range[1] = lambda1
@@ -57,10 +57,10 @@ function linePoint(lambda: number, phi: number): void {
     let lambdai = inflectionSpherical[0] * degrees * sign
     let phii: number
     const antimeridian = abs(delta) > 180
-    if (antimeridian ^ (sign * lambda2 < lambdai && lambdai < sign * lambda)) {
+    if ((antimeridian as unknown as number) ^ (sign * lambda2 < lambdai && lambdai < sign * lambda ? 1 : 0)) {
       phii = inflectionSpherical[1] * degrees
       if (phii > phi1) phi1 = phii
-    } else if (lambdai = (lambdai + 360) % 360 - 180, antimeridian ^ (sign * lambda2 < lambdai && lambdai < sign * lambda)) {
+    } else if (lambdai = (lambdai + 360) % 360 - 180, (antimeridian as unknown as number) ^ (sign * lambda2 < lambdai && lambdai < sign * lambda ? 1 : 0)) {
       phii = -inflectionSpherical[1] * degrees
       if (phii < phi0) phi0 = phii
     } else {

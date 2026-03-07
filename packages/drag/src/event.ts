@@ -1,14 +1,14 @@
 export default class DragEvent {
-  readonly type: string
+  readonly type!: string
   readonly sourceEvent: any
   readonly subject: any
   readonly target: any
   readonly identifier: any
-  readonly active: number
-  readonly x: number
-  readonly y: number
-  readonly dx: number
-  readonly dy: number
+  readonly active!: number
+  readonly x!: number
+  readonly y!: number
+  readonly dx!: number
+  readonly dy!: number
   private readonly _: any
 
   constructor(type: string, {

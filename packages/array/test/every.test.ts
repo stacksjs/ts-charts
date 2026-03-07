@@ -2,8 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { every } from '../src/index.ts'
 
 it('every(values, test) returns true if all tests pass', () => {
-  expect(every([1, 2, 3, 2, 1], (x: any) => x & 1)).toBe(false)
-  expect(every([1, 3, 5, 7], (x: any) => x & 1)).toBe(true)
+  expect(every([1, 2, 3, 2, 1], ((x: any) => x & 1) as any)).toBe(false)
+  expect(every([1, 3, 5, 7], ((x: any) => x & 1) as any)).toBe(true)
 })
 
 it('every(values, test) returns true if values is empty', () => {
@@ -11,8 +11,8 @@ it('every(values, test) returns true if values is empty', () => {
 })
 
 it('every(values, test) accepts an iterable', () => {
-  expect(every(new Set([1, 3, 5, 7]), (x: any) => x & 1)).toBe(true)
-  expect(every((function*() { yield* [1, 3, 5, 7] })(), (x: any) => x & 1)).toBe(true)
+  expect(every(new Set([1, 3, 5, 7]), ((x: any) => x & 1) as any)).toBe(true)
+  expect(every((function*() { yield* [1, 3, 5, 7] })(), ((x: any) => x & 1) as any)).toBe(true)
 })
 
 it('every(values, test) enforces that test is a function', () => {

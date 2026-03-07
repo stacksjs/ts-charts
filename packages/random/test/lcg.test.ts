@@ -29,7 +29,7 @@ describe('randomLcg', () => {
     assertInDelta(mean(run) as number, 1 / 2, 1e-2)
     assertInDelta(deviation(run) as number, Math.sqrt(1 / 12), 1e-2)
     const histogram = rollup(Array.from(run), (v: number[]) => v.length, (d: number) => Math.floor(d * 10))
-    for (const h of histogram) assertInDelta(h[1], 1000, 120)
+    for (const h of histogram) assertInDelta(h[1] as number, 1000, 120)
   })
 
   it('lcg with small fractional seeds is well-distributed', () => {

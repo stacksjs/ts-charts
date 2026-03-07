@@ -19,5 +19,5 @@ function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: an
   }
 }
 
-export default hcl(hue)
+export default hcl(hue) as (start: any, end: any) => (t: number) => string
 export const hclLong: (start: any, end: any) => (t: number) => string = hcl(color)

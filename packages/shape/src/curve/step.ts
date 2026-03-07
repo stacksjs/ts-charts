@@ -25,7 +25,18 @@ Step.prototype = {
     x = +x, y = +y
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
-      case 1: this._point = 2 // falls through
+      case 1: {
+        this._point = 2
+        if (this._t <= 0) {
+          this._context.lineTo(this._x, y)
+          this._context.lineTo(x, y)
+        } else {
+          const x1 = this._x * (1 - this._t) + x * this._t
+          this._context.lineTo(x1, this._y)
+          this._context.lineTo(x1, y)
+        }
+        break
+      }
       default: {
         if (this._t <= 0) {
           this._context.lineTo(this._x, y)

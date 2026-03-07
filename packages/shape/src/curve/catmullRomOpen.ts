@@ -38,7 +38,7 @@ CatmullRomOpen.prototype = {
       case 0: this._point = 1; break
       case 1: this._point = 2; break
       case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break
-      case 3: this._point = 4 // falls through
+      case 3: this._point = 4; point(this, x, y); break
       default: point(this, x, y); break
     }
 
@@ -64,4 +64,4 @@ export default (function custom(alpha: number): CatmullRomOpenCurveFactory {
   }
 
   return catmullRom as CatmullRomOpenCurveFactory
-})(0.5)
+})(0.5) as CatmullRomOpenCurveFactory

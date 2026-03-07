@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { some } from '../src/index.ts'
 
 it('some(values, test) returns true if any test passes', () => {
-  expect(some([1, 2, 3, 2, 1], (x: any) => x & 1)).toBe(true)
+  expect(some([1, 2, 3, 2, 1], ((x: any) => x & 1) as any)).toBe(true)
   expect(some([1, 2, 3, 2, 1], (x: any) => x > 3)).toBe(false)
 })
 

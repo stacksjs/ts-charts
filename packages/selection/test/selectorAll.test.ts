@@ -7,11 +7,11 @@ describe('selectorAll', () => {
     const body = document.body
     const div = document.querySelector('div')!
     body.classList.add('foo')
-    expect([...selectorAll('body').call(document.documentElement)]).toEqual([body])
-    expect([...selectorAll('.foo').call(document.documentElement)]).toEqual([body, div])
-    expect([...selectorAll('div.foo').call(document.documentElement)]).toEqual([div])
-    expect([...selectorAll('div').call(document.documentElement)]).toEqual([div])
-    expect([...selectorAll('h1').call(document.documentElement)]).toEqual([])
+    expect(Array.from(selectorAll('body').call(document.documentElement))).toEqual([body])
+    expect(Array.from(selectorAll('.foo').call(document.documentElement))).toEqual([body, div])
+    expect(Array.from(selectorAll('div.foo').call(document.documentElement))).toEqual([div])
+    expect(Array.from(selectorAll('div').call(document.documentElement))).toEqual([div])
+    expect(Array.from(selectorAll('h1').call(document.documentElement))).toEqual([])
     body.classList.remove('foo')
     document.body.innerHTML = ''
   })
@@ -22,10 +22,10 @@ describe('selectorAll', () => {
   })
 
   it('selectorAll(null).call(element) returns a new empty array each time', () => {
-    const one = selectorAll(undefined)() as any[]
-    const two = selectorAll(undefined)() as any[]
+    const one = selectorAll(undefined).call(document.documentElement) as any[]
+    const two = selectorAll(undefined).call(document.documentElement) as any[]
     expect(one === two).toBe(false)
     one.push('one')
-    expect(selectorAll(undefined)()).toEqual([])
+    expect(selectorAll(undefined).call(document.documentElement)).toEqual([])
   })
 })

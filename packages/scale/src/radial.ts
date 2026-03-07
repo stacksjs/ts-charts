@@ -11,7 +11,7 @@ function unsquare(x: number): number {
   return Math.sign(x) * Math.sqrt(Math.abs(x))
 }
 
-export default function radial(): any {
+export default function radial(..._args: any[]): any {
   const squared = continuous()
   let range = [0, 1]
   let round = false

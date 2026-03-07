@@ -23,7 +23,7 @@ it('bisector(comparator).left(array, value) returns the index of the first match
 })
 
 it('bisector(comparator).left(empty, value) returns zero', () => {
-  expect(bisector(() => { throw new Error() }).left([], 1)).toBe(0)
+  expect((bisector as any)(() => { throw new Error() }).left([], 1)).toBe(0)
 })
 
 it('bisector(comparator).left(array, value) returns the insertion point of a non-exact match', () => {
@@ -76,7 +76,7 @@ it('bisector(comparator).right(array, value) returns the index after the last ma
 })
 
 it('bisector(comparator).right(empty, value) returns zero', () => {
-  expect(bisector(() => { throw new Error() }).right([], 1)).toBe(0)
+  expect((bisector as any)(() => { throw new Error() }).right([], 1)).toBe(0)
 })
 
 it('bisector(comparator).right(array, value) returns the insertion point of a non-exact match', () => {
@@ -249,7 +249,7 @@ it('bisector(comparator).center(array, value) returns the closest index', () => 
 })
 
 it('bisector(comparator).center(empty, value) returns zero', () => {
-  expect(bisector(() => { throw new Error() }).center([], 1)).toBe(0)
+  expect((bisector as any)(() => { throw new Error() }).center([], 1)).toBe(0)
 })
 
 it('bisector(ascending).center(array, value) returns the left value', () => {

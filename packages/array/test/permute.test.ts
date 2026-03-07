@@ -20,6 +20,6 @@ it('permute(array, indexes) can duplicate input values', () => {
 })
 
 it('permute(object, keys) returns an array of values in the given key order', () => {
-  expect(permute({name: 'Adam', age: 42}, ['age', 'name'])).toEqual([42, 'Adam'])
-  expect(permute({name: 'Adam', age: 42}, ['name', 'age'])).toEqual(['Adam', 42])
+  expect(permute({name: 'Adam', age: 42} as any, ['age', 'name'] as any)).toEqual([42, 'Adam'])
+  expect(permute({name: 'Adam', age: 42} as any, ['name', 'age'] as any)).toEqual(['Adam', 42])
 })

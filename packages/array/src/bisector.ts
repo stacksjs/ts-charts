@@ -17,7 +17,7 @@ export default function bisector<T, U>(f: ((a: T, b: U) => number) | ((d: T) => 
     compare2 = (d: any, x: any) => ascending((f as (d: T) => U)(d), x)
     delta = (d: any, x: any) => (f as any)(d) - x
   } else {
-    compare1 = f === ascending || f === descending ? f : zero
+    compare1 = f === ascending || f === descending ? f as (a: any, b: any) => number : zero
     compare2 = f as (a: any, b: any) => number
     delta = f as (a: any, b: any) => number
   }

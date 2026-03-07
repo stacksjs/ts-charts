@@ -50,10 +50,10 @@ it('scaleUtc.nice(interval) can nice a polylinear domain, only affecting its ext
 
 it('scaleUtc.nice(interval.every(step)) nices using the specified time interval and step', () => {
   const x = scaleUtc().domain([utc(2009, 0, 1, 0, 12), utc(2009, 0, 1, 23, 48)])
-  expect(x.nice(utcDay.every(3)).domain()).toEqual([utc(2009, 0, 1), utc(2009, 0, 4)])
-  expect(x.nice(utcWeek.every(2)).domain()).toEqual([utc(2008, 11, 21), utc(2009, 0, 4)])
-  expect(x.nice(utcMonth.every(3)).domain()).toEqual([utc(2008, 9, 1), utc(2009, 3, 1)])
-  expect(x.nice(utcYear.every(10)).domain()).toEqual([utc(2000, 0, 1), utc(2010, 0, 1)])
+  expect(x.nice(utcDay.every!(3)).domain()).toEqual([utc(2009, 0, 1), utc(2009, 0, 4)])
+  expect(x.nice(utcWeek.every!(2)).domain()).toEqual([utc(2008, 11, 21), utc(2009, 0, 4)])
+  expect(x.nice(utcMonth.every!(3)).domain()).toEqual([utc(2008, 9, 1), utc(2009, 3, 1)])
+  expect(x.nice(utcYear.every!(10)).domain()).toEqual([utc(2000, 0, 1), utc(2010, 0, 1)])
 })
 
 it('scaleUtc.copy() isolates changes to the domain', () => {
@@ -126,7 +126,7 @@ it('scaleUtc.ticks(interval) observes the specified named tick interval', () => 
 
 it('scaleUtc.ticks(interval.every(step)) observes the specified tick interval and step', () => {
   const x = scaleUtc().domain([utc(2011, 0, 1, 12, 0, 0), utc(2011, 0, 1, 12, 33, 4)])
-  expect(x.ticks(utcMinute.every(10))).toEqual([
+  expect(x.ticks(utcMinute.every!(10))).toEqual([
     utc(2011, 0, 1, 12, 0),
     utc(2011, 0, 1, 12, 10),
     utc(2011, 0, 1, 12, 20),

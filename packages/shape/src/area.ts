@@ -19,7 +19,7 @@ export default function(x0?: any, y0?: any, y1?: any): any {
 
   function area(data: any): any {
     let i: number
-    let j: number
+    let j = 0
     let k: number
     const n = (data = array(data)).length
     let d: any

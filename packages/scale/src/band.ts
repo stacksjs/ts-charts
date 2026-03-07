@@ -2,7 +2,7 @@ import { range as sequence } from '@ts-charts/array'
 import { initRange } from './init.ts'
 import ordinal from './ordinal.ts'
 
-export default function band(): any {
+export default function band(..._args: any[]): any {
   const scale = ordinal().unknown(undefined)
   const domain = scale.domain
   const ordinalRange = scale.range
