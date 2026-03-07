@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "lockfileVersion": 1,
+  "generatedAt": "1771698413",
+  "packages": {
+    "bunfig@^0.15.6": {
+      "name": "bunfig",
+      "version": "^0.15.6",
+      "source": "pkgx"
+    }
+  }
+}
