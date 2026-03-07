@@ -1,10 +1,14 @@
 import none from './none.ts'
 
 export default function offsetWiggle(series: any[], order: number[]): void {
-  if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) return
   let n: number, m: number, s0: any
-  for (let y = 0, j = 1; j < m; ++j) {
-    for (let i = 0, s1 = 0, s2 = 0; i < n; ++i) {
+  if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) return
+  let y = 0
+  let j = 1
+  for (; j < m; ++j) {
+    let s1 = 0
+    let s2 = 0
+    for (let i = 0; i < n; ++i) {
       const si = series[order[i]]
       const sij0 = si[j][1] || 0
       const sij1 = si[j - 1][1] || 0

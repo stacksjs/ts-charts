@@ -668,11 +668,9 @@ export class Selection {
       const group = groups[j]
       for (let i = group.length - 1, next = group[i], node: any; --i >= 0;) {
         if (node = group[i]) {
-          if (next && next !== node.nextSibling) {
+          if (next && (node.compareDocumentPosition(next) ^ 4)) {
             const parent = next.parentNode
             if (parent) {
-              // Remove first to work around happy-dom insertBefore bug
-              if (node.parentNode === parent) parent.removeChild(node)
               parent.insertBefore(node, next)
             }
           }

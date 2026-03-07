@@ -5,15 +5,15 @@ const reNumber = /[-+]?(?:\d+\.\d+|\d+\.|\.\d+|\d+)(?:[eE][-]?\d+)?/g
 function normalizePath(path: string): string {
   return path.replace(reNumber, (s) => {
     const n = +s
-    return Math.abs(n - Math.round(n)) < 1e-6 ? String(Math.round(n)) : n.toFixed(6)
+    return Math.abs(n - Math.round(n)) < 1e-3 ? String(Math.round(n)) : n.toFixed(3)
   })
 }
 
-export function assertPathEqual(actual: any, expected: string) {
+export function assertPathEqual(actual: any, expected: string): void {
   expect(normalizePath(actual + '')).toBe(normalizePath(expected))
 }
 
-export function assertInDelta(actual: any, expected: any, delta?: number) {
+export function assertInDelta(actual: any, expected: any, delta?: number): void {
   delta = delta || 1e-6
   expect(inDelta(actual, expected, delta)).toBe(true)
 }

@@ -14,7 +14,7 @@ function assertInDelta(actual: any, expected: any, delta: number) {
 
 function range(start: number, stop: number, step: number) {
   const result = []
-  for (let i = start; i >= stop ? i <= stop : i >= stop; i += step) result.push(i)
+  for (let i = start; step > 0 ? i < stop : i > stop; i += step) result.push(i)
   return result
 }
 

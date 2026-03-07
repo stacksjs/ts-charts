@@ -99,13 +99,23 @@ function create(node: any, id: number, self: TransitionSchedule): void {
       if (o.state === RUNNING) {
         o.state = ENDED
         o.timer.stop()
-        o.on.call('interrupt', node, node.__data__, o.index, o.group)
+        try {
+          o.on.call('interrupt', node, node.__data__, o.index, o.group)
+        }
+        catch {
+          // Ensure transition cleanup still happens when listeners throw.
+        }
         delete schedules[i]
       }
       else if (+i < id) {
         o.state = ENDED
         o.timer.stop()
-        o.on.call('cancel', node, node.__data__, o.index, o.group)
+        try {
+          o.on.call('cancel', node, node.__data__, o.index, o.group)
+        }
+        catch {
+          // Ensure transition cleanup still happens when listeners throw.
+        }
         delete schedules[i]
       }
     }
@@ -119,13 +129,24 @@ function create(node: any, id: number, self: TransitionSchedule): void {
     })
 
     self.state = STARTING
-    self.on.call('start', node, node.__data__, self.index, self.group)
+    try {
+      self.on.call('start', node, node.__data__, self.index, self.group)
+    }
+    catch {
+      return stop()
+    }
     if (self.state !== STARTING) return
     self.state = STARTED
 
     tween = new Array(n = self.tween.length)
     for (i = 0, j = -1; i < n; ++i) {
-      if (o = self.tween[i].value.call(node, node.__data__, self.index, self.group)) {
+      try {
+        o = self.tween[i].value.call(node, node.__data__, self.index, self.group)
+      }
+      catch {
+        return stop()
+      }
+      if (o) {
         tween[++j] = o
       }
     }
@@ -138,11 +159,21 @@ function create(node: any, id: number, self: TransitionSchedule): void {
     const n = tween.length
 
     while (++i < n) {
-      tween[i].call(node, t)
+      try {
+        tween[i].call(node, t)
+      }
+      catch {
+        return stop()
+      }
     }
 
     if (self.state === ENDING) {
-      self.on.call('end', node, node.__data__, self.index, self.group)
+      try {
+        self.on.call('end', node, node.__data__, self.index, self.group)
+      }
+      catch {
+        return stop()
+      }
       stop()
     }
   }

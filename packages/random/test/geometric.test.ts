@@ -4,7 +4,13 @@ import { randomGeometric, randomLcg } from '../src/index.ts'
 import { skewness, kurtosis } from './statistics.ts'
 
 function assertInDelta(actual: number, expected: number, delta: number): void {
-  expect(Math.abs(actual - expected)).toBeLessThan(delta)
+  const diff = Math.abs(actual - expected)
+  if (delta === 0) {
+    expect(diff).toBe(0)
+    return
+  }
+
+  expect(diff).toBeLessThan(delta)
 }
 
 function dmean(p: number): number {

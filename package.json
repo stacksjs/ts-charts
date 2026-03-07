@@ -22,12 +22,12 @@
   ],
   "scripts": {
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
-    "test": "bun test",
+    "test": "TZ=America/Los_Angeles bun test",
     "lint": "bunx --bun pickier .",
     "lint:fix": "bunx --bun pickier . --fix",
-    "changelog": "bunx logsmith --verbose",
-    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
-    "release": "bun run changelog:generate && bunx bumpx prompt --recursive",
+    "changelog": "bunx --bun logsmith --verbose",
+    "changelog:generate": "bunx --bun logsmith --output CHANGELOG.md",
+    "release": "bun run changelog:generate && bunx --bun bumpx prompt --recursive",
     "dev:docs": "bun --bun bunpress dev docs",
     "build:docs": "bun --bun bunpress build docs",
     "preview:docs": "bun --bun bunpress preview docs",
@@ -36,7 +36,6 @@
   "devDependencies": {
     "better-dx": "^0.2.5",
     "bunfig": "^0.15.6",
-    "happy-dom": "^20.8.3",
     "very-happy-dom": "^0.0.9"
   },
   "workspaces": [

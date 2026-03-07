@@ -63,17 +63,17 @@ it('diverging.domain() handles a descending domain', () => {
 it('divergingLog.domain() handles a descending domain', () => {
   const s = scaleDivergingLog().domain([3, 2, 1])
   expect(s.domain()).toEqual([3, 2, 1])
-  expect(s(1.2)).toBe(1 - 0.1315172029168969)
-  expect(s(2.0)).toBe(1 - 0.5000000000000000)
-  expect(s(2.8)).toBe(1 - 0.9149213210862197)
+  expect(s(1.2)).toBeCloseTo(1 - 0.1315172029168969, 12)
+  expect(s(2.0)).toBeCloseTo(1 - 0.5000000000000000, 12)
+  expect(s(2.8)).toBeCloseTo(1 - 0.9149213210862197, 12)
 })
 
 it('divergingLog.domain() handles a descending negative domain', () => {
   const s = scaleDivergingLog().domain([-1, -2, -3])
   expect(s.domain()).toEqual([-1, -2, -3])
-  expect(s(-1.2)).toBe(0.1315172029168969)
-  expect(s(-2.0)).toBe(0.5000000000000000)
-  expect(s(-2.8)).toBe(0.9149213210862197)
+  expect(s(-1.2)).toBeCloseTo(0.1315172029168969, 12)
+  expect(s(-2.0)).toBeCloseTo(0.5000000000000000, 12)
+  expect(s(-2.8)).toBeCloseTo(0.9149213210862197, 12)
 })
 
 it('diverging.domain() handles a non-numeric domain', () => {

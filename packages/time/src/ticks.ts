@@ -60,7 +60,10 @@ function ticker(
   return [ticks, tickInterval]
 }
 
-const [utcTicks, utcTickInterval] = ticker(utcYear, utcMonth, utcSunday, unixDay, utcHour, utcMinute)
-const [timeTicks, timeTickInterval] = ticker(timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute)
+const utcTicker = ticker(utcYear, utcMonth, utcSunday, unixDay, utcHour, utcMinute)
+const timeTicker = ticker(timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute)
 
-export { utcTicks, utcTickInterval, timeTicks, timeTickInterval }
+export const utcTicks: (start: Date | number, stop: Date | number, count: TimeInterval | number) => Date[] = utcTicker[0]
+export const utcTickInterval: (start: Date | number, stop: Date | number, count: number) => TimeInterval | null | undefined = utcTicker[1]
+export const timeTicks: (start: Date | number, stop: Date | number, count: TimeInterval | number) => Date[] = timeTicker[0]
+export const timeTickInterval: (start: Date | number, stop: Date | number, count: number) => TimeInterval | null | undefined = timeTicker[1]
