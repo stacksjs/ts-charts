@@ -169,9 +169,9 @@ export function projectionMutator(projectAt: any): any {
     return p
   }
 
-  return function (): any {
-    project = projectAt.apply(this, arguments)
-    p.invert = project.invert && invert
+  return function (this: any, ...args: any[]): any {
+    project = projectAt.apply(this, args)
+    ;(p as any).invert = project.invert && invert
     return recenter()
   }
 }

@@ -1,6 +1,6 @@
 import { expect } from 'bun:test'
 
-export function assertPathEqual(actual: string, expected: string) {
+export function assertPathEqual(actual: string, expected: string): void {
   expect(normalizePath(actual + '')).toBe(normalizePath(expected + ''))
 }
 
@@ -15,7 +15,7 @@ function formatNumber(s: string): string {
   return Math.abs(n - Math.round(n)) < 1e-6 ? String(Math.round(n)) : n.toFixed(3)
 }
 
-export function assertInDelta(actual: any, expected: any, delta = 1e-6) {
+export function assertInDelta(actual: any, expected: any, delta = 1e-6): void {
   expect(inDelta(actual, expected, delta)).toBe(true)
 }
 

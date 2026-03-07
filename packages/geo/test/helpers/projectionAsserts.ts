@@ -1,6 +1,6 @@
 import { expect } from 'bun:test'
 
-export function assertProjectionEqual(projection: any, location: number[], point: number[], delta?: number) {
+export function assertProjectionEqual(projection: any, location: number[], point: number[], delta?: number): void {
   expect(
     planarEqual(projection(location), point, delta || 1e-6)
     && sphericalEqual(projection.invert(point), location, delta || 1e-3)
