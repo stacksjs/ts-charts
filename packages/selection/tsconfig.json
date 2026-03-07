@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "lib": ["esnext", "dom"],
+    "noEmit": true,
+    "isolatedDeclarations": true
+  },
+  "include": ["src", "test"]
+}

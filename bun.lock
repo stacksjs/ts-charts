@@ -6,16 +6,246 @@
       "name": "ts-starter-monorepo",
       "devDependencies": {
         "better-dx": "^0.2.5",
+        "bunfig": "^0.15.6",
+        "happy-dom": "^20.8.3",
+        "very-happy-dom": "^0.0.9",
       },
     },
-    "packages/my-project": {
-      "name": "ts-starter-monorepo",
+    "packages/array": {
+      "name": "@ts-charts/array",
       "version": "0.0.0",
-      "bin": {
-        "ts-starter-monorepo": "./dist/bin/cli.js",
+      "dependencies": {
+        "@ts-charts/internmap": "workspace:*",
       },
+    },
+    "packages/axis": {
+      "name": "@ts-charts/axis",
+      "version": "0.0.0",
       "devDependencies": {
-        "bunfig": "^0.15.6",
+        "@ts-charts/scale": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+      },
+    },
+    "packages/brush": {
+      "name": "@ts-charts/brush",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/drag": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+        "@ts-charts/transition": "workspace:*",
+      },
+    },
+    "packages/chord": {
+      "name": "@ts-charts/chord",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/path": "workspace:*",
+      },
+    },
+    "packages/color": {
+      "name": "@ts-charts/color",
+      "version": "0.0.0",
+    },
+    "packages/contour": {
+      "name": "@ts-charts/contour",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/array": "workspace:*",
+      },
+    },
+    "packages/delaunator": {
+      "name": "@ts-charts/delaunator",
+      "version": "0.0.0",
+    },
+    "packages/delaunay": {
+      "name": "@ts-charts/delaunay",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/delaunator": "workspace:*",
+      },
+    },
+    "packages/dispatch": {
+      "name": "@ts-charts/dispatch",
+      "version": "0.0.0",
+    },
+    "packages/drag": {
+      "name": "@ts-charts/drag",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+      },
+    },
+    "packages/dsv": {
+      "name": "@ts-charts/dsv",
+      "version": "0.0.0",
+    },
+    "packages/ease": {
+      "name": "@ts-charts/ease",
+      "version": "0.0.0",
+    },
+    "packages/fetch": {
+      "name": "@ts-charts/fetch",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/dsv": "workspace:*",
+      },
+    },
+    "packages/force": {
+      "name": "@ts-charts/force",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/quadtree": "workspace:*",
+        "@ts-charts/timer": "workspace:*",
+      },
+    },
+    "packages/format": {
+      "name": "@ts-charts/format",
+      "version": "0.0.0",
+    },
+    "packages/geo": {
+      "name": "@ts-charts/geo",
+      "version": "0.0.0",
+    },
+    "packages/hierarchy": {
+      "name": "@ts-charts/hierarchy",
+      "version": "0.0.0",
+    },
+    "packages/internmap": {
+      "name": "@ts-charts/internmap",
+      "version": "0.0.0",
+    },
+    "packages/interpolate": {
+      "name": "@ts-charts/interpolate",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/color": "workspace:*",
+      },
+    },
+    "packages/path": {
+      "name": "@ts-charts/path",
+      "version": "0.0.0",
+    },
+    "packages/polygon": {
+      "name": "@ts-charts/polygon",
+      "version": "0.0.0",
+    },
+    "packages/quadtree": {
+      "name": "@ts-charts/quadtree",
+      "version": "0.0.0",
+    },
+    "packages/random": {
+      "name": "@ts-charts/random",
+      "version": "0.0.0",
+    },
+    "packages/scale": {
+      "name": "@ts-charts/scale",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/array": "workspace:*",
+        "@ts-charts/format": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+        "@ts-charts/time": "workspace:*",
+        "@ts-charts/time-format": "workspace:*",
+      },
+    },
+    "packages/scale-chromatic": {
+      "name": "@ts-charts/scale-chromatic",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/color": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+      },
+    },
+    "packages/selection": {
+      "name": "@ts-charts/selection",
+      "version": "0.0.0",
+    },
+    "packages/shape": {
+      "name": "@ts-charts/shape",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/path": "workspace:*",
+      },
+    },
+    "packages/time": {
+      "name": "@ts-charts/time",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/array": "workspace:*",
+      },
+    },
+    "packages/time-format": {
+      "name": "@ts-charts/time-format",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/time": "workspace:*",
+      },
+    },
+    "packages/timer": {
+      "name": "@ts-charts/timer",
+      "version": "0.0.0",
+    },
+    "packages/transition": {
+      "name": "@ts-charts/transition",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/color": "workspace:*",
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/ease": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+        "@ts-charts/timer": "workspace:*",
+      },
+    },
+    "packages/ts-charts": {
+      "name": "ts-charts",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/array": "workspace:*",
+        "@ts-charts/axis": "workspace:*",
+        "@ts-charts/brush": "workspace:*",
+        "@ts-charts/chord": "workspace:*",
+        "@ts-charts/color": "workspace:*",
+        "@ts-charts/contour": "workspace:*",
+        "@ts-charts/delaunay": "workspace:*",
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/drag": "workspace:*",
+        "@ts-charts/dsv": "workspace:*",
+        "@ts-charts/ease": "workspace:*",
+        "@ts-charts/fetch": "workspace:*",
+        "@ts-charts/force": "workspace:*",
+        "@ts-charts/format": "workspace:*",
+        "@ts-charts/geo": "workspace:*",
+        "@ts-charts/hierarchy": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+        "@ts-charts/path": "workspace:*",
+        "@ts-charts/polygon": "workspace:*",
+        "@ts-charts/quadtree": "workspace:*",
+        "@ts-charts/random": "workspace:*",
+        "@ts-charts/scale": "workspace:*",
+        "@ts-charts/scale-chromatic": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+        "@ts-charts/shape": "workspace:*",
+        "@ts-charts/time": "workspace:*",
+        "@ts-charts/time-format": "workspace:*",
+        "@ts-charts/timer": "workspace:*",
+        "@ts-charts/transition": "workspace:*",
+        "@ts-charts/zoom": "workspace:*",
+      },
+    },
+    "packages/zoom": {
+      "name": "@ts-charts/zoom",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/dispatch": "workspace:*",
+        "@ts-charts/drag": "workspace:*",
+        "@ts-charts/interpolate": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+        "@ts-charts/transition": "workspace:*",
       },
     },
   },
@@ -40,6 +270,70 @@
 
     "@szmarczak/http-timer": ["@szmarczak/http-timer@4.0.6", "", { "dependencies": { "defer-to-connect": "^2.0.0" } }, "sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w=="],
 
+    "@ts-charts/array": ["@ts-charts/array@workspace:packages/array"],
+
+    "@ts-charts/axis": ["@ts-charts/axis@workspace:packages/axis"],
+
+    "@ts-charts/brush": ["@ts-charts/brush@workspace:packages/brush"],
+
+    "@ts-charts/chord": ["@ts-charts/chord@workspace:packages/chord"],
+
+    "@ts-charts/color": ["@ts-charts/color@workspace:packages/color"],
+
+    "@ts-charts/contour": ["@ts-charts/contour@workspace:packages/contour"],
+
+    "@ts-charts/delaunator": ["@ts-charts/delaunator@workspace:packages/delaunator"],
+
+    "@ts-charts/delaunay": ["@ts-charts/delaunay@workspace:packages/delaunay"],
+
+    "@ts-charts/dispatch": ["@ts-charts/dispatch@workspace:packages/dispatch"],
+
+    "@ts-charts/drag": ["@ts-charts/drag@workspace:packages/drag"],
+
+    "@ts-charts/dsv": ["@ts-charts/dsv@workspace:packages/dsv"],
+
+    "@ts-charts/ease": ["@ts-charts/ease@workspace:packages/ease"],
+
+    "@ts-charts/fetch": ["@ts-charts/fetch@workspace:packages/fetch"],
+
+    "@ts-charts/force": ["@ts-charts/force@workspace:packages/force"],
+
+    "@ts-charts/format": ["@ts-charts/format@workspace:packages/format"],
+
+    "@ts-charts/geo": ["@ts-charts/geo@workspace:packages/geo"],
+
+    "@ts-charts/hierarchy": ["@ts-charts/hierarchy@workspace:packages/hierarchy"],
+
+    "@ts-charts/internmap": ["@ts-charts/internmap@workspace:packages/internmap"],
+
+    "@ts-charts/interpolate": ["@ts-charts/interpolate@workspace:packages/interpolate"],
+
+    "@ts-charts/path": ["@ts-charts/path@workspace:packages/path"],
+
+    "@ts-charts/polygon": ["@ts-charts/polygon@workspace:packages/polygon"],
+
+    "@ts-charts/quadtree": ["@ts-charts/quadtree@workspace:packages/quadtree"],
+
+    "@ts-charts/random": ["@ts-charts/random@workspace:packages/random"],
+
+    "@ts-charts/scale": ["@ts-charts/scale@workspace:packages/scale"],
+
+    "@ts-charts/scale-chromatic": ["@ts-charts/scale-chromatic@workspace:packages/scale-chromatic"],
+
+    "@ts-charts/selection": ["@ts-charts/selection@workspace:packages/selection"],
+
+    "@ts-charts/shape": ["@ts-charts/shape@workspace:packages/shape"],
+
+    "@ts-charts/time": ["@ts-charts/time@workspace:packages/time"],
+
+    "@ts-charts/time-format": ["@ts-charts/time-format@workspace:packages/time-format"],
+
+    "@ts-charts/timer": ["@ts-charts/timer@workspace:packages/timer"],
+
+    "@ts-charts/transition": ["@ts-charts/transition@workspace:packages/transition"],
+
+    "@ts-charts/zoom": ["@ts-charts/zoom@workspace:packages/zoom"],
+
     "@types/bun": ["@types/bun@1.3.0", "", { "dependencies": { "bun-types": "1.3.0" } }, "sha512-+lAGCYjXjip2qY375xX/scJeVRmZ5cY0wyHYyCYxNcdEXrQ4AOe3gACgd4iQ8ksOslJtW4VNxBJ8llUwc3a6AA=="],
 
     "@types/cacheable-request": ["@types/cacheable-request@6.0.3", "", { "dependencies": { "@types/http-cache-semantics": "*", "@types/keyv": "^3.1.4", "@types/node": "*", "@types/responselike": "^1.0.0" } }, "sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw=="],
@@ -61,6 +355,10 @@
     "@types/responselike": ["@types/responselike@1.0.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw=="],
 
     "@types/unist": ["@types/unist@2.0.11", "", {}, "sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA=="],
+
+    "@types/whatwg-mimetype": ["@types/whatwg-mimetype@3.0.2", "", {}, "sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA=="],
+
+    "@types/ws": ["@types/ws@8.18.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg=="],
 
     "@types/yauzl": ["@types/yauzl@2.10.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q=="],
 
@@ -132,6 +430,8 @@
 
     "end-of-stream": ["end-of-stream@1.4.5", "", { "dependencies": { "once": "^1.4.0" } }, "sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg=="],
 
+    "entities": ["entities@7.0.1", "", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
+
     "env-paths": ["env-paths@2.2.1", "", {}, "sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A=="],
 
     "es-define-property": ["es-define-property@1.0.1", "", {}, "sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g=="],
@@ -165,6 +465,8 @@
     "got": ["got@11.8.6", "", { "dependencies": { "@sindresorhus/is": "^4.0.0", "@szmarczak/http-timer": "^4.0.5", "@types/cacheable-request": "^6.0.1", "@types/responselike": "^1.0.0", "cacheable-lookup": "^5.0.3", "cacheable-request": "^7.0.2", "decompress-response": "^6.0.0", "http2-wrapper": "^1.0.0-beta.5.2", "lowercase-keys": "^2.0.0", "p-cancelable": "^2.0.0", "responselike": "^2.0.0" } }, "sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g=="],
 
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
+
+    "happy-dom": ["happy-dom@20.8.3", "", { "dependencies": { "@types/node": ">=20.0.0", "@types/whatwg-mimetype": "^3.0.2", "@types/ws": "^8.18.1", "entities": "^7.0.1", "whatwg-mimetype": "^3.0.0", "ws": "^8.18.3" } }, "sha512-lMHQRRwIPyJ70HV0kkFT7jH/gXzSI7yDkQFe07E2flwmNDFoWUTRMKpW2sglsnpeA7b6S2TJPp98EbQxai8eaQ=="],
 
     "has-property-descriptors": ["has-property-descriptors@1.0.2", "", { "dependencies": { "es-define-property": "^1.0.0" } }, "sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg=="],
 
@@ -312,11 +614,11 @@
 
     "tinyglobby": ["tinyglobby@0.2.15", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.3" } }, "sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ=="],
 
+    "ts-charts": ["ts-charts@workspace:packages/ts-charts"],
+
     "ts-error-handling": ["ts-error-handling@0.1.1", "", {}, "sha512-d4VqdX0bJ+jvOYNsY58isJgrEr806Q9cjef5+1UO/kIn1M/+YYSwpR6fqdRhn9XXVASJLSzNmcnBSdl0fRCjDg=="],
 
     "ts-pkgx": ["ts-pkgx@0.4.88", "", { "optionalDependencies": { "chromium-bidi": "^7.2.0", "electron": "^37.4.0", "js-yaml": "^4.1.0", "playwright": "^1.55.0" }, "bin": { "ts-pkgx": "dist/bin/cli.js" } }, "sha512-VL9G/3QQbintDF/3uE5aabwSBvnv2xKdcKAsYyluUGKSnWD4zhgjIYvQxpnWvr6XuDvClc3wJPhA+RSfgbAAmg=="],
-
-    "ts-starter-monorepo": ["ts-starter-monorepo@workspace:packages/my-project"],
 
     "type-fest": ["type-fest@0.13.1", "", {}, "sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg=="],
 
@@ -326,9 +628,15 @@
 
     "universalify": ["universalify@0.1.2", "", {}, "sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg=="],
 
+    "very-happy-dom": ["very-happy-dom@0.0.9", "", { "bin": { "very-happy-dom": "dist/bin/cli.js" } }, "sha512-hx8so1V0PYwEtS0Va4cAeLpyXR2xEDxfi9Ini9kXr4bL18GDVln+I4U1UKezBlQTrsHKZuPt8xbRqavztwAxUg=="],
+
+    "whatwg-mimetype": ["whatwg-mimetype@3.0.0", "", {}, "sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q=="],
+
     "wrap-ansi": ["wrap-ansi@9.0.2", "", { "dependencies": { "ansi-styles": "^6.2.1", "string-width": "^7.0.0", "strip-ansi": "^7.1.0" } }, "sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww=="],
 
     "wrappy": ["wrappy@1.0.2", "", {}, "sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ=="],
+
+    "ws": ["ws@8.19.0", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg=="],
 
     "yauzl": ["yauzl@2.10.0", "", { "dependencies": { "buffer-crc32": "~0.2.3", "fd-slicer": "~1.1.0" } }, "sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g=="],
 

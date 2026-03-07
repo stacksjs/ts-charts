@@ -1,68 +1,70 @@
 {
-  "name": "ts-starter-monorepo",
-  "type": "module",
+  "name": "ts-charts",
   "version": "0.0.0",
-  "description": "Like our `ts-starter`, but optimized for monorepos.",
+  "type": "module",
+  "description": "A complete TypeScript rewrite of D3.js — umbrella package re-exporting all sub-packages.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/ts-starter-monorepo#readme",
+  "homepage": "https://github.com/stacksjs/ts-charts#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stacksjs/ts-starter-monorepo.git"
+    "url": "git+https://github.com/stacksjs/ts-charts.git"
   },
   "bugs": {
-    "url": "https://github.com/stacksjs/ts-starter-monorepo/issues"
+    "url": "https://github.com/stacksjs/ts-charts/issues"
   },
   "keywords": [
-    "monorepo",
-    "ts-starter",
-    "ts-starter-monorepo",
-    "template"
+    "d3",
+    "charts",
+    "visualization",
+    "typescript",
+    "bun"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./*": {
-      "import": "./dist/*"
+      "import": "./src/index.ts"
     }
   },
-  "module": "./dist/src/index.js",
+  "module": "./src/index.ts",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "ts-starter-monorepo": "./dist/bin/cli.js"
-  },
   "files": [
-    "README.md",
     "dist"
   ],
   "scripts": {
-    "build": "bun --bun build.ts && bun run compile",
-    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/bin-name",
-    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
-    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/bin-name-linux-x64",
-    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/bin-name-linux-arm64",
-    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/bin-name-windows-x64.exe",
-    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/bin-name-darwin-x64",
-    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/bin-name-darwin-arm64",
-    "zip": "bun run zip:all",
-    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
-    "zip:linux-x64": "zip -j bin/bin-name-linux-x64.zip bin/bin-name-linux-x64",
-    "zip:linux-arm64": "zip -j bin/bin-name-linux-arm64.zip bin/bin-name-linux-arm64",
-    "zip:windows-x64": "zip -j bin/bin-name-windows-x64.zip bin/bin-name-windows-x64.exe",
-    "zip:darwin-x64": "zip -j bin/bin-name-darwin-x64.zip bin/bin-name-darwin-x64",
-    "zip:darwin-arm64": "zip -j bin/bin-name-darwin-arm64.zip bin/bin-name-darwin-arm64",
-    "lint": "bunx --bun pickier .",
-    "lint:fix": "bunx --bun pickier . --fix",
-    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
-    "changelog": "bunx changelogen --output CHANGELOG.md",
-    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip",
-    "release": "bun run changelog && bunx bumpp package.json --all",
+    "build": "bun --bun build.ts",
     "test": "bun test"
   },
-  "devDependencies": {
-    "@stacksjs/clapp": "^0.2.0",
-    "bunfig": "^0.15.6"
+  "dependencies": {
+    "@ts-charts/array": "workspace:*",
+    "@ts-charts/axis": "workspace:*",
+    "@ts-charts/brush": "workspace:*",
+    "@ts-charts/chord": "workspace:*",
+    "@ts-charts/color": "workspace:*",
+    "@ts-charts/contour": "workspace:*",
+    "@ts-charts/delaunay": "workspace:*",
+    "@ts-charts/dispatch": "workspace:*",
+    "@ts-charts/drag": "workspace:*",
+    "@ts-charts/dsv": "workspace:*",
+    "@ts-charts/ease": "workspace:*",
+    "@ts-charts/fetch": "workspace:*",
+    "@ts-charts/force": "workspace:*",
+    "@ts-charts/format": "workspace:*",
+    "@ts-charts/geo": "workspace:*",
+    "@ts-charts/hierarchy": "workspace:*",
+    "@ts-charts/interpolate": "workspace:*",
+    "@ts-charts/path": "workspace:*",
+    "@ts-charts/polygon": "workspace:*",
+    "@ts-charts/quadtree": "workspace:*",
+    "@ts-charts/random": "workspace:*",
+    "@ts-charts/scale": "workspace:*",
+    "@ts-charts/scale-chromatic": "workspace:*",
+    "@ts-charts/selection": "workspace:*",
+    "@ts-charts/shape": "workspace:*",
+    "@ts-charts/time": "workspace:*",
+    "@ts-charts/time-format": "workspace:*",
+    "@ts-charts/timer": "workspace:*",
+    "@ts-charts/transition": "workspace:*",
+    "@ts-charts/zoom": "workspace:*"
   }
 }

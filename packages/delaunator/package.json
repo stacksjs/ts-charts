@@ -1,0 +1,21 @@
+{
+  "name": "@ts-charts/delaunator",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Fast Delaunay triangulation of 2D points",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "module": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "test": "bun test"
+  }
+}

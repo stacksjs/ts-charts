@@ -1,0 +1,27 @@
+{
+  "name": "@ts-charts/scale",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "module": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@ts-charts/array": "workspace:*",
+    "@ts-charts/format": "workspace:*",
+    "@ts-charts/interpolate": "workspace:*",
+    "@ts-charts/time": "workspace:*",
+    "@ts-charts/time-format": "workspace:*"
+  }
+}
