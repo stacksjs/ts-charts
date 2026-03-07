@@ -189,14 +189,14 @@ function textRemove(this: any): void {
 
 function textConstant(value: string): (this: any) => void {
   return function (this: any): void {
-    this.textContent = value
+    this.textContent = '' + value
   }
 }
 
 function textFunction(value: ValueFn<any>): (this: any) => void {
   return function (this: any): void {
     const v = value.apply(this, arguments as any)
-    this.textContent = v == null ? '' : v
+    this.textContent = v == null ? '' : '' + v
   }
 }
 
@@ -666,14 +666,15 @@ export class Selection {
     const groups = this._groups
     for (let j = -1, m = groups.length; ++j < m;) {
       const group = groups[j]
-      let next: any
-      for (let i = group.length - 1; i >= 0; --i) {
-        const node = group[i]
-        if (node) {
-          if (next && next.parentNode) {
-            if (typeof node.compareDocumentPosition === 'function'
-              ? node.compareDocumentPosition(next) ^ 4
-              : true) next.parentNode.insertBefore(node, next)
+      for (let i = group.length - 1, next = group[i], node: any; --i >= 0;) {
+        if (node = group[i]) {
+          if (next && next !== node.nextSibling) {
+            const parent = next.parentNode
+            if (parent) {
+              // Remove first to work around happy-dom insertBefore bug
+              if (node.parentNode === parent) parent.removeChild(node)
+              parent.insertBefore(node, next)
+            }
           }
           next = node
         }

@@ -6,7 +6,8 @@ export default function (this: any): any {
   const id0 = this._id
   const id1 = newId()
 
-  for (let groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
+  const groups = this._groups
+  for (let m = groups.length, j = 0; j < m; ++j) {
     for (let group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
         const inherit = get(node, id0)

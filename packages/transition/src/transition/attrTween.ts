@@ -39,6 +39,6 @@ export default function (this: any, name: any, value?: any): any {
   if (arguments.length < 2) return (value = this.tween(key)) && value._value
   if (value == null) return this.tween(key, null)
   if (typeof value !== 'function') throw new Error()
-  const fullname = namespace(name)
-  return this.tween(key, (typeof fullname !== 'string' ? attrTweenNS : attrTween)(fullname, value))
+  const fullname = namespace(name) as any
+  return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value))
 }

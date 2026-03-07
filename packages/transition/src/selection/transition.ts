@@ -35,7 +35,8 @@ export default function selectionTransition(this: any, name?: any): Transition {
     name = name == null ? null : name + ''
   }
 
-  for (let groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
+  const groups = this._groups
+  for (let m = groups.length, j = 0; j < m; ++j) {
     for (let group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
         schedule(node, name, id, i, group, timing || inherit(node, id))

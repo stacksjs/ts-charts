@@ -8,8 +8,14 @@ export default function (this: any, select: any): any {
 
   if (typeof select !== 'function') select = selector(select)
 
-  for (let groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (let group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+  const groups = this._groups
+  const m = groups.length
+  const subgroups = new Array(m)
+  for (let j = 0; j < m; ++j) {
+    const group = groups[j]
+    const n = group.length
+    const subgroup = subgroups[j] = new Array(n)
+    for (let node, subnode, i = 0; i < n; ++i) {
       if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
         if ('__data__' in node) subnode.__data__ = node.__data__
         subgroup[i] = subnode

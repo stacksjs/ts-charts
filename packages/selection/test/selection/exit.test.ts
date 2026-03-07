@@ -27,7 +27,7 @@ describe('selection.exit', () => {
 
   it('selection.exit() uses the order of the originating selection', () => {
     document.body.innerHTML = '<div id="one"></div><div id="two"></div><div id="three"></div>'
-    const sel = select(document.body).selectAll('div').data(['three', 'one'], function (this: any, d: any) { return d || this.id })
+    const sel = select(document.body).selectAll('div').data(['three', 'one'], function (this: any, d: any) { return d || this.getAttribute('id') })
     assertSelection(sel.exit(), { groups: [[, document.body.querySelector('#two'), ,]], parents: [document.body] })
     document.body.innerHTML = ''
   })

@@ -94,7 +94,7 @@ function create(node: any, id: number, self: TransitionSchedule): void {
       o = schedules[i]
       if (o.name !== self.name) continue
 
-      if (o.state === STARTED) return timeout(start)
+      if (o.state === STARTED) return void timeout(start)
 
       if (o.state === RUNNING) {
         o.state = ENDED

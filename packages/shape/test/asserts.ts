@@ -3,22 +3,25 @@ import { expect } from 'bun:test'
 const reNumber = /[-+]?(?:\d+\.\d+|\d+\.|\.\d+|\d+)(?:[eE][-]?\d+)?/g
 
 function normalizePath(path: string): string {
-  return path.replace(reNumber, formatNumber)
+  return path.replace(reNumber, (s) => {
+    const n = +s
+    return Math.abs(n - Math.round(n)) < 1e-6 ? String(Math.round(n)) : n.toFixed(6)
+  })
 }
 
-function formatNumber(s: string): string {
-  const n = +s
-  return Math.abs(n - Math.round(n)) < 1e-6 ? String(Math.round(n)) : n.toFixed(3)
+export function assertPathEqual(actual: any, expected: string) {
+  expect(normalizePath(actual + '')).toBe(normalizePath(expected))
 }
 
-export function assertPathEqual(actual: any, expected: string): void {
-  expect(normalizePath(actual + '')).toBe(normalizePath(expected + ''))
+export function assertInDelta(actual: any, expected: any, delta?: number) {
+  delta = delta || 1e-6
+  expect(inDelta(actual, expected, delta)).toBe(true)
 }
 
 function inDelta(actual: any, expected: any, delta: number): boolean {
   return (Array.isArray(expected) ? inDeltaArray
     : typeof expected === 'object' ? inDeltaObject
-    : inDeltaNumber)(actual, expected, delta)
+      : inDeltaNumber)(actual, expected, delta)
 }
 
 function inDeltaArray(actual: any[], expected: any[], delta: number): boolean {
@@ -37,8 +40,4 @@ function inDeltaObject(actual: any, expected: any, delta: number): boolean {
 
 function inDeltaNumber(actual: number, expected: number, delta: number): boolean {
   return actual >= expected - delta && actual <= expected + delta
-}
-
-export function assertInDelta(actual: any, expected: any, delta: number = 1e-6): void {
-  expect(inDelta(actual, expected, delta)).toBe(true)
 }

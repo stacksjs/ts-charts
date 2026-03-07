@@ -8,10 +8,18 @@ export default function (this: any, select: any): any {
 
   if (typeof select !== 'function') select = selectorAll(select)
 
-  for (let groups = this._groups, m = groups.length, subgroups: any[] = [], parents: any[] = [], j = 0; j < m; ++j) {
-    for (let group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+  const groups = this._groups
+  const m = groups.length
+  const subgroups: any[] = []
+  const parents: any[] = []
+  for (let j = 0; j < m; ++j) {
+    const group = groups[j]
+    const n = group.length
+    for (let node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (let children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        const children = select.call(node, node.__data__, i, group)
+        const inherit = get(node, id)
+        for (let child, k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit)
           }

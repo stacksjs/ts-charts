@@ -74,10 +74,10 @@ function attrFunctionNS(fullname: any, interpolateFn: any, value: any): () => an
 }
 
 export default function (this: any, name: string, value: any): any {
-  const fullname = namespace(name)
+  const fullname = namespace(name) as any
   const i = fullname === 'transform' ? interpolateTransform : interpolate
   return this.attrTween(name, typeof value === 'function'
-    ? (typeof fullname === 'string' ? attrFunction : attrFunctionNS)(fullname, i, tweenValue(this, 'attr.' + name, value))
-    : value == null ? (typeof fullname === 'string' ? attrRemove : attrRemoveNS)(fullname)
-    : (typeof fullname === 'string' ? attrConstant : attrConstantNS)(fullname, i, value))
+    ? (fullname.local ? attrFunctionNS : attrFunction)(fullname, i, tweenValue(this, 'attr.' + name, value))
+    : value == null ? (fullname.local ? attrRemoveNS : attrRemove)(fullname)
+    : (fullname.local ? attrConstantNS : attrConstant)(fullname, i, value))
 }

@@ -1,3 +1,4 @@
+import { it } from 'bun:test'
 import { Window } from 'very-happy-dom'
 
 export default function jsdomit(message: string, htmlOrRun: string | (() => Promise<void> | void), run?: () => Promise<void> | void): void {
@@ -19,7 +20,7 @@ export default function jsdomit(message: string, htmlOrRun: string | (() => Prom
       globalThis.window = win as any
       globalThis.document = win.document as any
       if (html) {
-        win.document.body.innerHTML = html
+        ;(win.document.body as any).innerHTML = html
       }
       await fn()
     }
