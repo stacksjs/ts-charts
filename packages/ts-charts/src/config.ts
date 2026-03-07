@@ -10,7 +10,7 @@ let _config: BinaryConfig | null = null
 export async function getConfig(): Promise<BinaryConfig> {
   if (!_config) {
     _config = await loadConfig({
-      name: 'project',
+      name: 'charts',
       defaultConfig,
     })
   }
