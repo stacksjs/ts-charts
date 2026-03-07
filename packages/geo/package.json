@@ -13,6 +13,9 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "@ts-charts/array": "workspace:*"
+  },
   "scripts": {
     "build": "bun --bun build.ts",
     "test": "bun test"
