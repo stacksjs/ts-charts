@@ -108,6 +108,9 @@
     "packages/geo": {
       "name": "@ts-charts/geo",
       "version": "0.0.0",
+      "dependencies": {
+        "@ts-charts/array": "workspace:*",
+      },
     },
     "packages/hierarchy": {
       "name": "@ts-charts/hierarchy",

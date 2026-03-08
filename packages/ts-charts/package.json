@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "description": "A complete TypeScript rewrite of D3.js — umbrella package re-exporting all sub-packages.",
-  "author": "Chris Breuer <chris@stacksjs.org>",
+  "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/ts-charts#readme",
   "repository": {

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.0",
   "description": "A complete TypeScript rewrite of D3.js as a Bun-first monorepo.",
-  "author": "Chris Breuer <chris@stacksjs.org>",
+  "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/ts-charts#readme",
   "repository": {
@@ -28,9 +28,9 @@
     "changelog": "bunx --bun logsmith --verbose",
     "changelog:generate": "bunx --bun logsmith --output CHANGELOG.md",
     "release": "bun run changelog:generate && bunx --bun bumpx prompt --recursive",
-    "dev:docs": "bun --bun bunpress dev docs",
-    "build:docs": "bun --bun bunpress build docs",
-    "preview:docs": "bun --bun bunpress preview docs",
+    "dev:docs": "bunx --bun bunpress dev docs",
+    "build:docs": "bunx --bun bunpress build docs",
+    "preview:docs": "bunx --bun bunpress preview docs",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {

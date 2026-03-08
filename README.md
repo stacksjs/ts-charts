@@ -6,41 +6,89 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# ts-starter-monorepo
+# ts-charts
 
-This is an opinionated TypeScript Starter kit to help kick-start development of your next Bun package.
+> A complete TypeScript rewrite of D3.js — fully typed, zero dependencies, Bun-first.
+
+All 30 D3.js packages, rewritten from the ground up in TypeScript with `isolatedDeclarations` support. Ships as a single umbrella package or 30+ individually installable sub-packages.
 
 ## Features
 
-This Starter Kit comes pre-configured with the following:
+- 🔷 **Fully Typed** — strict TypeScript with `isolatedDeclarations: true`, no `any` leaks
+- 📦 **Zero Dependencies** — no external runtime dependencies, everything inlined
+- ⚡ **Bun-First** — optimized for Bun, works in all modern browsers
+- 🌳 **Tree-Shakeable** — ESM-only, import only what you need
+- 🧪 **3,500+ Tests** — comprehensive test suite ported from D3, all passing
+- 🎯 **D3 API Compatible** — drop-in replacement for D3.js
 
-- 🛠️ [Powerful Build Process](https://github.com/oven-sh/bun) - via Bun
-- 💪🏽 [Fully Typed APIs](https://www.typescriptlang.org/) - via TypeScript
-- 📚 [Documentation-ready](https://bunpress.stacksjs.com/) - via BunPress
-- ⌘ [CLI & Binary](https://www.npmjs.com/package/bunx) - via Bun & Clapp
-- 🧪 [Built With Testing In Mind](https://bun.sh/docs/cli/test) - pre-configured unit-testing powered by [Bun](https://bun.sh/docs/cli/test)
-- 🤖 [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- 🎨 [Pickier](https://pickier.dev/) - for code linting _(and formatting)_
-- 📦️ [pkg.pr.new](https://pkg.pr.new) - Continuous (Preview) Releases for your libraries
-- 🐙 [GitHub Actions](https://github.com/features/actions) - runs your CI _(fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.)_
-
-## Get Started
-
-It's rather simple to get your package development started:
+## Install
 
 ```bash
-# you may use this GitHub template or the following command:
-bunx degit stacksjs/ts-starter my-pkg
-cd my-pkg
+# install the umbrella package (everything)
+bun add ts-charts
 
-bun i # install all deps
-bun run build # builds the library for production-ready use
-
-# after you have successfully committed, you may create a "release"
-bun run release # automates git commits, versioning, and changelog generations
+# or install individual packages
+bun add @ts-charts/scale
+bun add @ts-charts/selection
+bun add @ts-charts/shape
 ```
 
-_Check out the package.json scripts for more commands._
+## Usage
+
+```ts
+// import everything
+import { scaleLinear, line, select } from 'ts-charts'
+
+// or import from individual packages
+import { scaleLinear } from '@ts-charts/scale'
+import { line } from '@ts-charts/shape'
+import { select } from '@ts-charts/selection'
+
+// create a linear scale
+const x = scaleLinear()
+  .domain([0, 100])
+  .range([0, 960])
+
+// create a line generator
+const myLine = line()
+  .x((d: [number, number]) => x(d[0]))
+  .y((d: [number, number]) => d[1])
+```
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| `@ts-charts/array` | Array manipulation, statistics, histograms, bisection |
+| `@ts-charts/axis` | SVG axis generators for scales |
+| `@ts-charts/brush` | 1D and 2D brush selections |
+| `@ts-charts/chord` | Chord diagram layout and ribbon generator |
+| `@ts-charts/color` | Color spaces: RGB, HSL, Lab, HCL, Cubehelix |
+| `@ts-charts/contour` | Contour polygons and density estimation |
+| `@ts-charts/delaunay` | Delaunay triangulation and Voronoi diagrams |
+| `@ts-charts/dispatch` | Named event dispatching |
+| `@ts-charts/drag` | Drag-and-drop interaction |
+| `@ts-charts/dsv` | CSV and TSV parsing and formatting |
+| `@ts-charts/ease` | Easing functions for transitions |
+| `@ts-charts/fetch` | Convenience wrappers for the Fetch API |
+| `@ts-charts/force` | Force-directed graph layout |
+| `@ts-charts/format` | Number formatting (SI, fixed, currency, etc.) |
+| `@ts-charts/geo` | Geographic projections and path generators |
+| `@ts-charts/hierarchy` | Tree, treemap, pack, and partition layouts |
+| `@ts-charts/interpolate` | Value interpolation for animations |
+| `@ts-charts/path` | SVG path serialization |
+| `@ts-charts/polygon` | Polygon area, centroid, convex hull |
+| `@ts-charts/quadtree` | 2D spatial indexing |
+| `@ts-charts/random` | Random number generators for various distributions |
+| `@ts-charts/scale` | Scales: linear, log, ordinal, time, etc. |
+| `@ts-charts/scale-chromatic` | Color schemes: sequential, diverging, categorical |
+| `@ts-charts/selection` | DOM selection and manipulation |
+| `@ts-charts/shape` | Shape generators: line, area, arc, pie, stack |
+| `@ts-charts/time` | Time intervals and rounding |
+| `@ts-charts/time-format` | Date/time parsing and formatting |
+| `@ts-charts/timer` | Efficient animation scheduling via `requestAnimationFrame` |
+| `@ts-charts/transition` | Animated transitions on selections |
+| `@ts-charts/zoom` | Pan and zoom interaction |
 
 ## Testing
 
@@ -50,7 +98,7 @@ bun test
 
 ## Changelog
 
-Please see our [releases](https://github.com/stackjs/ts-starter-monorepo/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/stacksjs/ts-charts/releases) page for more information on what has changed recently.
 
 ## Contributing
 
@@ -60,7 +108,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/stacksjs/ts-starter-monorepo/discussions)
+[Discussions on GitHub](https://github.com/stacksjs/ts-charts/discussions)
 
 For casual chit-chat with others using this package:
 
@@ -68,7 +116,7 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-“Software that is free, but hopes for a postcard.” We love receiving postcards from around the world showing where Stacks is being used! We showcase them on our website too.
+"Software that is free, but hopes for a postcard." We love receiving postcards from around the world showing where Stacks is being used! We showcase them on our website too.
 
 Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094, United States 🌎
 
@@ -86,10 +134,10 @@ The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 Made with 💙
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/ts-starter-monorepo?style=flat-square
-[npm-version-href]: https://npmjs.com/package/ts-starter-monorepo
-[github-actions-src]: https://img.shields.io/github/actions/workflow/status/stacksjs/ts-starter-monorepo/ci.yml?style=flat-square&branch=main
-[github-actions-href]: https://github.com/stacksjs/ts-starter-monorepo/actions?query=workflow%3Aci
+[npm-version-src]: https://img.shields.io/npm/v/ts-charts?style=flat-square
+[npm-version-href]: https://npmjs.com/package/ts-charts
+[github-actions-src]: https://img.shields.io/github/actions/workflow/status/stacksjs/ts-charts/ci.yml?style=flat-square&branch=main
+[github-actions-href]: https://github.com/stacksjs/ts-charts/actions?query=workflow%3Aci
 
-<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/ts-starter-monorepo/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/stacksjs/ts-starter-monorepo -->
+<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/ts-charts/main?style=flat-square
+[codecov-href]: https://codecov.io/gh/stacksjs/ts-charts -->
