@@ -116,7 +116,7 @@ function type(t: string): DimType {
 }
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter(event: any): boolean {
+function defaultFilter(event: MouseEvent): boolean {
   return !event.ctrlKey && !event.button
 }
 
@@ -129,7 +129,7 @@ function defaultExtent(this: any): [[number, number], [number, number]] {
   return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]]
 }
 
-function defaultTouchable(this: any): boolean {
+function defaultTouchable(this: Element): boolean {
   return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
@@ -181,7 +181,7 @@ function brush(dim: BrushDim): any {
       .attr('pointer-events', 'all')
       .attr('cursor', cursors.overlay)
       .merge(overlay)
-      .each(function (this: any) {
+      .each(function (this: Element) {
         const extent = local(this).extent
         select(this)
           .attr('x', extent[0][0])
@@ -201,13 +201,13 @@ function brush(dim: BrushDim): any {
       .attr('shape-rendering', 'crispEdges')
 
     let handle = group.selectAll('.handle')
-      .data(dim.handles, (d: any) => d.type)
+      .data(dim.handles, (d: DimType) => d.type)
 
     handle.exit().remove()
 
     handle.enter().append('rect')
-      .attr('class', (d: any) => 'handle handle--' + d.type)
-      .attr('cursor', (d: any) => cursors[d.type])
+      .attr('class', (d: DimType) => 'handle handle--' + d.type)
+      .attr('cursor', (d: DimType) => cursors[d.type])
 
     group
       .each(redraw)
@@ -264,7 +264,7 @@ function brush(dim: BrushDim): any {
     brush.move(group, null, event)
   }
 
-  function redraw(this: any): void {
+  function redraw(this: Element): void {
     const group = select(this)
     const selection = local(this).selection
 
@@ -522,7 +522,7 @@ function brush(dim: BrushDim): any {
       emit.end(event, mode.name)
     }
 
-    function keydowned(event: any): void {
+    function keydowned(event: KeyboardEvent): void {
       switch (event.keyCode) {
         case 16: { // SHIFT
           shifting = signX && signY
@@ -552,7 +552,7 @@ function brush(dim: BrushDim): any {
       noevent(event)
     }
 
-    function keyupped(event: any): void {
+    function keyupped(event: KeyboardEvent): void {
       switch (event.keyCode) {
         case 16: { // SHIFT
           if (shifting) {
@@ -592,11 +592,11 @@ function brush(dim: BrushDim): any {
     }
   }
 
-  function touchmoved(this: any, event: any): void {
+  function touchmoved(this: Element, event: any): void {
     emitter(this, arguments).moved(event)
   }
 
-  function touchended(this: any, event: any): void {
+  function touchended(this: Element, event: any): void {
     emitter(this, arguments).ended(event)
   }
 

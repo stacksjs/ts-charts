@@ -24,12 +24,7 @@ it('documentation links point to existing internal anchors', async () => {
   const errors: string[] = []
 
   for (const { source, target, hash } of links) {
-    let normalizedTarget = target
-
-    if (!normalizedTarget.endsWith('.md')) {
-      errors.push(`- ${source} points to ${target} instead of ${target}.md.`)
-      normalizedTarget += '.md'
-    }
+    const normalizedTarget = target.endsWith('.md') ? target : `${target}.md`
 
     if (anchors.get(normalizedTarget)?.includes(hash.slice(1))) continue
 

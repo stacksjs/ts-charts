@@ -1,7 +1,8 @@
+import type { StackSeries } from '../offset/none.ts'
 import appearance from './appearance.ts'
 import { sum } from './ascending.ts'
 
-export default function orderInsideOut(series: any[]): number[] {
+export default function orderInsideOut(series: StackSeries[]): number[] {
   const n = series.length
   let i: number
   let j: number

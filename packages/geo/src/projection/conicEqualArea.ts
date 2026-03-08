@@ -1,8 +1,9 @@
 import { abs, asin, atan2, cos, epsilon, pi, sign, sin, sqrt } from '../math.ts'
 import { conicProjection } from './conic.ts'
 import { cylindricalEqualAreaRaw } from './cylindricalEqualArea.ts'
+import type { GeoRawProjection, GeoConicProjection } from '../types.ts'
 
-export function conicEqualAreaRaw(y0: number, y1: number): any {
+export function conicEqualAreaRaw(y0: number, y1: number): GeoRawProjection {
   const sy0 = sin(y0), n = (sy0 + sin(y1)) / 2
 
   // Are the parallels symmetrical around the Equator?
@@ -26,7 +27,7 @@ export function conicEqualAreaRaw(y0: number, y1: number): any {
   return project
 }
 
-export default function geoConicEqualArea(): any {
+export default function geoConicEqualArea(): GeoConicProjection {
   return conicProjection(conicEqualAreaRaw)
       .scale(155.424)
       .center([0, 33.6442])

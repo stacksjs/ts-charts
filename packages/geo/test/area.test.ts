@@ -146,8 +146,8 @@ describe('geoArea', () => {
     assertInDelta(geoArea({
       type: 'Polygon',
       coordinates: [
-        circle.radius(60)().coordinates[0],
-        circle.radius(45)().coordinates[0].reverse()
+        (circle.radius(60)().coordinates as number[][][])[0],
+        (circle.radius(45)().coordinates as number[][][])[0].reverse()
       ]
     }), Math.PI * (Math.SQRT2 - 1), 1e-5)
   })

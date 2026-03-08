@@ -191,13 +191,13 @@ jsdomit('transition.style(name, value) creates an styleTween with the specified 
   const root = document.documentElement
   const s = select(root).style('color', 'red')
   const t = s.transition().style('color', 'blue')
-  expect(t.styleTween('color').call(root).call(root, 0.5)).toBe('rgb(128, 0, 128)')
+  expect(t.styleTween('color')!.call(root).call(root, 0.5)).toBe('rgb(128, 0, 128)')
 })
 
 jsdomit('transition.style(name, value) creates a tween with the name "style.name"', async () => {
   const root = document.documentElement
   const s = select(root).style('color', 'red')
   const t = s.transition().style('color', 'blue')
-  t.tween('style.color').call(root).call(root, 0.5)
+  t.tween('style.color')!.call(root).call(root, 0.5)
   expect(root.style.getPropertyValue('color')).toBe('rgb(128, 0, 128)')
 })

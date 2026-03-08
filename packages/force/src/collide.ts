@@ -11,6 +11,15 @@ function y(d: ForceNode): number {
   return d.y! + d.vy!
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node type is dynamic
+interface QuadtreeNode {
+  data: ForceNode
+  r: number
+  length?: number
+  [index: number]: QuadtreeNode | undefined
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern requires dynamic return
 export default function forceCollide(radius?: number | ((node: ForceNode, i: number, nodes: ForceNode[]) => number)): any {
   let nodes: ForceNode[]
   let radii: number[]
@@ -23,6 +32,7 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
   function force(): void {
     let i: number
     const n = nodes.length
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree API types with dynamically added 'r' property
     let tree: any
     let node: ForceNode
     let xi: number
@@ -42,6 +52,7 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node with dynamically added 'r' property
     function apply(quad: any, x0: number, y0: number, x1: number, y1: number): boolean | void {
       const data = quad.data
       let rj = quad.r
@@ -67,6 +78,7 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node with dynamically added 'r' property
   function prepare(quad: any): void {
     if (quad.data) { quad.r = radii[quad.data.index]; return }
     for (let i = quad.r = 0; i < 4; ++i) {
@@ -91,15 +103,15 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
     initialize()
   }
 
-  force.iterations = function (_?: number): any {
+  force.iterations = function (_?: number): number | typeof force {
     return arguments.length ? (iterations = +_!, force) : iterations
   }
 
-  force.strength = function (_?: number): any {
+  force.strength = function (_?: number): number | typeof force {
     return arguments.length ? (strength = +_!, force) : strength
   }
 
-  force.radius = function (_?: number | ((node: ForceNode, i: number, nodes: ForceNode[]) => number)): any {
+  force.radius = function (_?: number | ((node: ForceNode, i: number, nodes: ForceNode[]) => number)): typeof radius | typeof force {
     return arguments.length ? (radius = typeof _ === 'function' ? _ : constant(+(_ as number)), initialize(), force) : radius
   }
 

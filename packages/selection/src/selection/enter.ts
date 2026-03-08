@@ -2,18 +2,18 @@ import sparse from './sparse.ts'
 import { Selection } from './index.ts'
 
 export default function enter(this: Selection): Selection {
-  return new Selection((this as any)._enter || this._groups.map(sparse), this._parents)
+  return new Selection(this._enter || this._groups.map(sparse), this._parents)
 }
 
 export class EnterNode {
   ownerDocument: Document
   namespaceURI: string | null
-  _next: any
-  _parent: any
-  __data__: any
+  _next: Element | null
+  _parent: Element
+  __data__: unknown
 
-  constructor(parent: any, datum: any) {
-    this.ownerDocument = parent.ownerDocument
+  constructor(parent: Element, datum: unknown) {
+    this.ownerDocument = parent.ownerDocument!
     this.namespaceURI = parent.namespaceURI
     this._next = null
     this._parent = parent

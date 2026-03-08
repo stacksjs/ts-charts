@@ -34,6 +34,6 @@ describe('select', () => {
 
   it('select(object) selects an arbitrary object', () => {
     const object = {}
-    assertSelection(select(object), { groups: [[object]] })
+    assertSelection(select(object as unknown as Node), { groups: [[object]] })
   })
 })

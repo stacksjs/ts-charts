@@ -1,10 +1,12 @@
-import { hcl as colorHcl } from '@ts-charts/color'
+import { hcl as colorHcl, type Hcl } from '@ts-charts/color'
 import color, { hue } from './color.ts'
 
-function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: any, end: any) => (t: number) => string {
-  return function (start: any, end: any): (t: number) => string {
-    const s = colorHcl(start) as any
-    const e = colorHcl(end) as any
+type ColorSpecifier = string | { toString(): string } | null
+
+function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string {
+  return function (start: ColorSpecifier, end: ColorSpecifier): (t: number) => string {
+    const s = colorHcl(start as string) as Hcl
+    const e = colorHcl(end as string) as Hcl
     const h = hueFn(s.h, e.h)
     const c = color(s.c, e.c)
     const l = color(s.l, e.l)
@@ -19,5 +21,5 @@ function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: an
   }
 }
 
-export default hcl(hue) as (start: any, end: any) => (t: number) => string
-export const hclLong: (start: any, end: any) => (t: number) => string = hcl(color)
+export default hcl(hue) as (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string
+export const hclLong: (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string = hcl(color)

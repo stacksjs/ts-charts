@@ -19,7 +19,7 @@ export interface LocaleDefinition {
 }
 
 export interface LocaleObject {
-  format: (specifier: string, options?: FormatOptions) => (value: any) => string
+  format: (specifier: string, options?: FormatOptions) => (value: number | string | { valueOf(): number } | undefined) => string
   formatPrefix: (specifier: string, value: number) => (value: number) => string
 }
 
@@ -45,7 +45,7 @@ export default function formatLocale(locale: LocaleDefinition): LocaleObject {
   const minus = locale.minus === undefined ? '\u2212' : locale.minus + ''
   const nan = locale.nan === undefined ? 'NaN' : locale.nan + ''
 
-  function newFormat(specifier: string, options?: FormatOptions): (value: any) => string {
+  function newFormat(specifier: string, options?: FormatOptions): (value: number | string | { valueOf(): number } | undefined) => string {
     const spec = formatSpecifier(specifier)
 
     let fill = spec.fill
@@ -87,6 +87,7 @@ export default function formatLocale(locale: LocaleDefinition): LocaleObject {
       : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision))
 
+    // eslint-disable-next-line ts/no-explicit-any -- D3's format mutates value across number/string types internally
     function format(value: any): string {
       let valuePrefix = prefix
       let valueSuffix = suffix

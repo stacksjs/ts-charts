@@ -1,7 +1,9 @@
-let cacheDigits: number, cacheAppend: any, cacheRadius: number, cacheCircle: string
+type AppendFn = (this: PathString, strings: TemplateStringsArray, ...values: number[]) => void
+
+let cacheDigits: number, cacheAppend: AppendFn, cacheRadius: number, cacheCircle: string
 
 export default class PathString {
-  _append: any
+  _append: AppendFn
   _radius: number
   _: string
   _line: number = NaN
@@ -71,7 +73,7 @@ export default class PathString {
   }
 }
 
-function append(this: any, strings: TemplateStringsArray, ...values: any[]): void {
+function append(this: PathString, strings: TemplateStringsArray, ...values: number[]): void {
   let i = 0
   this._ += strings[0]
   for (const j = strings.length - 1; i < j; ++i) {
@@ -79,14 +81,14 @@ function append(this: any, strings: TemplateStringsArray, ...values: any[]): voi
   }
 }
 
-function appendRound(digits: number): any {
+function appendRound(digits: number): AppendFn {
   const d = Math.floor(digits)
   if (!(d >= 0)) throw new RangeError(`invalid digits: ${digits}`)
   if (d > 15) return append
   if (d !== cacheDigits) {
     const k = 10 ** d
     cacheDigits = d
-    cacheAppend = function (this: any, strings: TemplateStringsArray, ...values: any[]): void {
+    cacheAppend = function (this: PathString, strings: TemplateStringsArray, ...values: number[]): void {
       let i = 0
       this._ += strings[0]
       for (const j = strings.length - 1; i < j; ++i) {

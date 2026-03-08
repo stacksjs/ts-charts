@@ -1,9 +1,9 @@
 // https://github.com/d3/d3-dsv/issues/45
 const fixtz = new Date('2019-01-01T00:00').getHours() || new Date('2019-07-01T00:00').getHours()
 
-export default function autoType<T extends Record<string, any>>(object: T): T {
+export default function autoType<T extends Record<string, string>>(object: T): T {
   for (const key in object) {
-    let value: any = (object[key] as string).trim()
+    let value: string | number | boolean | Date | null = (object[key] as string).trim()
     let number: number
     let m: RegExpMatchArray | null
     if (!value) value = null

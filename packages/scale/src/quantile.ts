@@ -1,25 +1,39 @@
 import { ascending, bisect, quantileSorted as threshold } from '@ts-charts/array'
 import { initRange } from './init.ts'
 
-export default function quantile(): any {
-  let domain: number[] = []
-  let range: any[] = []
-  let thresholds: number[] = []
-  let unknown: any
+export interface QuantileScale {
+  (x: number): unknown
+  invertExtent(y: unknown): [number, number]
+  domain(): number[]
+  domain(_: Iterable<unknown>): QuantileScale
+  range(): unknown[]
+  range(_: Iterable<unknown>): QuantileScale
+  unknown(): unknown
+  unknown(_: unknown): QuantileScale
+  quantiles(): number[]
+  copy(): QuantileScale
+  [key: string]: unknown
+}
 
-  function rescale(): any {
+export default function quantile(): QuantileScale {
+  let domain: number[] = []
+  let range: unknown[] = []
+  let thresholds: number[] = []
+  let unknown: unknown
+
+  function rescale(): QuantileScale {
     let i = 0
     const n = Math.max(1, range.length)
     thresholds = new Array(n - 1)
     while (++i < n) thresholds[i - 1] = threshold(domain, i / n) as number
-    return scale
+    return scale as unknown as QuantileScale
   }
 
-  function scale(x: any): any {
+  function scale(x: number): unknown {
     return x == null || isNaN(x = +x) ? unknown : range[bisect(thresholds, x)]
   }
 
-  scale.invertExtent = function (y: any): [number, number] {
+  scale.invertExtent = function (y: unknown): [number, number] {
     const i = range.indexOf(y)
     return i < 0 ? [NaN, NaN] : [
       i > 0 ? thresholds[i - 1] : domain[0],
@@ -27,32 +41,32 @@ export default function quantile(): any {
     ]
   }
 
-  scale.domain = function (_?: any): any {
+  scale.domain = function (_?: Iterable<unknown>): number[] | QuantileScale {
     if (!arguments.length) return domain.slice()
     domain = []
-    for (let d of _) if (d != null && !isNaN(d = +d)) domain.push(d)
+    for (let d of _! as Iterable<number>) if (d != null && !isNaN(d = +d)) domain.push(d)
     domain.sort(ascending)
     return rescale()
   }
 
-  scale.range = function (_?: any): any {
-    return arguments.length ? (range = Array.from(_), rescale()) : range.slice()
+  scale.range = function (_?: Iterable<unknown>): unknown[] | QuantileScale {
+    return arguments.length ? (range = Array.from(_!), rescale()) : range.slice()
   }
 
-  scale.unknown = function (_?: any): any {
-    return arguments.length ? (unknown = _, scale) : unknown
+  scale.unknown = function (_?: unknown): unknown | QuantileScale {
+    return arguments.length ? (unknown = _, scale as unknown as QuantileScale) : unknown
   }
 
   scale.quantiles = function (): number[] {
     return thresholds.slice()
   }
 
-  scale.copy = function (): any {
+  scale.copy = function (): QuantileScale {
     return quantile()
       .domain(domain)
       .range(range)
-      .unknown(unknown)
+      .unknown(unknown) as QuantileScale
   }
 
-  return initRange.apply(scale, arguments as any)
+  return initRange.apply(scale as unknown as Record<string, unknown>, arguments as unknown as []) as unknown as QuantileScale
 }

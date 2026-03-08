@@ -10,14 +10,14 @@ it('scaleQuantize() has the expected defaults', () => {
   const s = scaleQuantize()
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
-  expect(s.thresholds()).toEqual([0.5])
+  expect((s.thresholds as Function)()).toEqual([0.5])
   expect(s(0.25)).toBe(0)
   expect(s(0.75)).toBe(1)
 })
 
 it('quantize(value) maps a number to a discrete value in the range', () => {
   const s = scaleQuantize().range([0, 1, 2])
-  expect(s.thresholds()).toEqual([1 / 3, 2 / 3])
+  expect((s.thresholds as Function)()).toEqual([1 / 3, 2 / 3])
   expect(s(0.0)).toBe(0)
   expect(s(0.2)).toBe(0)
   expect(s(0.4)).toBe(1)
@@ -87,38 +87,38 @@ it('quantize.range() values are arbitrary', () => {
 
 it('quantize.invertExtent() maps a value in the range to a domain extent', () => {
   const s = scaleQuantize().range([0, 1, 2, 3])
-  expect(s.invertExtent(0)).toEqual([0.00, 0.25])
-  expect(s.invertExtent(1)).toEqual([0.25, 0.50])
-  expect(s.invertExtent(2)).toEqual([0.50, 0.75])
-  expect(s.invertExtent(3)).toEqual([0.75, 1.00])
+  expect((s.invertExtent as Function)(0)).toEqual([0.00, 0.25])
+  expect((s.invertExtent as Function)(1)).toEqual([0.25, 0.50])
+  expect((s.invertExtent as Function)(2)).toEqual([0.50, 0.75])
+  expect((s.invertExtent as Function)(3)).toEqual([0.75, 1.00])
 })
 
 it('quantize.invertExtent() allows arbitrary range values', () => {
   const a = {}
   const b = {}
   const s = scaleQuantize().range([a, b])
-  expect(s.invertExtent(a)).toEqual([0.0, 0.5])
-  expect(s.invertExtent(b)).toEqual([0.5, 1.0])
+  expect((s.invertExtent as Function)(a)).toEqual([0.0, 0.5])
+  expect((s.invertExtent as Function)(b)).toEqual([0.5, 1.0])
 })
 
 it('quantize.invertExtent() returns [NaN, NaN] when the given value is not in the range', () => {
   const s = scaleQuantize()
-  expect(s.invertExtent(-1).every(Number.isNaN)).toBe(true)
-  expect(s.invertExtent(0.5).every(Number.isNaN)).toBe(true)
-  expect(s.invertExtent(2).every(Number.isNaN)).toBe(true)
-  expect(s.invertExtent('a').every(Number.isNaN)).toBe(true)
+  expect((s.invertExtent as Function)(-1).every(Number.isNaN)).toBe(true)
+  expect((s.invertExtent as Function)(0.5).every(Number.isNaN)).toBe(true)
+  expect((s.invertExtent as Function)(2).every(Number.isNaN)).toBe(true)
+  expect((s.invertExtent as Function)('a').every(Number.isNaN)).toBe(true)
 })
 
 it('quantize.invertExtent() returns the first match if duplicate values exist in the range', () => {
   const s = scaleQuantize().range([0, 1, 2, 0])
-  expect(s.invertExtent(0)).toEqual([0.00, 0.25])
-  expect(s.invertExtent(1)).toEqual([0.25, 0.50])
+  expect((s.invertExtent as Function)(0)).toEqual([0.00, 0.25])
+  expect((s.invertExtent as Function)(1)).toEqual([0.25, 0.50])
 })
 
 it('quantize.invertExtent(y) is exactly consistent with quantize(x)', () => {
   const s = scaleQuantize().domain([4.2, 6.2]).range(range(10))
   s.range().forEach(function(y: any) {
-    const e = s.invertExtent(y)
+    const e = (s.invertExtent as Function)(y)
     expect(s(e[0])).toBe(y)
     expect(s(e[1])).toBe(y < 9 ? y + 1 : y)
   })

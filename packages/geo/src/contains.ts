@@ -1,56 +1,57 @@
 import polygonContains from './polygonContains.ts'
 import distance from './distance.ts'
 import { epsilon2, radians } from './math.ts'
+import type { GeoObject } from './types.ts'
 
-const containsObjectType: any = {
-  Feature: function (object: any, point: number[]): boolean {
-    return containsGeometry(object.geometry, point)
+const containsObjectType: Record<string, (object: GeoObject, point: number[]) => boolean> = {
+  Feature: function (object: GeoObject, point: number[]): boolean {
+    return containsGeometry(object.geometry!, point)
   },
-  FeatureCollection: function (object: any, point: number[]): boolean {
-    const features = object.features
+  FeatureCollection: function (object: GeoObject, point: number[]): boolean {
+    const features = object.features!
     let i = -1
     const n = features.length
-    while (++i < n) if (containsGeometry(features[i].geometry, point)) return true
+    while (++i < n) if (containsGeometry(features[i].geometry!, point)) return true
     return false
   }
 }
 
-const containsGeometryType: any = {
+const containsGeometryType: Record<string, (object: GeoObject, point: number[]) => boolean> = {
   Sphere: function (): boolean {
     return true
   },
-  Point: function (object: any, point: number[]): boolean {
-    return containsPoint(object.coordinates, point)
+  Point: function (object: GeoObject, point: number[]): boolean {
+    return containsPoint(object.coordinates as number[], point)
   },
-  MultiPoint: function (object: any, point: number[]): boolean {
-    const coordinates = object.coordinates
+  MultiPoint: function (object: GeoObject, point: number[]): boolean {
+    const coordinates = object.coordinates as number[][]
     let i = -1
     const n = coordinates.length
     while (++i < n) if (containsPoint(coordinates[i], point)) return true
     return false
   },
-  LineString: function (object: any, point: number[]): boolean {
-    return containsLine(object.coordinates, point)
+  LineString: function (object: GeoObject, point: number[]): boolean {
+    return containsLine(object.coordinates as number[][], point)
   },
-  MultiLineString: function (object: any, point: number[]): boolean {
-    const coordinates = object.coordinates
+  MultiLineString: function (object: GeoObject, point: number[]): boolean {
+    const coordinates = object.coordinates as number[][][]
     let i = -1
     const n = coordinates.length
     while (++i < n) if (containsLine(coordinates[i], point)) return true
     return false
   },
-  Polygon: function (object: any, point: number[]): boolean {
-    return containsPolygon(object.coordinates, point)
+  Polygon: function (object: GeoObject, point: number[]): boolean {
+    return containsPolygon(object.coordinates as number[][][], point)
   },
-  MultiPolygon: function (object: any, point: number[]): boolean {
-    const coordinates = object.coordinates
+  MultiPolygon: function (object: GeoObject, point: number[]): boolean {
+    const coordinates = object.coordinates as number[][][][]
     let i = -1
     const n = coordinates.length
     while (++i < n) if (containsPolygon(coordinates[i], point)) return true
     return false
   },
-  GeometryCollection: function (object: any, point: number[]): boolean {
-    const geometries = object.geometries
+  GeometryCollection: function (object: GeoObject, point: number[]): boolean {
+    const geometries = object.geometries!
     let i = -1
     const n = geometries.length
     while (++i < n) if (containsGeometry(geometries[i], point)) return true
@@ -58,7 +59,7 @@ const containsGeometryType: any = {
   }
 }
 
-function containsGeometry(geometry: any, point: number[]): boolean {
+function containsGeometry(geometry: GeoObject, point: number[]): boolean {
   return geometry && containsGeometryType.hasOwnProperty(geometry.type)
       ? containsGeometryType[geometry.type](geometry, point)
       : false
@@ -102,7 +103,7 @@ function pointRadians(point: number[]): number[] {
   return [point[0] * radians, point[1] * radians]
 }
 
-export default function geoContains(object: any, point: number[]): boolean {
+export default function geoContains(object: GeoObject, point: number[]): boolean {
   return (object && containsObjectType.hasOwnProperty(object.type)
       ? containsObjectType[object.type]
       : containsGeometry)(object, point)

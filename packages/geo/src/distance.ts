@@ -1,7 +1,8 @@
 import length from './length.ts'
+import type { GeoObject } from './types.ts'
 
-const coordinates: any[] = [null, null]
-const object: any = { type: 'LineString', coordinates: coordinates }
+const coordinates: (number[] | null)[] = [null, null]
+const object: GeoObject = { type: 'LineString', coordinates: coordinates as unknown as number[][] }
 
 export default function geoDistance(a: number[], b: number[]): number {
   coordinates[0] = a

@@ -1,13 +1,13 @@
-export default function ZoomEvent(this: any, type: string, {
+export default function ZoomEvent(this: Record<string, unknown>, type: string, {
   sourceEvent,
   target,
   transform,
   dispatch,
 }: {
-  sourceEvent: any
-  target: any
-  transform: any
-  dispatch: any
+  sourceEvent: Event | null
+  target: unknown
+  transform: unknown
+  dispatch: unknown
 }): void {
   Object.defineProperties(this, {
     type: { value: type, enumerable: true, configurable: true },

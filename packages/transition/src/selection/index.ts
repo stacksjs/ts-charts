@@ -12,4 +12,4 @@ declare module '@ts-charts/selection' {
 
 // Monkey-patch Selection prototype
 Selection.prototype.interrupt = selectionInterrupt
-Selection.prototype.transition = selectionTransition as any
+Selection.prototype.transition = selectionTransition as (this: Selection, name?: string | Transition) => Transition

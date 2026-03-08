@@ -2,15 +2,16 @@ import { Adder } from '@ts-charts/array'
 import { asin, atan2, cos, degrees, epsilon, epsilon2, hypot, radians, sin, sqrt } from './math.ts'
 import noop from './noop.ts'
 import stream from './stream.ts'
+import type { GeoStream, GeoObject } from './types.ts'
 
 let W0: number, W1: number,
     X0: number, Y0: number, Z0: number,
     X1: number, Y1: number, Z1: number,
-    X2: any, Y2: any, Z2: any,
+    X2: Adder, Y2: Adder, Z2: Adder,
     lambda00: number, phi00: number,
     x0: number, y0: number, z0: number
 
-const centroidStream: any = {
+const centroidStream: GeoStream = {
   sphere: noop,
   point: centroidPoint,
   lineStart: centroidLineStart,
@@ -112,7 +113,7 @@ function centroidRingPoint(lambda: number, phi: number): void {
   centroidPointCartesian(x0, y0, z0)
 }
 
-export default function geoCentroid(object: any): number[] {
+export default function geoCentroid(object: GeoObject): number[] {
   W0 = W1 =
   X0 = Y0 = Z0 =
   X1 = Y1 = Z1 = 0

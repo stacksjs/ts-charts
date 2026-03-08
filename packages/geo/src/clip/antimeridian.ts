@@ -1,17 +1,18 @@
 import clip from './index.ts'
 import { abs, atan, cos, epsilon, halfPi, pi, sin } from '../math.ts'
+import type { GeoStream, GeoStreamFactory, ClipLine } from '../types.ts'
 
 export default clip(
   function (): boolean { return true },
   clipAntimeridianLine,
   clipAntimeridianInterpolate,
   [-pi, -halfPi]
-) as (sink: any) => any
+) as GeoStreamFactory
 
 // Takes a line and cuts into visible segments. Return values: 0 - there were
 // intersections or the line was empty; 1 - no intersections; 2 - there were
 // intersections, and the first and last segments should be rejoined.
-function clipAntimeridianLine(stream: any): any {
+function clipAntimeridianLine(stream: GeoStream): ClipLine {
   let lambda0 = NaN,
       phi0 = NaN,
       sign0 = NaN,
@@ -52,7 +53,9 @@ function clipAntimeridianLine(stream: any): any {
     },
     clean: function (): number {
       return 2 - clean // if intersections, rejoin first and last segments
-    }
+    },
+    polygonStart: function (): void { stream.polygonStart() },
+    polygonEnd: function (): void { stream.polygonEnd() }
   }
 }
 
@@ -67,7 +70,7 @@ function clipAntimeridianIntersect(lambda0: number, phi0: number, lambda1: numbe
       : (phi0 + phi1) / 2
 }
 
-function clipAntimeridianInterpolate(from: any, to: any, direction: number, stream: any): void {
+function clipAntimeridianInterpolate(from: number[] | null, to: number[] | null, direction: number, stream: GeoStream): void {
   let phi: number
   if (from == null) {
     phi = direction * halfPi
@@ -80,13 +83,13 @@ function clipAntimeridianInterpolate(from: any, to: any, direction: number, stre
     stream.point(-pi, -phi)
     stream.point(-pi, 0)
     stream.point(-pi, phi)
-  } else if (abs(from[0] - to[0]) > epsilon) {
-    const lambda = from[0] < to[0] ? pi : -pi
+  } else if (abs(from[0] - to![0]) > epsilon) {
+    const lambda = from[0] < to![0] ? pi : -pi
     phi = direction * lambda / 2
     stream.point(-lambda, phi)
     stream.point(0, phi)
     stream.point(lambda, phi)
   } else {
-    stream.point(to[0], to[1])
+    stream.point(to![0], to![1])
   }
 }

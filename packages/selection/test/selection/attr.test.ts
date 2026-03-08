@@ -64,7 +64,7 @@ describe('selection.attr', () => {
       .datum(function (_d: any, i: number) { return 'parent-' + i })
       .selectAll('child')
       .data(function (_d: any, i: number) { return [0, 1].map(function (j) { return 'child-' + i + '-' + j }) })
-      .attr('foo', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]) })
+      .attr('foo', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]); return null })
 
     expect(results).toEqual([
       [three, 'child-0-0', 0, [three, four]],

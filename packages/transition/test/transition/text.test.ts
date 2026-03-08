@@ -50,6 +50,6 @@ jsdomit('transition.text(value) creates a tween with the name "text"', () => {
   const root = document.documentElement
   const s = select(root)
   const t = s.transition().text('hello')
-  expect(t.tween('text').call(root)).toBe(undefined)
+  expect(t.tween('text')!.call(root)).toBe(undefined)
   expect(root.textContent).toBe('hello')
 })

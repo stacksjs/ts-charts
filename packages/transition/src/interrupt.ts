@@ -1,8 +1,14 @@
-import { STARTING, ENDING, ENDED } from './transition/schedule.ts'
+import { STARTING, ENDING, ENDED, type TransitionSchedule } from './transition/schedule.ts'
 
-export default function interrupt(node: any, name?: string | null): void {
-  const schedules = node.__transition
-  let schedule: any
+interface TransitionNode extends Element {
+  __transition?: Record<string, TransitionSchedule>
+  __data__?: unknown
+}
+
+export default function interrupt(node: Element, name?: string | null): void {
+  const tNode = node as TransitionNode
+  const schedules = tNode.__transition
+  let schedule: TransitionSchedule
   let active: boolean
   let empty = true
   let i: string
@@ -16,9 +22,9 @@ export default function interrupt(node: any, name?: string | null): void {
     active = schedule.state > STARTING && schedule.state < ENDING
     schedule.state = ENDED
     schedule.timer.stop()
-    schedule.on.call(active ? 'interrupt' : 'cancel', node, node.__data__, schedule.index, schedule.group)
+    schedule.on.call(active ? 'interrupt' : 'cancel', node, tNode.__data__, schedule.index, schedule.group)
     delete schedules[i]
   }
 
-  if (empty) delete node.__transition
+  if (empty) delete tNode.__transition
 }

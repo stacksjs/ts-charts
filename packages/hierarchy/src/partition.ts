@@ -47,16 +47,16 @@ export default function partition<T>(): PartitionLayout<T> {
     }
   }
 
-  partition.round = function (x?: boolean): any {
-    return arguments.length ? (round = !!x, partition) : round
+  partition.round = function (x?: boolean): boolean | PartitionLayout<T> {
+    return arguments.length ? (round = !!x, partition as PartitionLayout<T>) : round
   }
 
-  partition.size = function (x?: [number, number]): any {
-    return arguments.length ? (dx = +x![0], dy = +x![1], partition) : [dx, dy]
+  partition.size = function (x?: [number, number]): [number, number] | PartitionLayout<T> {
+    return arguments.length ? (dx = +x![0], dy = +x![1], partition as PartitionLayout<T>) : [dx, dy]
   }
 
-  partition.padding = function (x?: number): any {
-    return arguments.length ? (padding = +x!, partition) : padding
+  partition.padding = function (x?: number): number | PartitionLayout<T> {
+    return arguments.length ? (padding = +x!, partition as PartitionLayout<T>) : padding
   }
 
   return partition as PartitionLayout<T>

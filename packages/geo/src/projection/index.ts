@@ -8,23 +8,24 @@ import { rotateRadians } from '../rotation.ts'
 import { transformer } from '../transform.ts'
 import { fitExtent, fitSize, fitWidth, fitHeight } from './fit.ts'
 import resample from './resample.ts'
+import type { GeoStream, GeoStreamFactory, GeoRawProjection, GeoProjection, GeoObject, GeoTransformInstance } from '../types.ts'
 
-const transformRadians: any = transformer({
-  point: function (this: any, x: number, y: number): void {
+const transformRadians: GeoStreamFactory = transformer({
+  point: function (this: GeoTransformInstance, x: number, y: number): void {
     this.stream.point(x * radians, y * radians)
   }
 })
 
-function transformRotate(rotate: any): any {
+function transformRotate(rotate: GeoRawProjection): GeoStreamFactory {
   return transformer({
-    point: function (this: any, x: number, y: number): void {
+    point: function (this: GeoTransformInstance, x: number, y: number): void {
       const r = rotate(x, y)
       return this.stream.point(r[0], r[1])
     }
   })
 }
 
-function scaleTranslate(k: number, dx: number, dy: number, sx: number, sy: number): any {
+function scaleTranslate(k: number, dx: number, dy: number, sx: number, sy: number): GeoRawProjection {
   function transform(x: number, y: number): number[] {
     x *= sx; y *= sy
     return [dx + k * x, dy - k * y]
@@ -35,7 +36,7 @@ function scaleTranslate(k: number, dx: number, dy: number, sx: number, sy: numbe
   return transform
 }
 
-function scaleTranslateRotate(k: number, dx: number, dy: number, sx: number, sy: number, alpha: number): any {
+function scaleTranslateRotate(k: number, dx: number, dy: number, sx: number, sy: number, alpha: number): GeoRawProjection {
   if (!alpha) return scaleTranslate(k, dx, dy, sx, sy)
   const cosAlpha = cos(alpha),
       sinAlpha = sin(alpha),
@@ -55,107 +56,107 @@ function scaleTranslateRotate(k: number, dx: number, dy: number, sx: number, sy:
   return transform
 }
 
-export default function projection(project: any): any {
-  return projectionMutator(function (): any { return project })()
+export default function projection(project: GeoRawProjection): GeoProjection {
+  return projectionMutator(function (): GeoRawProjection { return project })()
 }
 
-export function projectionMutator(projectAt: any): any {
-  let project: any,
+export function projectionMutator(projectAt: (...args: unknown[]) => GeoRawProjection): (...args: unknown[]) => GeoProjection {
+  let project: GeoRawProjection,
       k = 150,
       x = 480, y = 250,
       lambda = 0, phi = 0,
-      deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate: any,
+      deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate: GeoRawProjection,
       alpha = 0,
       sx = 1,
       sy = 1,
-      theta: any = null, preclip: any = clipAntimeridian,
-      x0: number | null = null, y0: number, x1: number, y1: number, postclip: any = identity,
+      theta: number | null = null, preclip: GeoStreamFactory = clipAntimeridian,
+      x0: number | null = null, y0: number, x1: number, y1: number, postclip: GeoStreamFactory = identity,
       delta2 = 0.5,
-      projectResample: any,
-      projectTransform: any,
-      projectRotateTransform: any,
-      cache: any,
-      cacheStream: any
+      projectResample: GeoStreamFactory,
+      projectTransform: GeoRawProjection,
+      projectRotateTransform: GeoRawProjection,
+      cache: GeoStream | null,
+      cacheStream: GeoStream | null
 
-  function p(point: number[]): any {
+  function p(point: number[]): number[] {
     return projectRotateTransform(point[0] * radians, point[1] * radians)
   }
 
-  function invert(point: number[]): any {
-    point = projectRotateTransform.invert(point[0], point[1])
+  function invert(point: number[]): number[] | null {
+    point = projectRotateTransform.invert!(point[0], point[1])
     return point && [point[0] * degrees, point[1] * degrees]
   }
 
-  p.stream = function (stream: any): any {
+  p.stream = function (stream: GeoStream): GeoStream {
     return cache && cacheStream === stream ? cache : cache = transformRadians(transformRotate(rotate)(preclip(projectResample(postclip(cacheStream = stream)))))
   }
 
-  p.preclip = function (_?: any): any {
-    return arguments.length ? (preclip = _, theta = undefined, reset()) : preclip
+  p.preclip = function (_?: GeoStreamFactory): GeoProjection | GeoStreamFactory {
+    return arguments.length ? (preclip = _!, theta = undefined as unknown as number | null, reset()) : preclip
   }
 
-  p.postclip = function (_?: any): any {
-    return arguments.length ? (postclip = _, x0 = y0 = x1 = y1 = null as any, reset()) : postclip
+  p.postclip = function (_?: GeoStreamFactory): GeoProjection | GeoStreamFactory {
+    return arguments.length ? (postclip = _!, x0 = y0 = x1 = y1 = null!, reset()) : postclip
   }
 
-  p.clipAngle = function (_?: any): any {
-    return arguments.length ? (preclip = +_ ? clipCircle(theta = _ * radians) : (theta = null, clipAntimeridian), reset()) : theta * degrees
+  p.clipAngle = function (_?: number | null): GeoProjection | number | null {
+    return arguments.length ? (preclip = +_! ? clipCircle(theta = _! * radians) : (theta = null, clipAntimeridian), reset()) : theta! * degrees
   }
 
-  p.clipExtent = function (_?: any): any {
-    return arguments.length ? (postclip = _ == null ? (x0 = y0 = x1 = y1 = null as any, identity) : clipRectangle(x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reset()) : x0 == null ? null : [[x0, y0], [x1, y1]]
+  p.clipExtent = function (_?: number[][] | null): GeoProjection | number[][] | null {
+    return arguments.length ? (postclip = _ == null ? (x0 = y0 = x1 = y1 = null!, identity) : clipRectangle(x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reset()) : x0 == null ? null : [[x0, y0], [x1, y1]]
   }
 
-  p.scale = function (_?: any): any {
-    return arguments.length ? (k = +_, recenter()) : k
+  p.scale = function (_?: number): GeoProjection | number {
+    return arguments.length ? (k = +_!, recenter()) : k
   }
 
-  p.translate = function (_?: any): any {
-    return arguments.length ? (x = +_[0], y = +_[1], recenter()) : [x, y]
+  p.translate = function (_?: number[]): GeoProjection | number[] {
+    return arguments.length ? (x = +_![0], y = +_![1], recenter()) : [x, y]
   }
 
-  p.center = function (_?: any): any {
-    return arguments.length ? (lambda = _[0] % 360 * radians, phi = _[1] % 360 * radians, recenter()) : [lambda * degrees, phi * degrees]
+  p.center = function (_?: number[]): GeoProjection | number[] {
+    return arguments.length ? (lambda = _![0] % 360 * radians, phi = _![1] % 360 * radians, recenter()) : [lambda * degrees, phi * degrees]
   }
 
-  p.rotate = function (_?: any): any {
-    return arguments.length ? (deltaLambda = _[0] % 360 * radians, deltaPhi = _[1] % 360 * radians, deltaGamma = _.length > 2 ? _[2] % 360 * radians : 0, recenter()) : [deltaLambda * degrees, deltaPhi * degrees, deltaGamma * degrees]
+  p.rotate = function (_?: number[]): GeoProjection | number[] {
+    return arguments.length ? (deltaLambda = _![0] % 360 * radians, deltaPhi = _![1] % 360 * radians, deltaGamma = _!.length > 2 ? _![2] % 360 * radians : 0, recenter()) : [deltaLambda * degrees, deltaPhi * degrees, deltaGamma * degrees]
   }
 
-  p.angle = function (_?: any): any {
-    return arguments.length ? (alpha = _ % 360 * radians, recenter()) : alpha * degrees
+  p.angle = function (_?: number): GeoProjection | number {
+    return arguments.length ? (alpha = _! % 360 * radians, recenter()) : alpha * degrees
   }
 
-  p.reflectX = function (_?: any): any {
-    return arguments.length ? (sx = _ ? -1 : 1, recenter()) : sx < 0
+  p.reflectX = function (_?: boolean): GeoProjection | boolean {
+    return arguments.length ? (sx = _! ? -1 : 1, recenter()) : sx < 0
   }
 
-  p.reflectY = function (_?: any): any {
-    return arguments.length ? (sy = _ ? -1 : 1, recenter()) : sy < 0
+  p.reflectY = function (_?: boolean): GeoProjection | boolean {
+    return arguments.length ? (sy = _! ? -1 : 1, recenter()) : sy < 0
   }
 
-  p.precision = function (_?: any): any {
-    return arguments.length ? (projectResample = resample(projectTransform, delta2 = _ * _), reset()) : sqrt(delta2)
+  p.precision = function (_?: number): GeoProjection | number {
+    return arguments.length ? (projectResample = resample(projectTransform, delta2 = _! * _!), reset()) : sqrt(delta2)
   }
 
-  p.fitExtent = function (extent: number[][], object: any): any {
-    return fitExtent(p, extent, object)
+  p.fitExtent = function (extent: number[][], object: GeoObject): GeoProjection {
+    return fitExtent(p as unknown as GeoProjection, extent, object)
   }
 
-  p.fitSize = function (size: number[], object: any): any {
-    return fitSize(p, size, object)
+  p.fitSize = function (size: number[], object: GeoObject): GeoProjection {
+    return fitSize(p as unknown as GeoProjection, size, object)
   }
 
-  p.fitWidth = function (width: number, object: any): any {
-    return fitWidth(p, width, object)
+  p.fitWidth = function (width: number, object: GeoObject): GeoProjection {
+    return fitWidth(p as unknown as GeoProjection, width, object)
   }
 
-  p.fitHeight = function (height: number, object: any): any {
-    return fitHeight(p, height, object)
+  p.fitHeight = function (height: number, object: GeoObject): GeoProjection {
+    return fitHeight(p as unknown as GeoProjection, height, object)
   }
 
-  function recenter(): any {
-    const center = scaleTranslateRotate(k, 0, 0, sx, sy, alpha).apply(null, project(lambda, phi)),
+  function recenter(): GeoProjection {
+    const center = scaleTranslateRotate(k, 0, 0, sx, sy, alpha).apply(null, project(lambda, phi) as [number, number]),
         transform = scaleTranslateRotate(k, x - center[0], y - center[1], sx, sy, alpha)
     rotate = rotateRadians(deltaLambda, deltaPhi, deltaGamma)
     projectTransform = compose(project, transform)
@@ -164,14 +165,14 @@ export function projectionMutator(projectAt: any): any {
     return reset()
   }
 
-  function reset(): any {
+  function reset(): GeoProjection {
     cache = cacheStream = null
-    return p
+    return p as unknown as GeoProjection
   }
 
-  return function (this: any, ...args: any[]): any {
+  return function (this: unknown, ...args: unknown[]): GeoProjection {
     project = projectAt.apply(this, args)
-    ;(p as any).invert = project.invert && invert
+    ;(p as unknown as { invert?: (point: number[]) => number[] | null }).invert = project.invert && invert
     return recenter()
   }
 }

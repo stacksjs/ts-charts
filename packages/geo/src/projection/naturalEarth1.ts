@@ -1,5 +1,6 @@
 import projection from './index.ts'
 import { abs, epsilon } from '../math.ts'
+import type { GeoRawProjection, GeoProjection } from '../types.ts'
 
 export function naturalEarth1Raw(lambda: number, phi: number): number[] {
   const phi2 = phi * phi, phi4 = phi2 * phi2
@@ -9,7 +10,7 @@ export function naturalEarth1Raw(lambda: number, phi: number): number[] {
   ]
 }
 
-(naturalEarth1Raw as any).invert = function (x: number, y: number): number[] {
+;(naturalEarth1Raw as GeoRawProjection).invert = function (x: number, y: number): number[] {
   let phi = y, i = 25, delta: number
   do {
     const phi2 = phi * phi, phi4 = phi2 * phi2
@@ -23,7 +24,7 @@ export function naturalEarth1Raw(lambda: number, phi: number): number[] {
   ]
 }
 
-export default function geoNaturalEarth1(): any {
-  return projection(naturalEarth1Raw)
+export default function geoNaturalEarth1(): GeoProjection {
+  return projection(naturalEarth1Raw as GeoRawProjection)
       .scale(175.295)
 }

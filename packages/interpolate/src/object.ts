@@ -1,8 +1,9 @@
 import value from './value.ts'
 
-export default function interpolateObject(a: any, b: any): (t: number) => Record<string, any> {
-  const i: Record<string, (t: number) => any> = {}
-  const c: Record<string, any> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- accepts any value, coerces non-objects to {}
+export default function interpolateObject(a: any, b: any): (t: number) => Record<string, unknown> {
+  const i: Record<string, (t: number) => unknown> = {}
+  const c: Record<string, unknown> = {}
   let k: string
 
   if (a === null || typeof a !== 'object') a = {}
@@ -16,7 +17,7 @@ export default function interpolateObject(a: any, b: any): (t: number) => Record
     }
   }
 
-  return function (t: number): Record<string, any> {
+  return function (t: number): Record<string, unknown> {
     for (k in i) c[k] = i[k](t)
     return c
   }

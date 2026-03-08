@@ -1,21 +1,29 @@
-import { namespace } from '@ts-charts/selection'
+import { namespace, type NamespaceLocal } from '@ts-charts/selection'
 
-function attrInterpolate(name: string, i: any): (t: number) => void {
-  return function (this: any, t: number): void {
+type InterpolatorFactory = (this: Element, ...args: unknown[]) => (t: number) => string
+
+interface TweenFn {
+  (this: Element): ((t: number) => void) | undefined
+  _value: InterpolatorFactory
+}
+
+function attrInterpolate(name: string, i: (t: number) => string): (t: number) => void {
+  return function (this: Element, t: number): void {
     this.setAttribute(name, i.call(this, t))
   }
 }
 
-function attrInterpolateNS(fullname: any, i: any): (t: number) => void {
-  return function (this: any, t: number): void {
+function attrInterpolateNS(fullname: NamespaceLocal, i: (t: number) => string): (t: number) => void {
+  return function (this: Element, t: number): void {
     this.setAttributeNS(fullname.space, fullname.local, i.call(this, t))
   }
 }
 
-function attrTweenNS(fullname: any, value: any): any {
-  let t0: any, i0: any
-  function tween(this: any): any {
-    const i = value.apply(this, arguments)
+function attrTweenNS(fullname: NamespaceLocal, value: InterpolatorFactory): TweenFn {
+  let t0: ((t: number) => void) | undefined
+  let i0: ((t: number) => string) | undefined
+  function tween(this: Element): ((t: number) => void) | undefined {
+    const i = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
     if (i !== i0) t0 = (i0 = i) && attrInterpolateNS(fullname, i)
     return t0
   }
@@ -23,10 +31,11 @@ function attrTweenNS(fullname: any, value: any): any {
   return tween
 }
 
-function attrTween(name: string, value: any): any {
-  let t0: any, i0: any
-  function tween(this: any): any {
-    const i = value.apply(this, arguments)
+function attrTween(name: string, value: InterpolatorFactory): TweenFn {
+  let t0: ((t: number) => void) | undefined
+  let i0: ((t: number) => string) | undefined
+  function tween(this: Element): ((t: number) => void) | undefined {
+    const i = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
     if (i !== i0) t0 = (i0 = i) && attrInterpolate(name, i)
     return t0
   }
@@ -34,11 +43,11 @@ function attrTween(name: string, value: any): any {
   return tween
 }
 
-export default function (this: any, name: any, value?: any): any {
+export default function (this: { tween: Function }, name: string, value?: InterpolatorFactory | null): unknown {
   const key = 'attr.' + name
-  if (arguments.length < 2) return (value = this.tween(key)) && value._value
+  if (arguments.length < 2) { const t = this.tween(key) as TweenFn | null; return t && t._value }
   if (value == null) return this.tween(key, null)
   if (typeof value !== 'function') throw new Error()
-  const fullname = namespace(name) as any
-  return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value))
+  const fullname = namespace(name)
+  return this.tween(key, ((typeof fullname === 'object' && fullname.local) ? attrTweenNS : attrTween)(fullname as NamespaceLocal & string, value))
 }

@@ -29,7 +29,7 @@ describe('selection.insert', () => {
     document.body.innerHTML = '<div id="one"><span class="before"></span></div><div id="two"><span class="before"></span></div>'
     const one = document.querySelector('#one')!
     const two = document.querySelector('#two')!
-    const sel = selectAll([one, two]).insert(function () { return document.createElement('SPAN') }, function () { return undefined })
+    const sel = selectAll([one, two]).insert(function () { return document.createElement('SPAN') }, function () { return null })
     const three = one.querySelector('span:last-child')!
     const four = two.querySelector('span:last-child')!
     assertSelection(sel, { groups: [[three, four]], parents: [null] })
@@ -49,7 +49,7 @@ describe('selection.insert', () => {
       .datum(function (_d: any, i: number) { return 'parent-' + i })
       .selectAll('child')
       .data(function (_d: any, i: number) { return [0, 1].map(function (j) { return 'child-' + i + '-' + j }) })
-      .insert('span', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]) })
+      .insert('span', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]); return null })
 
     expect(results).toEqual([
       [three, 'child-0-0', 0, [three, four]],

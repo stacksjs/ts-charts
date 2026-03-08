@@ -1,7 +1,8 @@
 import none from './none.ts'
+import type { StackSeries } from './none.ts'
 
-export default function offsetWiggle(series: any[], order: number[]): void {
-  let n: number, m: number, s0: any
+export default function offsetWiggle(series: StackSeries[], order: number[]): void {
+  let n: number, m: number, s0: StackSeries
   if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) return
   let y = 0
   let j = 1

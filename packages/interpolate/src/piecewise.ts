@@ -1,13 +1,15 @@
 import { default as value } from './value.ts'
 
-export default function piecewise(interpolate: any, values?: any[]): (t: number) => any {
-  if (values === undefined) { values = interpolate; interpolate = value }
+type Interpolator = (a: unknown, b: unknown) => (t: number) => unknown
+
+export default function piecewise(interpolate: Interpolator | unknown[], values?: unknown[]): (t: number) => unknown {
+  if (values === undefined) { values = interpolate as unknown[]; interpolate = value }
   let i = 0
-  const n = (values as any[]).length - 1
-  let v = (values as any[])[0]
+  const n = values.length - 1
+  let v = values[0]
   const I = new Array(n < 0 ? 0 : n)
-  while (i < n) I[i] = interpolate(v, v = (values as any[])[++i])
-  return function (t: number): any {
+  while (i < n) I[i] = (interpolate as Interpolator)(v, v = values[++i])
+  return function (t: number): unknown {
     const i = Math.max(0, Math.min(n - 1, Math.floor(t *= n)))
     return I[i](t - i)
   }

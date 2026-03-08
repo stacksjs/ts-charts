@@ -24,7 +24,7 @@ export default function(x0?: any, y0?: any, y1?: any): any {
     const n = (data = array(data)).length
     let d: any
     let defined0 = false
-    let buffer: any
+    let buffer: ReturnType<typeof path> | undefined
     const x0z = new Array(n)
     const y0z = new Array(n)
 

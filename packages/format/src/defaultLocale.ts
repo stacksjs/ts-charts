@@ -2,7 +2,7 @@ import formatLocale from './locale.ts'
 import type { LocaleDefinition, LocaleObject } from './locale.ts'
 
 let locale: LocaleObject
-export let format: (specifier: string) => (value: any) => string
+export let format: (specifier: string) => (value: number | string | { valueOf(): number } | undefined) => string
 export let formatPrefix: (specifier: string, value: number) => (value: number) => string
 
 defaultLocale({

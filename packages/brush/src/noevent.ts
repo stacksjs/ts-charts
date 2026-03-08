@@ -1,8 +1,8 @@
-export function nopropagation(event: any): void {
+export function nopropagation(event: Event): void {
   event.stopImmediatePropagation()
 }
 
-export default function noevent(event: any): void {
+export default function noevent(event: Event): void {
   event.preventDefault()
   event.stopImmediatePropagation()
 }

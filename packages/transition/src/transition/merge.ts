@@ -1,6 +1,6 @@
 import { Transition } from './index.ts'
 
-export default function (this: any, transition: any): any {
+export default function (this: Transition, transition: Transition): Transition {
   if (transition._id !== this._id) throw new Error()
 
   const groups0 = this._groups
@@ -16,7 +16,7 @@ export default function (this: any, transition: any): any {
     const group1 = groups1[j]
     const n = group0.length
     const merge = merges[j] = new Array(n)
-    for (let node, i = 0; i < n; ++i) {
+    for (let node: Element | null, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node
       }

@@ -2,7 +2,23 @@ import type { CurveContext, CurveGenerator } from './linear.ts'
 import { epsilon } from '../math.ts'
 import { Cardinal } from './cardinal.ts'
 
-export function point(that: any, x: number, y: number): void {
+interface CatmullRomState {
+  _context: CurveContext
+  _x0: number
+  _x1: number
+  _x2: number
+  _y0: number
+  _y1: number
+  _y2: number
+  _l01_a: number
+  _l12_a: number
+  _l23_a: number
+  _l01_2a: number
+  _l12_2a: number
+  _l23_2a: number
+}
+
+export function point(that: CatmullRomState, x: number, y: number): void {
   let x1 = that._x1
   let y1 = that._y1
   let x2 = that._x2

@@ -10,7 +10,7 @@ it('scaleSymlog() has the expected defaults', () => {
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
   expect(s.clamp()).toBe(false)
-  expect(s.constant()).toBe(1)
+  expect(s.constant!()).toBe(1)
 })
 
 it('symlog(x) maps a domain value x to a range value y', () => {
@@ -36,12 +36,12 @@ it('symlog.invert(y) returns NaN if the range is not coercible to number', () =>
 })
 
 it('symlog.constant(constant) sets the constant to the specified value', () => {
-  const s = scaleSymlog().constant(5)
-  expect(s.constant()).toBe(5)
+  const s = scaleSymlog().constant!(5)
+  expect(s.constant!()).toBe(5)
 })
 
 it('symlog.constant(constant) changing the constant does not change the domain or range', () => {
-  const s = scaleSymlog().constant(2)
+  const s = scaleSymlog().constant!(2)
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
 })
@@ -136,7 +136,7 @@ it('symlog.copy() returns a copy with changes to the domain are isolated', () =>
   expect(x.domain()).toEqual([1, 2])
   expect(y.domain()).toEqual([2, 3])
   const y2 = x.domain([1, 1.9]).copy()
-  x.nice(5)
+  x.nice!(5)
   expect(x.domain()).toEqual([1, 2])
   expect(y2.domain()).toEqual([1, 1.9])
 })

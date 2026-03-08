@@ -1,6 +1,7 @@
 import { asin, atan2, cos, sin, sqrt } from '../math.ts'
+import type { GeoRawProjection } from '../types.ts'
 
-export function azimuthalRaw(scale: (cxcy: number) => number): any {
+export function azimuthalRaw(scale: (cxcy: number) => number): GeoRawProjection {
   return function (x: number, y: number): number[] {
     const cx = cos(x),
         cy = cos(y),

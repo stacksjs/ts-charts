@@ -34,11 +34,11 @@ describe('geoCircle', () => {
   it('circle.center([45, 45])', () => {
     const o = geoCircle().center([45, 45]).radius(0)()
     expect(o.type).toBe('Polygon')
-    assertInDelta(o.coordinates[0][0], [45, 45], 1e-6)
+    assertInDelta((o.coordinates as number[][][])[0][0], [45, 45], 1e-6)
   })
 
   it('circle: first and last points are coincident', () => {
     const o = geoCircle().center([0, 0]).radius(0.02).precision(45)()
-    assertInDelta(o.coordinates[0][0], o.coordinates[0].pop(), 1e-6)
+    assertInDelta((o.coordinates as number[][][])[0][0], (o.coordinates as number[][][])[0].pop(), 1e-6)
   })
 })

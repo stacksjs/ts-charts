@@ -73,7 +73,6 @@ export function timerFlush(): void {
 
 function wake(): void {
   clockNow = (clockLast = clock.now()) + clockSkew
-  frame = timeoutId as number
   frame = 0
   timeoutId = 0
   try {
@@ -113,13 +112,13 @@ function nap(): void {
 
 function sleep(time?: number): void {
   if (frame) return // Soonest alarm already set, or will be.
-  if (timeoutId) timeoutId = clearTimeout(timeoutId as ReturnType<typeof setTimeout>) as unknown as number
+  if (timeoutId) { clearTimeout(timeoutId as ReturnType<typeof setTimeout>); timeoutId = 0 }
   const delay = (time ?? 0) - clockNow // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time! < Infinity) timeoutId = setTimeout(wake, time! - clock.now() - clockSkew) as unknown as number
-    if (intervalId) intervalId = clearInterval(intervalId as ReturnType<typeof setInterval>) as unknown as number
+    if (time! < Infinity) timeoutId = setTimeout(wake, time! - clock.now() - clockSkew) as ReturnType<typeof setTimeout>
+    if (intervalId) { clearInterval(intervalId as ReturnType<typeof setInterval>); intervalId = 0 }
   } else {
-    if (!intervalId) clockLast = clock.now(), intervalId = setInterval(poke, pokeDelay) as unknown as number
+    if (!intervalId) { clockLast = clock.now(); intervalId = setInterval(poke, pokeDelay) as ReturnType<typeof setInterval> }
     frame = 1
     setFrame(wake)
   }

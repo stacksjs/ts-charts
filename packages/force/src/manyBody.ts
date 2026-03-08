@@ -4,12 +4,24 @@ import jiggle from './jiggle.ts'
 import { x, y } from './simulation.ts'
 import type { ForceNode } from './center.ts'
 
+interface ManyBodyQuad {
+  data: ForceNode
+  value: number
+  x: number
+  y: number
+  length?: number
+  next?: ManyBodyQuad
+  r?: number
+  [index: number]: ManyBodyQuad | undefined
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern
 export default function forceManyBody(): any {
   let nodes: ForceNode[]
   let node: ForceNode
   let random: () => number
   let alpha: number
-  let strength: any = constant(-30)
+  let strength: (node: ForceNode, i: number, nodes: ForceNode[]) => number = constant(-30) as unknown as (node: ForceNode, i: number, nodes: ForceNode[]) => number
   let strengths: number[]
   let distanceMin2 = 1
   let distanceMax2 = Infinity
@@ -31,8 +43,10 @@ export default function forceManyBody(): any {
     for (i = 0; i < n; ++i) nd = nodes[i], strengths[nd.index!] = +strength(nd, i, nodes)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node structure
   function accumulate(quad: any): void {
     let str = 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any
     let c: number
     let weight = 0
@@ -66,6 +80,7 @@ export default function forceManyBody(): any {
     quad.value = str
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node structure
   function apply(quad: any, x1: number, _: number, x2: number): boolean | void {
     if (!quad.value) return true
 
@@ -110,19 +125,19 @@ export default function forceManyBody(): any {
     initialize()
   }
 
-  force.strength = function (_?: any): any {
-    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_), initialize(), force) : strength
+  force.strength = function (_?: number | ((node: ForceNode, i: number, nodes: ForceNode[]) => number)): typeof strength | typeof force {
+    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_!) as unknown as (node: ForceNode, i: number, nodes: ForceNode[]) => number, initialize(), force) : strength
   }
 
-  force.distanceMin = function (_?: number): any {
+  force.distanceMin = function (_?: number): number | typeof force {
     return arguments.length ? (distanceMin2 = _! * _!, force) : Math.sqrt(distanceMin2)
   }
 
-  force.distanceMax = function (_?: number): any {
+  force.distanceMax = function (_?: number): number | typeof force {
     return arguments.length ? (distanceMax2 = _! * _!, force) : Math.sqrt(distanceMax2)
   }
 
-  force.theta = function (_?: number): any {
+  force.theta = function (_?: number): number | typeof force {
     return arguments.length ? (theta2 = _! * _!, force) : Math.sqrt(theta2)
   }
 

@@ -4,7 +4,7 @@ import { scaleDiverging, scaleDivergingLog } from '../src/index.ts'
 it('scaleDiverging() has the expected defaults', () => {
   const s = scaleDiverging()
   expect(s.domain()).toEqual([0, 0.5, 1])
-  expect(s.interpolator()(0.42)).toBe(0.42)
+  expect((s.interpolator as Function)()(0.42)).toBe(0.42)
   expect(s.clamp()).toBe(false)
   expect(s(-0.5)).toBe(-0.5)
   expect(s( 0.0)).toBe(0.0)
@@ -113,17 +113,17 @@ it('diverging.copy() returns an isolated copy of the scale', () => {
 })
 
 it('diverging.range() returns the computed range', () => {
-  const s = scaleDiverging(function(t: any) { return t * 2 + 1 })
+  const s = (scaleDiverging as Function)(function(t: any) { return t * 2 + 1 })
   expect(s.range()).toEqual([1, 2, 3])
 })
 
 it('diverging.interpolator(interpolator) sets the interpolator', () => {
   const i0 = function(t: any) { return t }
   const i1 = function(t: any) { return t * 2 }
-  const s = scaleDiverging(i0)
-  expect(s.interpolator()).toBe(i0)
-  expect(s.interpolator(i1)).toBe(s)
-  expect(s.interpolator()).toBe(i1)
+  const s = (scaleDiverging as Function)(i0)
+  expect((s.interpolator as Function)()).toBe(i0)
+  expect((s.interpolator as Function)(i1)).toBe(s)
+  expect((s.interpolator as Function)()).toBe(i1)
   expect(s(-0.5)).toBe(-1.0)
   expect(s( 0.0)).toBe(0.0)
   expect(s( 0.5)).toBe(1.0)
@@ -131,18 +131,18 @@ it('diverging.interpolator(interpolator) sets the interpolator', () => {
 
 it('diverging.range(range) sets the interpolator', () => {
   const s = scaleDiverging().range([1, 3, 10])
-  expect(s.interpolator()(0.5)).toBe(3)
+  expect((s.interpolator as Function)()(0.5)).toBe(3)
   expect(s.range()).toEqual([1, 3, 10])
 })
 
 it('diverging.range(range) ignores additional values', () => {
   const s = scaleDiverging().range([1, 3, 10, 20])
-  expect(s.interpolator()(0.5)).toBe(3)
+  expect((s.interpolator as Function)()(0.5)).toBe(3)
   expect(s.range()).toEqual([1, 3, 10])
 })
 
 it('scaleDiverging(range) sets the interpolator', () => {
-  const s = scaleDiverging([1, 3, 10])
-  expect(s.interpolator()(0.5)).toBe(3)
+  const s = (scaleDiverging as Function)([1, 3, 10])
+  expect((s.interpolator as Function)()(0.5)).toBe(3)
   expect(s.range()).toEqual([1, 3, 10])
 })

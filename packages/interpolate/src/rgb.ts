@@ -1,19 +1,21 @@
-import { rgb as colorRgb } from '@ts-charts/color'
+import { rgb as colorRgb, type Rgb } from '@ts-charts/color'
 import basis from './basis.ts'
 import basisClosed from './basisClosed.ts'
 import nogamma, { gamma } from './color.ts'
 
+type ColorSpecifier = string | { toString(): string } | null
+
 interface RgbInterpolator {
-  (start: any, end: any): (t: number) => string
+  (start: ColorSpecifier, end: ColorSpecifier): (t: number) => string
   gamma(y: number): RgbInterpolator
 }
 
 export default (function rgbGamma(y: number): RgbInterpolator {
   const color = gamma(y)
 
-  function rgb(start: any, end: any): (t: number) => string {
-    const s = colorRgb(start) as any
-    const e = colorRgb(end) as any
+  function rgb(start: ColorSpecifier, end: ColorSpecifier): (t: number) => string {
+    const s = colorRgb(start as string) as Rgb
+    const e = colorRgb(end as string) as Rgb
     const r = color(s.r, e.r)
     const g = color(s.g, e.g)
     const b = color(s.b, e.b)
@@ -32,16 +34,16 @@ export default (function rgbGamma(y: number): RgbInterpolator {
   return rgb
 })(1) as RgbInterpolator
 
-function rgbSpline(spline: (values: number[]) => (t: number) => number): (colors: any[]) => (t: number) => string {
-  return function (colors: any[]): (t: number) => string {
+function rgbSpline(spline: (values: number[]) => (t: number) => number): (colors: ColorSpecifier[]) => (t: number) => string {
+  return function (colors: ColorSpecifier[]): (t: number) => string {
     const n = colors.length
     const r = new Array(n)
     const g = new Array(n)
     const b = new Array(n)
     let i: number
-    let color: any
+    let color!: Rgb
     for (i = 0; i < n; ++i) {
-      color = colorRgb(colors[i]) as any
+      color = colorRgb(colors[i] as string) as Rgb
       r[i] = color.r || 0
       g[i] = color.g || 0
       b[i] = color.b || 0
@@ -59,5 +61,5 @@ function rgbSpline(spline: (values: number[]) => (t: number) => number): (colors
   }
 }
 
-export const rgbBasis: (colors: any[]) => (t: number) => string = rgbSpline(basis)
-export const rgbBasisClosed: (colors: any[]) => (t: number) => string = rgbSpline(basisClosed)
+export const rgbBasis: (colors: ColorSpecifier[]) => (t: number) => string = rgbSpline(basis)
+export const rgbBasisClosed: (colors: ColorSpecifier[]) => (t: number) => string = rgbSpline(basisClosed)

@@ -1,15 +1,15 @@
-export default function BrushEvent(this: any, type: string, {
+export default function BrushEvent(this: Record<string, unknown>, type: string, {
   sourceEvent,
   target,
   selection,
   mode,
   dispatch,
 }: {
-  sourceEvent: any
-  target: any
-  selection: any
-  mode: any
-  dispatch: any
+  sourceEvent: Event | null
+  target: unknown
+  selection: number[] | null
+  mode: string | undefined
+  dispatch: unknown
 }): void {
   Object.defineProperties(this, {
     type: { value: type, enumerable: true, configurable: true },

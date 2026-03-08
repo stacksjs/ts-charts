@@ -6,7 +6,7 @@ it('scaleSqrt() has the expected defaults', () => {
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
   expect(s.clamp()).toBe(false)
-  expect(s.exponent()).toBe(0.5)
+  expect(s.exponent!()).toBe(0.5)
   expect(s.interpolate()({array: ['red']}, {array: ['blue']})(0.5)).toEqual({array: ['rgb(128, 0, 128)']})
 })
 

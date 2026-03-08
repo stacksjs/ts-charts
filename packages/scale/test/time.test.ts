@@ -362,55 +362,55 @@ it('time.ticks() returns descending ticks for a descending domain', () => {
 })
 
 it('time.tickFormat()(date) formats year on New Year\'s', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 0, 1))).toBe('2011')
   expect(f(local(2012, 0, 1))).toBe('2012')
   expect(f(local(2013, 0, 1))).toBe('2013')
 })
 
 it('time.tickFormat()(date) formats month on the 1st of each month', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 1))).toBe('February')
   expect(f(local(2011, 2, 1))).toBe('March')
   expect(f(local(2011, 3, 1))).toBe('April')
 })
 
 it('time.tickFormat()(date) formats week on Sunday midnight', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 6))).toBe('Feb 06')
   expect(f(local(2011, 1, 13))).toBe('Feb 13')
   expect(f(local(2011, 1, 20))).toBe('Feb 20')
 })
 
 it('time.tickFormat()(date) formats date on midnight', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 2))).toBe('Wed 02')
   expect(f(local(2011, 1, 3))).toBe('Thu 03')
   expect(f(local(2011, 1, 4))).toBe('Fri 04')
 })
 
 it('time.tickFormat()(date) formats hour on minute zero', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 2, 11))).toBe('11 AM')
   expect(f(local(2011, 1, 2, 12))).toBe('12 PM')
   expect(f(local(2011, 1, 2, 13))).toBe('01 PM')
 })
 
 it('time.tickFormat()(date) formats minute on second zero', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 2, 11, 59))).toBe('11:59')
   expect(f(local(2011, 1, 2, 12,  1))).toBe('12:01')
   expect(f(local(2011, 1, 2, 12,  2))).toBe('12:02')
 })
 
 it('time.tickFormat()(date) otherwise, formats second', () => {
-  const f = scaleTime().tickFormat()
+  const f = scaleTime().tickFormat!()
   expect(f(local(2011, 1, 2, 12,  1,  9))).toBe(':09')
   expect(f(local(2011, 1, 2, 12,  1, 10))).toBe(':10')
   expect(f(local(2011, 1, 2, 12,  1, 11))).toBe(':11')
 })
 
 it('time.tickFormat(count, specifier) returns a time format for the specified specifier', () => {
-  const f = scaleTime().tickFormat(10, '%c')
+  const f = scaleTime().tickFormat!(10, '%c')
   expect(f(local(2011, 1, 2, 12))).toBe('2/2/2011, 12:00:00 PM')
 })

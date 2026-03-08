@@ -1,13 +1,14 @@
 import { abs, atan2, cos, epsilon, pi, sign, sin, sqrt } from '../math.ts'
 import { conicProjection } from './conic.ts'
 import { equirectangularRaw } from './equirectangular.ts'
+import type { GeoRawProjection, GeoConicProjection } from '../types.ts'
 
-export function conicEquidistantRaw(y0: number, y1: number): any {
+export function conicEquidistantRaw(y0: number, y1: number): GeoRawProjection {
   const cy0 = cos(y0),
       n = y0 === y1 ? sin(y0) : (cy0 - cos(y1)) / (y1 - y0),
       g = cy0 / n + y0
 
-  if (abs(n) < epsilon) return equirectangularRaw
+  if (abs(n) < epsilon) return equirectangularRaw as GeoRawProjection
 
   function project(x: number, y: number): number[] {
     const gy = g - y, nx = n * x
@@ -25,7 +26,7 @@ export function conicEquidistantRaw(y0: number, y1: number): any {
   return project
 }
 
-export default function geoConicEquidistant(): any {
+export default function geoConicEquidistant(): GeoConicProjection {
   return conicProjection(conicEquidistantRaw)
       .scale(131.154)
       .center([0, 13.9389])

@@ -243,13 +243,13 @@ jsdomit('transition.attr(name, value) creates an attrTween with the specified na
   const root = document.documentElement
   const s = select(root).attr('fill', 'red')
   const t = s.transition().attr('fill', 'blue')
-  expect(t.attrTween('fill').call(root).call(root, 0.5)).toBe('rgb(128, 0, 128)')
+  expect(t.attrTween('fill')!.call(root).call(root, 0.5)).toBe('rgb(128, 0, 128)')
 })
 
 jsdomit('transition.attr(name, value) creates a tween with the name "attr.name"', async () => {
   const root = document.documentElement
   const s = select(root).attr('fill', 'red')
   const t = s.transition().attr('fill', 'blue')
-  t.tween('attr.fill').call(root).call(root, 0.5)
+  t.tween('attr.fill')!.call(root).call(root, 0.5)
   expect(root.getAttribute('fill')).toBe('rgb(128, 0, 128)')
 })

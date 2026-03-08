@@ -39,7 +39,8 @@ jsdomit('transition.remove() creates an end listener named end.remove', async ()
     expect(body.parentNode).toBe(root)
   }
 
-  t.on('end.remove').call(body)
+  const endRemove = t.on('end.remove')!
+  endRemove.call(body)
   expect(body.parentNode).toBe(null)
   t.on('end.remove', null)
   root.appendChild(body)

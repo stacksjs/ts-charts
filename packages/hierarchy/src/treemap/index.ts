@@ -30,16 +30,16 @@ export interface TreemapLayout<T> {
 }
 
 export default function treemap<T>(): TreemapLayout<T> {
-  let tile: any = squarify
+  let tile: (parent: TileParent & TileNode, x0: number, y0: number, x1: number, y1: number) => void = squarify
   let round = false
   let dx = 1
   let dy = 1
   let paddingStack: number[] = [0]
-  let paddingInner: (node: HierarchyNode<T>) => number = constantZero as any
-  let paddingTop: (node: HierarchyNode<T>) => number = constantZero as any
-  let paddingRight: (node: HierarchyNode<T>) => number = constantZero as any
-  let paddingBottom: (node: HierarchyNode<T>) => number = constantZero as any
-  let paddingLeft: (node: HierarchyNode<T>) => number = constantZero as any
+  let paddingInner: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
+  let paddingTop: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
+  let paddingRight: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
+  let paddingBottom: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
+  let paddingLeft: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
 
   function treemap(root: HierarchyNode<T>): HierarchyNode<T> {
     root.x0 =
@@ -48,7 +48,7 @@ export default function treemap<T>(): TreemapLayout<T> {
     root.y1 = dy
     root.eachBefore(positionNode)
     paddingStack = [0]
-    if (round) root.eachBefore(roundNode as any)
+    if (round) root.eachBefore(roundNode as (node: HierarchyNode<T>) => void)
     return root
   }
 
@@ -76,44 +76,44 @@ export default function treemap<T>(): TreemapLayout<T> {
     }
   }
 
-  treemap.round = function (x?: boolean): any {
-    return arguments.length ? (round = !!x, treemap) : round
+  treemap.round = function (x?: boolean): boolean | TreemapLayout<T> {
+    return arguments.length ? (round = !!x, treemap as TreemapLayout<T>) : round
   }
 
-  treemap.size = function (x?: [number, number]): any {
-    return arguments.length ? (dx = +x![0], dy = +x![1], treemap) : [dx, dy]
+  treemap.size = function (x?: [number, number]): [number, number] | TreemapLayout<T> {
+    return arguments.length ? (dx = +x![0], dy = +x![1], treemap as TreemapLayout<T>) : [dx, dy]
   }
 
-  treemap.tile = function (x?: any): any {
-    return arguments.length ? (tile = required(x), treemap) : tile
+  treemap.tile = function (x?: (parent: TileParent & TileNode, x0: number, y0: number, x1: number, y1: number) => void): typeof tile | TreemapLayout<T> {
+    return arguments.length ? (tile = required(x!), treemap as TreemapLayout<T>) : tile
   }
 
-  treemap.padding = function (x?: any): any {
-    return arguments.length ? treemap.paddingInner(x).paddingOuter(x) : treemap.paddingInner()
+  treemap.padding = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingInner | TreemapLayout<T> {
+    return arguments.length ? (treemap as TreemapLayout<T>).paddingInner(x!).paddingOuter(x!) : treemap.paddingInner()
   }
 
-  treemap.paddingInner = function (x?: any): any {
-    return arguments.length ? (paddingInner = typeof x === 'function' ? x : constant(+x) as any, treemap) : paddingInner
+  treemap.paddingInner = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingInner | TreemapLayout<T> {
+    return arguments.length ? (paddingInner = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingInner
   }
 
-  treemap.paddingOuter = function (x?: any): any {
-    return arguments.length ? treemap.paddingTop(x).paddingRight(x).paddingBottom(x).paddingLeft(x) : treemap.paddingTop()
+  treemap.paddingOuter = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingTop | TreemapLayout<T> {
+    return arguments.length ? (treemap as TreemapLayout<T>).paddingTop(x!).paddingRight(x!).paddingBottom(x!).paddingLeft(x!) : treemap.paddingTop()
   }
 
-  treemap.paddingTop = function (x?: any): any {
-    return arguments.length ? (paddingTop = typeof x === 'function' ? x : constant(+x) as any, treemap) : paddingTop
+  treemap.paddingTop = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingTop | TreemapLayout<T> {
+    return arguments.length ? (paddingTop = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingTop
   }
 
-  treemap.paddingRight = function (x?: any): any {
-    return arguments.length ? (paddingRight = typeof x === 'function' ? x : constant(+x) as any, treemap) : paddingRight
+  treemap.paddingRight = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingRight | TreemapLayout<T> {
+    return arguments.length ? (paddingRight = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingRight
   }
 
-  treemap.paddingBottom = function (x?: any): any {
-    return arguments.length ? (paddingBottom = typeof x === 'function' ? x : constant(+x) as any, treemap) : paddingBottom
+  treemap.paddingBottom = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingBottom | TreemapLayout<T> {
+    return arguments.length ? (paddingBottom = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingBottom
   }
 
-  treemap.paddingLeft = function (x?: any): any {
-    return arguments.length ? (paddingLeft = typeof x === 'function' ? x : constant(+x) as any, treemap) : paddingLeft
+  treemap.paddingLeft = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingLeft | TreemapLayout<T> {
+    return arguments.length ? (paddingLeft = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingLeft
   }
 
   return treemap as TreemapLayout<T>

@@ -81,24 +81,28 @@ export default function dsvFormat(delimiter: string): DSV {
   const reFormat = new RegExp('["' + delimiter + '\n\r]')
   const DELIMITER = delimiter.charCodeAt(0)
 
+  // eslint-disable-next-line ts/no-explicit-any -- generic parse returns caller-determined type
   function parse(text: string, f?: DSVRowConverter<any>): DSVParsedArray<any> {
+    // eslint-disable-next-line ts/no-explicit-any
     let convert: ((row: string[], i: number) => any) | undefined
     let columns: string[] | undefined
     const rows = parseRows(text, function (row: string[], i: number) {
       if (convert) return convert(row, i - 1)
       columns = row
       convert = f ? customConverter(row, f) : objectConverter(row)
+    // eslint-disable-next-line ts/no-explicit-any
     }) as DSVParsedArray<any>
     rows.columns = columns || []
     return rows
   }
 
+  // eslint-disable-next-line ts/no-explicit-any -- generic parseRows returns caller-determined type
   function parseRows(text: string, f?: DSVRowsConverter<any>): any[] {
-    const rows: any[] = [] // output rows
+    const rows: unknown[] = [] // output rows
     const N = text.length
     let I = 0 // current character index
     let n = 0 // current line number
-    let t: any // current token
+    let t: unknown // current token
     let eof = N <= 0 // current token followed by EOF?
     let eol = false // current token followed by EOL?
 
@@ -136,8 +140,8 @@ export default function dsvFormat(delimiter: string): DSV {
     }
 
     while ((t = token()) !== EOF) {
-      const row: any[] = []
-      while (t !== EOL && t !== EOF) { row.push(t); t = token() }
+      const row: string[] = []
+      while (t !== EOL && t !== EOF) { row.push(t as string); t = token() }
       if (f && (t = f(row, n++)) == null) continue
       rows.push(f ? t : row)
     }

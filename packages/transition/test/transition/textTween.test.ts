@@ -28,6 +28,6 @@ jsdomit('transition.textTween(null) removes an existing text tween', () => {
   const root = document.documentElement
   const factory = () => {}
   const t = select(root).transition().textTween(factory)
-  t.textTween(undefined)
+  t.textTween(null)
   expect(t.textTween()).toBe(null)
 })

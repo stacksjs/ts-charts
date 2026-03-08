@@ -8,8 +8,8 @@ describe('azimuthal', () => {
       geoAzimuthalEqualArea()([-180, 0]),
       geoAzimuthalEquidistant()([180, 0])
     ]) {
-      expect(Math.abs(p[0]) < Infinity).toBe(true)
-      expect(Math.abs(p[1]) < Infinity).toBe(true)
+      expect(Math.abs(p![0]) < Infinity).toBe(true)
+      expect(Math.abs(p![1]) < Infinity).toBe(true)
     }
   })
 })

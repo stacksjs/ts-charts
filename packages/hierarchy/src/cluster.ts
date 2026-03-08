@@ -80,16 +80,16 @@ export default function cluster<T>(): ClusterLayout<T> {
     })
   }
 
-  cluster.separation = function (x?: (a: HierarchyNode<T>, b: HierarchyNode<T>) => number): any {
-    return arguments.length ? (separation = x!, cluster) : separation
+  cluster.separation = function (x?: (a: HierarchyNode<T>, b: HierarchyNode<T>) => number): typeof separation | ClusterLayout<T> {
+    return arguments.length ? (separation = x!, cluster as ClusterLayout<T>) : separation
   }
 
-  cluster.size = function (x?: [number, number]): any {
-    return arguments.length ? (nodeSize = false, dx = +x![0], dy = +x![1], cluster) : (nodeSize ? null : [dx, dy])
+  cluster.size = function (x?: [number, number]): [number, number] | null | ClusterLayout<T> {
+    return arguments.length ? (nodeSize = false, dx = +x![0], dy = +x![1], cluster as ClusterLayout<T>) : (nodeSize ? null : [dx, dy])
   }
 
-  cluster.nodeSize = function (x?: [number, number]): any {
-    return arguments.length ? (nodeSize = true, dx = +x![0], dy = +x![1], cluster) : (nodeSize ? [dx, dy] : null)
+  cluster.nodeSize = function (x?: [number, number]): [number, number] | null | ClusterLayout<T> {
+    return arguments.length ? (nodeSize = true, dx = +x![0], dy = +x![1], cluster as ClusterLayout<T>) : (nodeSize ? [dx, dy] : null)
   }
 
   return cluster as ClusterLayout<T>

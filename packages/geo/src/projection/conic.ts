@@ -1,14 +1,15 @@
 import { degrees, pi, radians } from '../math.ts'
 import { projectionMutator } from './index.ts'
+import type { GeoRawProjection, GeoConicProjection } from '../types.ts'
 
-export function conicProjection(projectAt: any): any {
+export function conicProjection(projectAt: (y0: number, y1: number) => GeoRawProjection): GeoConicProjection {
   let phi0 = 0,
       phi1 = pi / 3
-  const m = projectionMutator(projectAt),
-      p = m(phi0, phi1)
+  const m = projectionMutator(projectAt as (...args: unknown[]) => GeoRawProjection),
+      p = m(phi0, phi1) as unknown as GeoConicProjection
 
-  p.parallels = function (_?: number[]): any {
-    return arguments.length ? m(phi0 = (_![0]) * radians, phi1 = (_![1]) * radians) : [phi0 * degrees, phi1 * degrees]
+  p.parallels = function (_?: number[]): GeoConicProjection | number[] {
+    return arguments.length ? m(phi0 = (_![0]) * radians, phi1 = (_![1]) * radians) as unknown as GeoConicProjection : [phi0 * degrees, phi1 * degrees]
   }
 
   return p

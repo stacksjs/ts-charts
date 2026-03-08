@@ -1,29 +1,30 @@
 import { describe, it, expect } from 'bun:test'
 import { geoStream } from '../src/index.ts'
+import type { GeoStream, GeoObject } from '../src/types.ts'
 
 describe('geoStream', () => {
   it('geoStream(object) ignores unknown types', () => {
-    geoStream({ type: 'Unknown' }, {})
-    geoStream({ type: 'Feature', geometry: { type: 'Unknown' } }, {})
-    geoStream({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Unknown' } }] }, {})
-    geoStream({ type: 'GeometryCollection', geometries: [{ type: 'Unknown' }] }, {})
+    geoStream({ type: 'Unknown' }, {} as GeoStream)
+    geoStream({ type: 'Feature', geometry: { type: 'Unknown' } }, {} as GeoStream)
+    geoStream({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Unknown' } }] }, {} as GeoStream)
+    geoStream({ type: 'GeometryCollection', geometries: [{ type: 'Unknown' }] }, {} as GeoStream)
   })
 
   it('geoStream(object) ignores null geometries', () => {
-    geoStream(null, {})
-    geoStream({ type: 'Feature', geometry: null }, {})
-    geoStream({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: null }] }, {})
-    geoStream({ type: 'GeometryCollection', geometries: [null] }, {})
+    geoStream(null as any, {} as GeoStream)
+    geoStream({ type: 'Feature', geometry: null }, {} as GeoStream)
+    geoStream({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: null }] }, {} as GeoStream)
+    geoStream({ type: 'GeometryCollection', geometries: [null as unknown as GeoObject] }, {} as GeoStream)
   })
 
   it('geoStream(object) returns void', () => {
-    expect(geoStream({ type: 'Point', coordinates: [1, 2] }, { point: function () { return true } })).toBeUndefined()
+    expect(geoStream({ type: 'Point', coordinates: [1, 2] }, { point: function () { return true } } as unknown as GeoStream)).toBeUndefined()
   })
 
   it('geoStream(object) allows empty multi-geometries', () => {
-    geoStream({ type: 'MultiPoint', coordinates: [] }, {})
-    geoStream({ type: 'MultiLineString', coordinates: [] }, {})
-    geoStream({ type: 'MultiPolygon', coordinates: [] }, {})
+    geoStream({ type: 'MultiPoint', coordinates: [] }, {} as GeoStream)
+    geoStream({ type: 'MultiLineString', coordinates: [] }, {} as GeoStream)
+    geoStream({ type: 'MultiPolygon', coordinates: [] }, {} as GeoStream)
   })
 
   it('geoStream(Sphere) calls sphere', () => {
@@ -32,7 +33,7 @@ describe('geoStream', () => {
       sphere: function () {
         ++calls
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(1)
   })
 
@@ -46,7 +47,7 @@ describe('geoStream', () => {
         expect(z).toBe(++coordinates)
         ++calls
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(1)
   })
 
@@ -60,7 +61,7 @@ describe('geoStream', () => {
         expect(z).toBe(++coordinates)
         ++calls
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(2)
   })
 
@@ -80,7 +81,7 @@ describe('geoStream', () => {
       lineEnd: function () {
         expect(++calls).toBe(4)
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(4)
   })
 
@@ -106,7 +107,7 @@ describe('geoStream', () => {
       polygonEnd: function () {
         expect(++calls === 10).toBe(true)
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(10)
   })
 
@@ -120,7 +121,7 @@ describe('geoStream', () => {
         expect(z).toBe(++coordinates)
         expect(++calls).toBe(1)
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(1)
   })
 
@@ -134,7 +135,7 @@ describe('geoStream', () => {
         expect(z).toBe(++coordinates)
         expect(++calls).toBe(1)
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(1)
   })
 
@@ -148,7 +149,7 @@ describe('geoStream', () => {
         expect(z).toBe(++coordinates)
         expect(++calls).toBe(1)
       }
-    })
+    } as unknown as GeoStream)
     expect(calls).toBe(1)
   })
 })

@@ -1,13 +1,21 @@
-function textInterpolate(i: any): (t: number) => void {
-  return function (this: any, t: number): void {
+type InterpolatorFactory = (this: Element, ...args: unknown[]) => (t: number) => string
+
+interface TweenFn {
+  (this: Element): ((t: number) => void) | undefined
+  _value: InterpolatorFactory
+}
+
+function textInterpolate(i: (t: number) => string): (t: number) => void {
+  return function (this: Element, t: number): void {
     this.textContent = i.call(this, t)
   }
 }
 
-function textTween(value: any): any {
-  let t0: any, i0: any
-  function tween(this: any): any {
-    const i = value.apply(this, arguments)
+function textTween(value: InterpolatorFactory): TweenFn {
+  let t0: ((t: number) => void) | undefined
+  let i0: ((t: number) => string) | undefined
+  function tween(this: Element): ((t: number) => void) | undefined {
+    const i = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
     if (i !== i0) t0 = (i0 = i) && textInterpolate(i)
     return t0
   }
@@ -15,9 +23,9 @@ function textTween(value: any): any {
   return tween
 }
 
-export default function (this: any, value?: any): any {
+export default function (this: { tween: Function }, value?: InterpolatorFactory | null): unknown {
   const key = 'text'
-  if (arguments.length < 1) return (value = this.tween(key)) && value._value
+  if (arguments.length < 1) { const t = this.tween(key) as TweenFn | null; return t && t._value }
   if (value == null) return this.tween(key, null)
   if (typeof value !== 'function') throw new Error()
   return this.tween(key, textTween(value))

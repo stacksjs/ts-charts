@@ -251,16 +251,16 @@ export default function tree<T>(): TreeLayout<T> {
     node.y = node.depth * dy
   }
 
-  tree.separation = function (x?: (a: HierarchyNode<T>, b: HierarchyNode<T>) => number): any {
-    return arguments.length ? (separation = x!, tree) : separation
+  tree.separation = function (x?: (a: HierarchyNode<T>, b: HierarchyNode<T>) => number): typeof separation | TreeLayout<T> {
+    return arguments.length ? (separation = x!, tree as TreeLayout<T>) : separation
   }
 
-  tree.size = function (x?: [number, number]): any {
-    return arguments.length ? (nodeSize = false, dx = +x![0], dy = +x![1], tree) : (nodeSize ? null : [dx, dy])
+  tree.size = function (x?: [number, number]): [number, number] | null | TreeLayout<T> {
+    return arguments.length ? (nodeSize = false, dx = +x![0], dy = +x![1], tree as TreeLayout<T>) : (nodeSize ? null : [dx, dy])
   }
 
-  tree.nodeSize = function (x?: [number, number]): any {
-    return arguments.length ? (nodeSize = true, dx = +x![0], dy = +x![1], tree) : (nodeSize ? [dx, dy] : null)
+  tree.nodeSize = function (x?: [number, number]): [number, number] | null | TreeLayout<T> {
+    return arguments.length ? (nodeSize = true, dx = +x![0], dy = +x![1], tree as TreeLayout<T>) : (nodeSize ? [dx, dy] : null)
   }
 
   return tree as TreeLayout<T>

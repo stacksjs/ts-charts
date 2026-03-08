@@ -4,7 +4,7 @@ import { select, selectAll, style } from '../../src/index.ts'
 describe('selection.style', () => {
   it('style(node, name) returns the inline value of the style property with the specified name', () => {
     const node = { style: { getPropertyValue(name: string) { return name === 'color' ? 'red' : '' } } }
-    expect(style(node, 'color')).toBe('red')
+    expect(style(node as unknown as Element, 'color')).toBe('red')
   })
 
   it('style(node, name) returns the computed value if there is no inline style', () => {
@@ -80,7 +80,7 @@ describe('selection.style', () => {
       .datum(function (_d: any, i: number) { return 'parent-' + i })
       .selectAll('child')
       .data(function (_d: any, i: number) { return [0, 1].map(function (j) { return 'child-' + i + '-' + j }) })
-      .style('color', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]) })
+      .style('color', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]); return null })
 
     expect(results).toEqual([
       [three, 'child-0-0', 0, [three, four]],

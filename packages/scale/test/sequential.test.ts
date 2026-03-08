@@ -4,7 +4,7 @@ import { scaleSequential } from '../src/index.ts'
 it('scaleSequential() has the expected defaults', () => {
   const s = scaleSequential()
   expect(s.domain()).toEqual([0, 1])
-  expect(s.interpolator()(0.42)).toBe(0.42)
+  expect((s.interpolator as Function)()(0.42)).toBe(0.42)
   expect(s.clamp()).toBe(false)
   expect(s.unknown()).toBe(undefined)
   expect(s(-0.5)).toBe(-0.5)
@@ -86,34 +86,34 @@ it('sequential.copy() returns an isolated copy of the scale', () => {
 it('sequential.interpolator(interpolator) sets the interpolator', () => {
   const i0 = function(t: any) { return t }
   const i1 = function(t: any) { return t * 2 }
-  const s = scaleSequential(i0)
-  expect(s.interpolator()).toBe(i0)
-  expect(s.interpolator(i1)).toBe(s)
-  expect(s.interpolator()).toBe(i1)
+  const s = (scaleSequential as Function)(i0)
+  expect((s.interpolator as Function)()).toBe(i0)
+  expect((s.interpolator as Function)(i1)).toBe(s)
+  expect((s.interpolator as Function)()).toBe(i1)
   expect(s(-0.5)).toBe(-1.0)
   expect(s( 0.0)).toBe(0.0)
   expect(s( 0.5)).toBe(1.0)
 })
 
 it('sequential.range() returns the computed range', () => {
-  const s = scaleSequential(function(t: any) { return t * 2 + 1 })
+  const s = (scaleSequential as Function)(function(t: any) { return t * 2 + 1 })
   expect(s.range()).toEqual([1, 3])
 })
 
 it('sequential.range(range) sets the interpolator', () => {
   const s = scaleSequential().range([1, 3])
-  expect(s.interpolator()(0.5)).toBe(2)
+  expect((s.interpolator as Function)()(0.5)).toBe(2)
   expect(s.range()).toEqual([1, 3])
 })
 
 it('sequential.range(range) ignores additional values', () => {
   const s = scaleSequential().range([1, 3, 10])
-  expect(s.interpolator()(0.5)).toBe(2)
+  expect((s.interpolator as Function)()(0.5)).toBe(2)
   expect(s.range()).toEqual([1, 3])
 })
 
 it('scaleSequential(range) sets the interpolator', () => {
-  const s = scaleSequential([1, 3])
-  expect(s.interpolator()(0.5)).toBe(2)
+  const s = (scaleSequential as Function)([1, 3])
+  expect((s.interpolator as Function)()(0.5)).toBe(2)
   expect(s.range()).toEqual([1, 3])
 })

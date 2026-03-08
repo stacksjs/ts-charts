@@ -11,6 +11,11 @@ export function y(d: ForceNode): number {
   return d.y!
 }
 
+export interface Force {
+  (alpha: number): void
+  initialize?(nodes: ForceNode[], random: () => number): void
+}
+
 const initialRadius = 10
 const initialAngle = Math.PI * (3 - Math.sqrt(5))
 
@@ -32,11 +37,11 @@ export interface Simulation {
   velocityDecay(_: number): Simulation
   randomSource(): () => number
   randomSource(_: () => number): Simulation
-  force(name: string): any
-  force(name: string, _: any): Simulation
+  force(name: string): Force | undefined
+  force(name: string, _: Force | null): Simulation
   find(x: number, y: number, radius?: number): ForceNode | undefined
-  on(name: string): any
-  on(name: string, _: any): Simulation
+  on(name: string): ((...args: unknown[]) => void) | undefined
+  on(name: string, _: ((...args: unknown[]) => void) | null): Simulation
 }
 
 export default function forceSimulation(nodes?: ForceNode[]): Simulation {
@@ -46,7 +51,7 @@ export default function forceSimulation(nodes?: ForceNode[]): Simulation {
   let alphaDecay = 1 - Math.pow(alphaMin, 1 / 300)
   let alphaTarget = 0
   let velocityDecay = 0.6
-  const forces = new Map<string, any>()
+  const forces = new Map<string, Force>()
   const stepper = timer(step)
   const event = dispatch('tick', 'end')
   let random = lcg()
@@ -72,7 +77,7 @@ export default function forceSimulation(nodes?: ForceNode[]): Simulation {
     for (let k = 0; k < iterations; ++k) {
       alpha += (alphaTarget - alpha) * alphaDecay
 
-      forces.forEach(function (force: any) {
+      forces.forEach(function (force: Force) {
         force(alpha)
       })
 
@@ -106,8 +111,8 @@ export default function forceSimulation(nodes?: ForceNode[]): Simulation {
     }
   }
 
-  function initializeForce(force: any): any {
-    if (force.initialize) force.initialize(nodes, random)
+  function initializeForce(force: Force): Force {
+    if (force.initialize) force.initialize(nodes!, random)
     return force
   }
 
@@ -124,36 +129,44 @@ export default function forceSimulation(nodes?: ForceNode[]): Simulation {
       return stepper.stop(), simulation
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter overload pattern
     nodes: function (_?: ForceNode[]): any {
-      return arguments.length ? (nodes = _, initializeNodes(), forces.forEach(initializeForce), simulation) : nodes
+      return arguments.length ? (nodes = _!, initializeNodes(), forces.forEach(initializeForce), simulation) : nodes!
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     alpha: function (_?: number): any {
       return arguments.length ? (alpha = +_!, simulation) : alpha
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     alphaMin: function (_?: number): any {
       return arguments.length ? (alphaMin = +_!, simulation) : alphaMin
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     alphaDecay: function (_?: number): any {
       return arguments.length ? (alphaDecay = +_!, simulation) : +alphaDecay
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     alphaTarget: function (_?: number): any {
       return arguments.length ? (alphaTarget = +_!, simulation) : alphaTarget
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     velocityDecay: function (_?: number): any {
       return arguments.length ? (velocityDecay = 1 - _!, simulation) : 1 - velocityDecay
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     randomSource: function (_?: () => number): any {
       return arguments.length ? (random = _!, forces.forEach(initializeForce), simulation) : random
     },
 
-    force: function (name: string, _?: any): any {
-      return arguments.length > 1 ? ((_ == null ? forces.delete(name) : forces.set(name, initializeForce(_))), simulation) : forces.get(name)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    force: function (name: string, _?: Force | null): any {
+      return arguments.length > 1 ? ((_ == null ? forces.delete(name) : forces.set(name, initializeForce(_!))), simulation) : forces.get(name)
     },
 
     find: function (x: number, y: number, radius?: number): ForceNode | undefined {
@@ -179,8 +192,9 @@ export default function forceSimulation(nodes?: ForceNode[]): Simulation {
       return closest
     },
 
-    on: function (name: string, _?: any): any {
-      return arguments.length > 1 ? (event.on(name, _), simulation) : event.on(name)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter overload pattern
+    on: function (name: string, _?: ((...args: unknown[]) => void) | null): any {
+      return arguments.length > 1 ? (event.on(name, _!), simulation) : event.on(name)
     }
   }
 }

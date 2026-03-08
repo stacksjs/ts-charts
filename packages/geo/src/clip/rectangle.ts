@@ -3,39 +3,40 @@ import clipBuffer from './buffer.ts'
 import clipLine from './line.ts'
 import clipRejoin from './rejoin.ts'
 import { merge } from '@ts-charts/array'
+import type { GeoStream, GeoStreamFactory } from '../types.ts'
 
 const clipMax = 1e9, clipMin = -clipMax
 
-export default function clipRectangle(x0: number, y0: number, x1: number, y1: number): (stream: any) => any {
+export default function clipRectangle(x0: number, y0: number, x1: number, y1: number): GeoStreamFactory {
 
   function visible(x: number, y: number): boolean {
     return x0 <= x && x <= x1 && y0 <= y && y <= y1
   }
 
-  function interpolate(from: any, to: any, direction: number, stream: any): void {
+  function interpolate(from: number[] | null, to: number[] | null, direction: number, stream: GeoStream): void {
     let a = 0, a1 = 0
     if (from == null
-        || (a = corner(from, direction)) !== (a1 = corner(to, direction))
-        || comparePoint(from, to) < 0 !== direction > 0) {
+        || (a = corner(from, direction)) !== (a1 = corner(to!, direction))
+        || comparePoint(from, to!) < 0 !== direction > 0) {
       do stream.point(a === 0 || a === 3 ? x0 : x1, a > 1 ? y1 : y0)
       while ((a = (a + direction + 4) % 4) !== a1)
     } else {
-      stream.point(to[0], to[1])
+      stream.point(to![0], to![1])
     }
   }
 
-  function corner(p: any, direction: number): number {
+  function corner(p: number[], direction: number): number {
     return abs(p[0] - x0) < epsilon ? direction > 0 ? 0 : 3
         : abs(p[0] - x1) < epsilon ? direction > 0 ? 2 : 1
         : abs(p[1] - y0) < epsilon ? direction > 0 ? 1 : 0
         : direction > 0 ? 3 : 2
   }
 
-  function compareIntersection(a: any, b: any): number {
+  function compareIntersection(a: { x: number[] }, b: { x: number[] }): number {
     return comparePoint(a.x, b.x)
   }
 
-  function comparePoint(a: any, b: any): number {
+  function comparePoint(a: number[], b: number[]): number {
     const ca = corner(a, 1),
         cb = corner(b, 1)
     return ca !== cb ? ca - cb
@@ -45,18 +46,18 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
         : b[0] - a[0]
   }
 
-  return function (stream: any): any {
+  return function (stream: GeoStream): GeoStream {
     let activeStream = stream,
         bufferStream = clipBuffer(),
-        segments: any,
-        polygon: any,
-        ring: any,
+        segments: number[][][][],
+        polygon: number[][][],
+        ring: number[][],
         x__: number, y__: number, v__: boolean,
         x_: number, y_: number, v_: boolean,
         first: boolean,
         clean: boolean
 
-    const clipStream: any = {
+    const clipStream: GeoStream = {
       point: point,
       lineStart: lineStart,
       lineEnd: lineEnd,
@@ -89,7 +90,7 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
     function polygonEnd(): void {
       const startInside = polygonInside(),
           cleanInside = clean && startInside,
-          visibleSegments = (segments = merge(segments)).length
+          visibleSegments = (segments = merge(segments) as unknown as number[][][][]).length
       if (cleanInside || visibleSegments) {
         stream.polygonStart()
         if (cleanInside) {
@@ -98,11 +99,11 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
           stream.lineEnd()
         }
         if (visibleSegments) {
-          clipRejoin(segments, compareIntersection, startInside, interpolate, stream)
+          clipRejoin(segments as unknown as number[][][], compareIntersection, startInside, interpolate, stream)
         }
         stream.polygonEnd()
       }
-      activeStream = stream, segments = polygon = ring = null
+      activeStream = stream, segments = polygon = ring = null!
     }
 
     function lineStart(): void {

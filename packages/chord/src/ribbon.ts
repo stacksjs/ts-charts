@@ -3,24 +3,32 @@ import { slice } from './array.ts'
 import constant from './constant.ts'
 import { abs, cos, epsilon, halfPi, sin } from './math.ts'
 
-function defaultSource(d: any): any {
+interface RibbonDatum {
+  source?: unknown
+  target?: unknown
+  radius?: number
+  startAngle?: number
+  endAngle?: number
+}
+
+function defaultSource(d: RibbonDatum): unknown {
   return d.source
 }
 
-function defaultTarget(d: any): any {
+function defaultTarget(d: RibbonDatum): unknown {
   return d.target
 }
 
-function defaultRadius(d: any): number {
-  return d.radius
+function defaultRadius(d: RibbonDatum): number {
+  return d.radius!
 }
 
-function defaultStartAngle(d: any): number {
-  return d.startAngle
+function defaultStartAngle(d: RibbonDatum): number {
+  return d.startAngle!
 }
 
-function defaultEndAngle(d: any): number {
-  return d.endAngle
+function defaultEndAngle(d: RibbonDatum): number {
+  return d.endAngle!
 }
 
 function defaultPadAngle(): number {
@@ -65,10 +73,10 @@ function ribbon(headRadius?: ((...args: any[]) => number) | null): RibbonGenerat
   let startAngle: (...args: any[]) => number = defaultStartAngle
   let endAngle: (...args: any[]) => number = defaultEndAngle
   let padAngle: (...args: any[]) => number = defaultPadAngle
-  let context: any = null
+  let context: ReturnType<typeof path> | null = null
 
-  function ribbon(this: any, ...args: any[]): string | null {
-    let buffer: any
+  function ribbon(this: unknown, ...args: any[]): string | null {
+    let buffer: ReturnType<typeof path> | undefined
     const s = source.apply(this, args)
     const t = target.apply(this, args)
     const ap = padAngle.apply(this, args) / 2

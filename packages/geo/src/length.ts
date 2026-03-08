@@ -2,13 +2,14 @@ import { Adder } from '@ts-charts/array'
 import { abs, atan2, cos, radians, sin, sqrt } from './math.ts'
 import noop from './noop.ts'
 import stream from './stream.ts'
+import type { GeoStream, GeoObject } from './types.ts'
 
-let lengthSum: any,
+let lengthSum: Adder,
     lambda0: number,
     sinPhi0: number,
     cosPhi0: number
 
-const lengthStream: any = {
+const lengthStream: GeoStream = {
   sphere: noop,
   point: noop,
   lineStart: lengthLineStart,
@@ -46,7 +47,7 @@ function lengthPoint(lambda: number, phi: number): void {
   lambda0 = lambda, sinPhi0 = sinPhi, cosPhi0 = cosPhi
 }
 
-export default function geoLength(object: any): number {
+export default function geoLength(object: GeoObject): number {
   lengthSum = new Adder()
   stream(object, lengthStream)
   return +lengthSum

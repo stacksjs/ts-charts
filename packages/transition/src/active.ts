@@ -1,11 +1,15 @@
 import { Transition } from './transition/index.ts'
-import { SCHEDULED } from './transition/schedule.ts'
+import { SCHEDULED, type TransitionSchedule } from './transition/schedule.ts'
+
+interface TransitionNode extends Element {
+  __transition?: Record<string, TransitionSchedule>
+}
 
 const root: [null] = [null]
 
-export default function active(node: any, name?: string | null): Transition | null {
-  const schedules = node.__transition
-  let schedule: any
+export default function active(node: Element, name?: string | null): Transition | null {
+  const schedules = (node as TransitionNode).__transition
+  let schedule: TransitionSchedule
   let i: string
 
   if (schedules) {

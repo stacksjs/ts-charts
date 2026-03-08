@@ -1,26 +1,27 @@
 import { cartesian } from '../cartesian.ts'
 import { abs, asin, atan2, cos, epsilon, radians, sqrt } from '../math.ts'
 import { transformer } from '../transform.ts'
+import type { GeoStream, GeoStreamFactory, GeoRawProjection, GeoTransformInstance } from '../types.ts'
 
 const maxDepth = 16
 const cosMinDistance = cos(30 * radians)
 
-export default function resampleProjection(project: any, delta2: number): any {
+export default function resampleProjection(project: GeoRawProjection, delta2: number): GeoStreamFactory {
   return +delta2 ? resample(project, delta2) : resampleNone(project)
 }
 
-function resampleNone(project: any): any {
+function resampleNone(project: GeoRawProjection): GeoStreamFactory {
   return transformer({
-    point: function (this: any, x: number, y: number): void {
+    point: function (this: GeoTransformInstance, x: number, y: number): void {
       const p = project(x, y)
       this.stream.point(p[0], p[1])
     }
   })
 }
 
-function resample(project: any, delta2: number): any {
+function resample(project: GeoRawProjection, delta2: number): GeoStreamFactory {
 
-  function resampleLineTo(x0: number, y0: number, lambda0: number, a0: number, b0: number, c0: number, x1: number, y1: number, lambda1: number, a1: number, b1: number, c1: number, depth: number, stream: any): void {
+  function resampleLineTo(x0: number, y0: number, lambda0: number, a0: number, b0: number, c0: number, x1: number, y1: number, lambda1: number, a1: number, b1: number, c1: number, depth: number, stream: GeoStream): void {
     const dx = x1 - x0,
         dy = y1 - y0,
         d2 = dx * dx + dy * dy
@@ -47,11 +48,11 @@ function resample(project: any, delta2: number): any {
     }
   }
 
-  return function (stream: any): any {
+  return function (stream: GeoStream): GeoStream {
     let lambda00: number, x00: number, y00: number, a00: number, b00: number, c00: number,
         lambda0: number, x0: number, y0: number, a0: number, b0: number, c0: number
 
-    const resampleStream: any = {
+    const resampleStream: GeoStream = {
       point: point,
       lineStart: lineStart,
       lineEnd: lineEnd,

@@ -1,3 +1,3 @@
-export default function number(x: any): number {
-  return +x
+export default function number(x: unknown): number {
+  return +(x as number)
 }

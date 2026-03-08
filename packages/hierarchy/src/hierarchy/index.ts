@@ -216,17 +216,17 @@ function leastCommonAncestor<T>(a: HierarchyNode<T>, b: HierarchyNode<T>): Hiera
   return c
 }
 
-function objectChildren(d: any): any[] | undefined {
-  return d.children
+function objectChildren<T>(d: T): Iterable<T> | null | undefined {
+  return (d as Record<string, unknown>).children as Iterable<T> | undefined
 }
 
-function mapChildren(d: any): any[] | null {
-  return Array.isArray(d) ? d[1] : null
+function mapChildren<T>(d: T): Iterable<T> | null {
+  return Array.isArray(d) ? d[1] as Iterable<T> : null
 }
 
-function copyData(node: HierarchyNode<any>): void {
+function copyData(node: HierarchyNode<{ value?: number; data: unknown }>): void {
   if (node.data.value !== undefined) node.value = node.data.value
-  node.data = node.data.data
+  node.data = node.data.data as { value?: number; data: unknown }
 }
 
 export function computeHeight<T>(node: HierarchyNode<T>): void {

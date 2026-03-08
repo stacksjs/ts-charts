@@ -1,6 +1,7 @@
 import { asin, cos, sin } from '../math.ts'
+import type { GeoRawProjection } from '../types.ts'
 
-export function cylindricalEqualAreaRaw(phi0: number): any {
+export function cylindricalEqualAreaRaw(phi0: number): GeoRawProjection {
   const cosPhi0 = cos(phi0)
 
   function forward(lambda: number, phi: number): number[] {

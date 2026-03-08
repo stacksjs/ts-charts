@@ -1,15 +1,19 @@
+interface DragDispatch {
+  on(...args: unknown[]): unknown
+}
+
 export default class DragEvent {
   readonly type!: string
-  readonly sourceEvent: any
-  readonly subject: any
-  readonly target: any
-  readonly identifier: any
+  declare readonly sourceEvent: Event
+  declare readonly subject: { x: number; y: number } | undefined
+  declare readonly target: unknown
+  declare readonly identifier: string | number
   readonly active!: number
   readonly x!: number
   readonly y!: number
   readonly dx!: number
   readonly dy!: number
-  private readonly _: any
+  private declare readonly _: DragDispatch
 
   constructor(type: string, {
     sourceEvent,
@@ -20,16 +24,16 @@ export default class DragEvent {
     x, y, dx, dy,
     dispatch
   }: {
-    sourceEvent: any
-    subject?: any
-    target: any
-    identifier: any
+    sourceEvent: Event
+    subject?: { x: number; y: number }
+    target: unknown
+    identifier: string | number
     active: number
     x: number
     y: number
     dx: number
     dy: number
-    dispatch: any
+    dispatch: DragDispatch
   }) {
     Object.defineProperties(this, {
       type: { value: type, enumerable: true, configurable: true },
@@ -46,7 +50,7 @@ export default class DragEvent {
     })
   }
 
-  on(...args: any[]): any {
+  on(...args: unknown[]): unknown {
     const value = this._.on.apply(this._, args)
     return value === this._ ? this : value
   }

@@ -1,4 +1,5 @@
-import { get, set, init } from './schedule.ts'
+import { get, set, init, type TransitionSchedule } from './schedule.ts'
+import type { Dispatch } from '@ts-charts/dispatch'
 
 function start(name: string): boolean {
   return (name + '').trim().split(/^|\s+/).every(function (t) {
@@ -8,10 +9,10 @@ function start(name: string): boolean {
   })
 }
 
-function onFunction(id: number, name: string, listener: any): () => void {
-  let on0: any, on1: any
+function onFunction(id: number, name: string, listener: ((...args: unknown[]) => void) | null): () => void {
+  let on0: Dispatch, on1: Dispatch
   const sit = start(name) ? init : set
-  return function (this: any): void {
+  return function (this: Element): void {
     const schedule = sit(this, id)
     const on = schedule.on
 
@@ -21,10 +22,10 @@ function onFunction(id: number, name: string, listener: any): () => void {
   }
 }
 
-export default function (this: any, name: string, listener?: any): any {
+export default function (this: { _id: number; node: () => Element; each: Function }, name: string, listener?: ((...args: unknown[]) => void) | null): unknown {
   const id = this._id
 
   return arguments.length < 2
     ? get(this.node(), id).on.on(name)
-    : this.each(onFunction(id, name, listener))
+    : this.each(onFunction(id, name, listener ?? null))
 }

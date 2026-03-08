@@ -1,13 +1,17 @@
 import constant from './constant.ts'
 import type { ForceNode } from './center.ts'
 
-export default function forceRadial(radius?: any, x?: number | null, y?: number | null): any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessor can be function or constant
+type NodeAccessor = (...args: any[]) => number
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern
+export default function forceRadial(_radius?: number | NodeAccessor, x?: number | null, y?: number | null): any {
   let nodes: ForceNode[]
-  let strength: any = constant(0.1)
+  let strength: NodeAccessor = constant(0.1)
   let strengths: number[]
   let radiuses: number[]
+  let radius: NodeAccessor = typeof _radius === 'function' ? _radius : constant(+(_radius as number))
 
-  if (typeof radius !== 'function') radius = constant(+radius)
   if (x == null) x = 0
   if (y == null) y = 0
 
@@ -40,20 +44,20 @@ export default function forceRadial(radius?: any, x?: number | null, y?: number 
     initialize()
   }
 
-  force.strength = function (_?: any): any {
-    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_), initialize(), force) : strength
+  force.strength = function (_?: number | NodeAccessor): NodeAccessor | typeof force {
+    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_!), initialize(), force) : strength
   }
 
-  force.radius = function (_?: any): any {
-    return arguments.length ? (radius = typeof _ === 'function' ? _ : constant(+_), initialize(), force) : radius
+  force.radius = function (_?: number | NodeAccessor): typeof radius | typeof force {
+    return arguments.length ? (radius = typeof _ === 'function' ? _ : constant(+_!), initialize(), force) : radius
   }
 
-  force.x = function (_?: number): any {
-    return arguments.length ? (x = +_!, force) : x
+  force.x = function (_?: number): number | typeof force {
+    return arguments.length ? (x = +_!, force) : x as number
   }
 
-  force.y = function (_?: number): any {
-    return arguments.length ? (y = +_!, force) : y
+  force.y = function (_?: number): number | typeof force {
+    return arguments.length ? (y = +_!, force) : y as number
   }
 
   return force

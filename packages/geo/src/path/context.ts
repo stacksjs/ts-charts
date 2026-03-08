@@ -1,13 +1,14 @@
 import { tau } from '../math.ts'
 import noop from '../noop.ts'
+import type { GeoPathContext } from '../types.ts'
 
 export default class PathContext {
-  _context: any
+  _context: GeoPathContext
   _radius: number = 4.5
   _line: number = NaN
   _point: number = NaN
 
-  constructor(context: any) {
+  constructor(context: GeoPathContext) {
     this._context = context
   }
 

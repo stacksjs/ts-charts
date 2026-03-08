@@ -59,7 +59,7 @@ describe('selection.classed', () => {
       .datum(function (_d: any, i: number) { return 'parent-' + i })
       .selectAll('child')
       .data(function (_d: any, i: number) { return [0, 1].map(function (j) { return 'child-' + i + '-' + j }) })
-      .classed('c1 c2', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]) })
+      .classed('c1 c2', function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]); return false })
 
     expect(results).toEqual([
       [three, 'child-0-0', 0, [three, four]],

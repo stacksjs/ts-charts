@@ -1,4 +1,9 @@
-export function initRange(this: any, domain?: any, range?: any): any {
+// D3 scales are callable functions with methods attached.
+// Using Record<string, any> to accommodate the dynamic getter/setter API.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type InitableScale = Record<string, any>
+
+export function initRange(this: InitableScale, domain?: unknown, range?: unknown): InitableScale {
   switch (arguments.length) {
     case 0: break
     case 1: this.range(domain); break
@@ -7,7 +12,7 @@ export function initRange(this: any, domain?: any, range?: any): any {
   return this
 }
 
-export function initInterpolator(this: any, domain?: any, interpolator?: any): any {
+export function initInterpolator(this: InitableScale, domain?: unknown, interpolator?: unknown): InitableScale {
   switch (arguments.length) {
     case 0: break
     case 1: {

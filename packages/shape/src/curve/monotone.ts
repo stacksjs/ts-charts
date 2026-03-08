@@ -8,7 +8,16 @@ function sign(x: number): number {
 // the following paper: Steffen, M. 1990. A Simple Method for Monotonic
 // Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
 // NOV(II), P. 443, 1990.
-function slope3(that: any, x2: number, y2: number): number {
+interface MonotoneState {
+  _context: CurveContext
+  _x0: number
+  _x1: number
+  _y0: number
+  _y1: number
+  _t0: number
+}
+
+function slope3(that: MonotoneState, x2: number, y2: number): number {
   const h0 = that._x1 - that._x0
   const h1 = x2 - that._x1
   const s0 = (that._y1 - that._y0) / (h0 || (h1 < 0 ? -0 : 0))
@@ -18,7 +27,7 @@ function slope3(that: any, x2: number, y2: number): number {
 }
 
 // Calculate a one-sided slope.
-function slope2(that: any, t: number): number {
+function slope2(that: MonotoneState, t: number): number {
   const h = that._x1 - that._x0
   return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t
 }
@@ -26,7 +35,7 @@ function slope2(that: any, t: number): number {
 // According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
 // "you can express cubic Hermite interpolation in terms of cubic Bezier curves
 // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function pointM(that: any, t0: number, t1: number): void {
+function pointM(that: MonotoneState, t0: number, t1: number): void {
   const x0 = that._x0
   const y0 = that._y0
   const x1 = that._x1

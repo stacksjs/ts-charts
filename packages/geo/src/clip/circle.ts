@@ -3,23 +3,24 @@ import { circleStream } from '../circle.ts'
 import { abs, cos, epsilon, pi, radians, sqrt } from '../math.ts'
 import pointEqual from '../pointEqual.ts'
 import clip from './index.ts'
+import type { GeoStream, GeoStreamFactory, ClipLine } from '../types.ts'
 
-export default function clipCircle(radius: number): any {
+export default function clipCircle(radius: number): GeoStreamFactory {
   const cr = cos(radius),
       delta = 2 * radians,
       smallRadius = cr > 0,
       notHemisphere = abs(cr) > epsilon
 
-  function interpolate(from: any, to: any, direction: number, stream: any): void {
-    circleStream(stream, radius, delta, direction, from, to)
+  function interpolate(from: number[] | null, to: number[] | null, direction: number, stream: GeoStream): void {
+    circleStream(stream, radius, delta, direction, from as number[] | null, to as number[] | null)
   }
 
   function visible(lambda: number, phi: number): boolean {
     return cos(lambda) * cos(phi) > cr
   }
 
-  function clipLine(stream: any): any {
-    let point0: any,
+  function clipLine(stream: GeoStream): ClipLine {
+    let point0: number[] | null,
         c0: number,
         v0: boolean,
         v00: boolean,
@@ -30,33 +31,33 @@ export default function clipCircle(radius: number): any {
         clean = 1
       },
       point: function (lambda: number, phi: number): void {
-        let point1: any = [lambda, phi],
-            point2: any,
+        let point1: number[] = [lambda, phi],
+            point2: number[] | null | undefined,
             v = visible(lambda, phi),
             c = smallRadius
               ? v ? 0 : code(lambda, phi)
               : v ? code(lambda + (lambda < 0 ? pi : -pi), phi) : 0
         if (!point0 && (v00 = v0 = v)) stream.lineStart()
         if (v !== v0) {
-          point2 = intersect(point0, point1)
-          if (!point2 || pointEqual(point0, point2) || pointEqual(point1, point2))
+          point2 = intersect(point0!, point1) as number[] | undefined
+          if (!point2 || pointEqual(point0!, point2) || pointEqual(point1, point2))
             point1[2] = 1
         }
         if (v !== v0) {
           clean = 0
           if (v) {
             stream.lineStart()
-            point2 = intersect(point1, point0)
-            stream.point(point2[0], point2[1])
+            point2 = intersect(point1, point0!) as number[] | undefined
+            stream.point(point2![0], point2![1])
           } else {
-            point2 = intersect(point0, point1)
-            stream.point(point2[0], point2[1], 2)
+            point2 = intersect(point0!, point1) as number[] | undefined
+            stream.point(point2![0], point2![1], 2)
             stream.lineEnd()
           }
-          point0 = point2
+          point0 = point2!
         } else if (notHemisphere && point0 && smallRadius !== v) {
-          let t: any
-          if (!(c & c0) && (t = intersect(point1, point0, true))) {
+          let t: number[][] | undefined
+          if (!(c & c0) && (t = intersect(point1, point0!, true) as number[][] | undefined)) {
             clean = 0
             if (smallRadius) {
               stream.lineStart()
@@ -81,12 +82,14 @@ export default function clipCircle(radius: number): any {
         point0 = null
       },
       clean: function (): number {
-        return clean | ((v00 && v0) as any << 1)
-      }
+        return clean | ((v00 && v0) ? 2 : 0)
+      },
+      polygonStart: function (): void { stream.polygonStart() },
+      polygonEnd: function (): void { stream.polygonEnd() }
     }
   }
 
-  function intersect(a: any, b: any, two?: boolean): any {
+  function intersect(a: number[], b: number[], two?: boolean): number[] | number[][] | undefined {
     const pa = cartesian(a),
         pb = cartesian(b)
 
@@ -96,7 +99,7 @@ export default function clipCircle(radius: number): any {
         n1n2 = n2[0],
         determinant = n2n2 - n1n2 * n1n2
 
-    if (!determinant) return !two && a
+    if (!determinant) return !two ? a : undefined
 
     const c1 = cr * n2n2 / determinant,
         c2 = -cr * n1n2 / determinant,
@@ -110,10 +113,10 @@ export default function clipCircle(radius: number): any {
         uu = cartesianDot(u, u),
         t2 = w * w - uu * (cartesianDot(A, A) - 1)
 
-    if (t2 < 0) return
+    if (t2 < 0) return undefined
 
     const t = sqrt(t2)
-    let q: any = cartesianScale(u, (-w - t) / uu)
+    let q: number[] = cartesianScale(u, (-w - t) / uu)
     cartesianAddInPlace(q, A)
     q = spherical(q)
 

@@ -47,18 +47,18 @@ describe('geoContains', () => {
   })
 
   it('a Polygon with a hole does not contain a point', () => {
-    const outer = geoCircle().radius(60)().coordinates[0]
-    const inner = geoCircle().radius(3)().coordinates[0]
-    const polygon = { type: 'Polygon', coordinates: [outer, inner] }
+    const outer = (geoCircle().radius(60)().coordinates as number[][][])[0]
+    const inner = (geoCircle().radius(3)().coordinates as number[][][])[0]
+    const polygon = { type: 'Polygon' as const, coordinates: [outer, inner] as number[][][] }
     expect(geoContains(polygon, [1, 1])).toBe(false)
     expect(geoContains(polygon, [5, 0])).toBe(true)
     expect(geoContains(polygon, [65, 0])).toBe(false)
   })
 
   it('a MultiPolygon contains a point', () => {
-    const p1 = geoCircle().radius(6)().coordinates
-    const p2 = geoCircle().radius(6).center([90, 0])().coordinates
-    const polygon = { type: 'MultiPolygon', coordinates: [p1, p2] }
+    const p1 = geoCircle().radius(6)().coordinates as number[][][]
+    const p2 = geoCircle().radius(6).center([90, 0])().coordinates as number[][][]
+    const polygon = { type: 'MultiPolygon' as const, coordinates: [p1, p2] as number[][][][] }
     expect(geoContains(polygon, [1, 0])).toBe(true)
     expect(geoContains(polygon, [90, 1])).toBe(true)
     expect(geoContains(polygon, [90, 45])).toBe(false)
@@ -87,8 +87,8 @@ describe('geoContains', () => {
   })
 
   it('a FeatureCollection contains a point', () => {
-    const feature1 = { type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [45, 0]] } }
-    const feature2 = { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-45, 0], [0, 0]] } }
+    const feature1 = { type: 'Feature' as const, geometry: { type: 'LineString', coordinates: [[0, 0], [45, 0]] } }
+    const feature2 = { type: 'Feature' as const, geometry: { type: 'LineString', coordinates: [[-45, 0], [0, 0]] } }
     const featureCollection = { type: 'FeatureCollection', features: [feature1, feature2] }
     expect(geoContains(featureCollection, [45, 0])).toBe(true)
     expect(geoContains(featureCollection, [-45, 0])).toBe(true)
@@ -96,6 +96,6 @@ describe('geoContains', () => {
   })
 
   it('null contains nothing', () => {
-    expect(geoContains(null, [0, 0])).toBe(false)
+    expect(geoContains(null as any, [0, 0])).toBe(false)
   })
 })

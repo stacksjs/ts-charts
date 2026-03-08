@@ -5,7 +5,7 @@ export interface NamespaceLocal {
   local: string
 }
 
-export default function namespace(name: any): NamespaceLocal | string {
+export default function namespace(name: string): NamespaceLocal | string {
   let prefix: string = name = name + ''
   const i = prefix.indexOf(':')
   if (i >= 0 && (prefix = name.slice(0, i)) !== 'xmlns') name = name.slice(i + 1)

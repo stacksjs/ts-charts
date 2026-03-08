@@ -8,7 +8,7 @@ describe('selectAll', () => {
   })
 
   it('selectAll(...) accepts an iterable', () => {
-    expect(selectAll(new Set([document])).nodes()).toEqual([document])
+    expect(selectAll(new Set([document as unknown as Node])).nodes()).toEqual([document as unknown as Element])
   })
 
   it('selectAll(string) selects all elements that match the selector string, in order', () => {
@@ -39,7 +39,7 @@ describe('selectAll', () => {
     const one = selectAll()._groups[0]
     const two = selectAll()._groups[0]
     expect(one === two).toBe(false)
-    one.push('one')
+    one.push('one' as unknown as Element)
     expect(selectAll()._groups[0]).toEqual([])
   })
 

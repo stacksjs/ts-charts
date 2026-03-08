@@ -409,23 +409,19 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
   return {
     format(specifier: string): (date: Date | number) => string {
       const f = newFormat(specifier += '', formats)
-      ;(f as any).toString = function (): string { return specifier }
-      return f
+      return Object.assign(f, { toString(): string { return specifier } })
     },
     parse(specifier: string): (string: string) => Date | null {
       const p = newParse(specifier += '', false)
-      ;(p as any).toString = function (): string { return specifier }
-      return p
+      return Object.assign(p, { toString(): string { return specifier } })
     },
     utcFormat(specifier: string): (date: Date | number) => string {
       const f = newFormat(specifier += '', utcFormats)
-      ;(f as any).toString = function (): string { return specifier }
-      return f
+      return Object.assign(f, { toString(): string { return specifier } })
     },
     utcParse(specifier: string): (string: string) => Date | null {
       const p = newParse(specifier += '', true)
-      ;(p as any).toString = function (): string { return specifier }
-      return p
+      return Object.assign(p, { toString(): string { return specifier } })
     },
   }
 }
@@ -596,7 +592,7 @@ function formatWeekdayNumberMonday(d: Date): number {
 }
 
 function formatWeekNumberSunday(d: Date, p: string): string {
-  return pad(timeSunday.count!((timeYear(d) as any) - 1, d), p, 2)
+  return pad(timeSunday.count!(timeYear(d).getTime() - 1, d), p, 2)
 }
 
 function dISO(d: Date): Date {
@@ -614,7 +610,7 @@ function formatWeekdayNumberSunday(d: Date): number {
 }
 
 function formatWeekNumberMonday(d: Date, p: string): string {
-  return pad(timeMonday.count!((timeYear(d) as any) - 1, d), p, 2)
+  return pad(timeMonday.count!(timeYear(d).getTime() - 1, d), p, 2)
 }
 
 function formatYear(d: Date, p: string): string {
@@ -685,7 +681,7 @@ function formatUTCWeekdayNumberMonday(d: Date): number {
 }
 
 function formatUTCWeekNumberSunday(d: Date, p: string): string {
-  return pad(utcSunday.count!((utcYear(d) as any) - 1, d), p, 2)
+  return pad(utcSunday.count!(utcYear(d).getTime() - 1, d), p, 2)
 }
 
 function UTCdISO(d: Date): Date {
@@ -703,7 +699,7 @@ function formatUTCWeekdayNumberSunday(d: Date): number {
 }
 
 function formatUTCWeekNumberMonday(d: Date, p: string): string {
-  return pad(utcMonday.count!((utcYear(d) as any) - 1, d), p, 2)
+  return pad(utcMonday.count!(utcYear(d).getTime() - 1, d), p, 2)
 }
 
 function formatUTCYear(d: Date, p: string): string {

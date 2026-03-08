@@ -17,8 +17,10 @@ export const blurImage: (data: { data: number[], width: number, height?: number 
 
 type BlurFn = (T: number[], S: number[], start: number, stop: number, step: number) => void
 
-function Blur2(blurFactory: (radius: number) => BlurFn): (data: any, rx: number, ry?: number) => any {
-  return function(data: any, rx: number, ry: number = rx): any {
+interface BlurData { data: number[], width: number, height?: number }
+
+function Blur2(blurFactory: (radius: number) => BlurFn): (data: BlurData, rx: number, ry?: number) => BlurData {
+  return function(data: BlurData, rx: number, ry: number = rx): BlurData {
     if (!((rx = +rx) >= 0)) throw new RangeError('invalid rx')
     if (!((ry = +ry) >= 0)) throw new RangeError('invalid ry')
     let { data: values, width, height } = data

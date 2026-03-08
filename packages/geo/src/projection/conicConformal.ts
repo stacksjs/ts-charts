@@ -1,17 +1,18 @@
 import { abs, atan, atan2, cos, epsilon, halfPi, log, pi, pow, sign, sin, sqrt, tan } from '../math.ts'
 import { conicProjection } from './conic.ts'
 import { mercatorRaw } from './mercator.ts'
+import type { GeoRawProjection, GeoConicProjection } from '../types.ts'
 
 function tany(y: number): number {
   return tan((halfPi + y) / 2)
 }
 
-export function conicConformalRaw(y0: number, y1: number): any {
+export function conicConformalRaw(y0: number, y1: number): GeoRawProjection {
   const cy0 = cos(y0),
       n = y0 === y1 ? sin(y0) : log(cy0 / cos(y1)) / log(tany(y1) / tany(y0)),
       f = cy0 * pow(tany(y0), n) / n
 
-  if (!n) return mercatorRaw
+  if (!n) return mercatorRaw as GeoRawProjection
 
   function project(x: number, y: number): number[] {
     if (f > 0) { if (y < -halfPi + epsilon) y = -halfPi + epsilon }
@@ -31,7 +32,7 @@ export function conicConformalRaw(y0: number, y1: number): any {
   return project
 }
 
-export default function geoConicConformal(): any {
+export default function geoConicConformal(): GeoConicProjection {
   return conicProjection(conicConformalRaw)
       .scale(109.5)
       .parallels([30, 30])

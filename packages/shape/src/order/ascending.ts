@@ -1,11 +1,12 @@
+import type { StackSeries, StackSeriesPoint } from '../offset/none.ts'
 import none from './none.ts'
 
-export default function orderAscending(series: any[]): number[] {
+export default function orderAscending(series: StackSeries[]): number[] {
   const sums = series.map(sum)
   return none(series).sort(function (a: number, b: number): number { return sums[a] - sums[b] })
 }
 
-export function sum(series: any[]): number {
+export function sum(series: StackSeriesPoint[]): number {
   let s = 0, i = -1
   const n = series.length
   let v: number

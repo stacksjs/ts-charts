@@ -1,8 +1,10 @@
-import { cubehelix as colorCubehelix } from '@ts-charts/color'
+import { cubehelix as colorCubehelix, type Cubehelix } from '@ts-charts/color'
 import color, { hue } from './color.ts'
 
+type ColorSpecifier = string | { toString(): string } | null
+
 interface CubehelixInterpolator {
-  (start: any, end: any): (t: number) => string
+  (start: ColorSpecifier, end: ColorSpecifier): (t: number) => string
   gamma(y: number): CubehelixInterpolator
 }
 
@@ -10,9 +12,9 @@ function cubehelix(hueFn: (a: number, b: number) => (t: number) => number): Cube
   return (function cubehelixGamma(y: number): CubehelixInterpolator {
     y = +y
 
-    function cubehelixInterp(start: any, end: any): (t: number) => string {
-      const s = colorCubehelix(start) as any
-      const e = colorCubehelix(end) as any
+    function cubehelixInterp(start: ColorSpecifier, end: ColorSpecifier): (t: number) => string {
+      const s = colorCubehelix(start as string) as Cubehelix
+      const e = colorCubehelix(end as string) as Cubehelix
       const h = hueFn(s.h, e.h)
       const sat = color(s.s, e.s)
       const l = color(s.l, e.l)

@@ -2,23 +2,23 @@ import constant from './constant.ts'
 import { abs, acos, asin, atan2, cos, epsilon, halfPi, max, min, pi, sin, sqrt, tau } from './math.ts'
 import { withPath } from './path.ts'
 
-function arcInnerRadius(d: any): any {
+function arcInnerRadius(d: Record<string, unknown>): unknown {
   return d.innerRadius
 }
 
-function arcOuterRadius(d: any): any {
+function arcOuterRadius(d: Record<string, unknown>): unknown {
   return d.outerRadius
 }
 
-function arcStartAngle(d: any): any {
+function arcStartAngle(d: Record<string, unknown>): unknown {
   return d.startAngle
 }
 
-function arcEndAngle(d: any): any {
+function arcEndAngle(d: Record<string, unknown>): unknown {
   return d.endAngle
 }
 
-function arcPadAngle(d: any): any {
+function arcPadAngle(d: Record<string, unknown>): unknown {
   return d && d.padAngle // Note: optional!
 }
 
@@ -86,7 +86,7 @@ export default function(): any {
   const path = withPath(arc)
 
   function arc(this: any): any {
-    let buffer: any
+    let buffer: ReturnType<typeof path> | undefined
     let r: number
     let r0 = +innerRadius.apply(this, arguments)
     let r1 = +outerRadius.apply(this, arguments)
@@ -126,8 +126,8 @@ export default function(): any {
       let rc = min(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments))
       let rc0 = rc
       let rc1 = rc
-      let t0: any
-      let t1: any
+      let t0: ReturnType<typeof cornerTangents>
+      let t1: ReturnType<typeof cornerTangents>
 
       // Apply padding? Note that since r1 >= r0, da1 >= da0.
       if (rp > epsilon) {

@@ -28,13 +28,13 @@ describe('geoPolygonContains', () => {
   })
 
   it('geoPolygonContains(smallCircle, point) returns the expected value', () => {
-    const polygon = geoCircle().radius(60)().coordinates
+    const polygon = geoCircle().radius(60)().coordinates as number[][][]
     expect(geoPolygonContains(polygon, [-180, 0])).toBe(false)
     expect(geoPolygonContains(polygon, [1, 1])).toBe(true)
   })
 
   it('geoPolygonContains wraps longitudes', () => {
-    const polygon = geoCircle().center([300, 0])().coordinates
+    const polygon = geoCircle().center([300, 0])().coordinates as number[][][]
     expect(geoPolygonContains(polygon, [300, 0])).toBe(true)
     expect(geoPolygonContains(polygon, [-60, 0])).toBe(true)
     expect(geoPolygonContains(polygon, [-420, 0])).toBe(true)
@@ -92,7 +92,7 @@ describe('geoPolygonContains', () => {
   })
 
   it('geoPolygonContains(largeCircle, point) returns the expected value', () => {
-    const polygon = geoCircle().radius(120)().coordinates
+    const polygon = geoCircle().radius(120)().coordinates as number[][][]
     expect(geoPolygonContains(polygon, [-180, 0])).toBe(false)
     expect(geoPolygonContains(polygon, [-90, 0])).toBe(true)
   })
@@ -105,8 +105,8 @@ describe('geoPolygonContains', () => {
 
   it('geoPolygonContains(largeNarrowEquatorialHole, point) returns the expected value', () => {
     const circle = geoCircle().center([0, -90]),
-      ring0 = circle.radius(90 - 0.01)().coordinates[0],
-      ring1 = circle.radius(90 + 0.01)().coordinates[0].reverse(),
+      ring0 = (circle.radius(90 - 0.01)().coordinates as number[][][])[0],
+      ring1 = (circle.radius(90 + 0.01)().coordinates as number[][][])[0].reverse(),
       polygon = [ring0, ring1]
     expect(geoPolygonContains(polygon, [0, 0])).toBe(false)
     expect(geoPolygonContains(polygon, [0, -90])).toBe(true)
@@ -114,8 +114,8 @@ describe('geoPolygonContains', () => {
 
   it('geoPolygonContains(largeNarrowEquatorialStrip, point) returns the expected value', () => {
     const circle = geoCircle().center([0, -90]),
-      ring0 = circle.radius(90 + 0.01)().coordinates[0],
-      ring1 = circle.radius(90 - 0.01)().coordinates[0].reverse(),
+      ring0 = (circle.radius(90 + 0.01)().coordinates as number[][][])[0],
+      ring1 = (circle.radius(90 - 0.01)().coordinates as number[][][])[0].reverse(),
       polygon = [ring0, ring1]
     expect(geoPolygonContains(polygon, [0, -90])).toBe(false)
     expect(geoPolygonContains(polygon, [0, 0])).toBe(true)
@@ -192,7 +192,7 @@ describe('geoPolygonContains', () => {
   })
 
   it('geoPolygonContains(hemisphereTouchingTheSouthPole, point) returns the expected value', () => {
-    const polygon = geoCircle().radius(90)().coordinates
+    const polygon = geoCircle().radius(90)().coordinates as number[][][]
     expect(geoPolygonContains(polygon, [0, 0])).toBe(true)
   })
 

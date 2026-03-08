@@ -6,7 +6,7 @@ it('scaleRadial() has the expected defaults', () => {
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
   expect(s.clamp()).toBe(false)
-  expect(s.round()).toBe(false)
+  expect(s.round!()).toBe(false)
 })
 
 it('scaleRadial(range) sets the range', () => {
@@ -59,10 +59,10 @@ it('radial(x) can map a bilinear domain with two values to the corresponding ran
 
 it('radial(NaN) returns undefined', () => {
   const s = scaleRadial()
-  expect(s(NaN)).toBe(undefined)
-  expect(s(undefined)).toBe(undefined)
-  expect(s('foo')).toBe(undefined)
-  expect(s({})).toBe(undefined)
+  expect(s(NaN) as unknown).toBe(undefined)
+  expect(s(undefined as any) as unknown).toBe(undefined)
+  expect(s('foo' as any) as unknown).toBe(undefined)
+  expect(s({} as any) as unknown).toBe(undefined)
 })
 
 it('radial.unknown(unknown)(NaN) returns the specified unknown value', () => {

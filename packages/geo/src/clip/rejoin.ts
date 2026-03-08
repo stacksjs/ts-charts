@@ -1,16 +1,17 @@
 import pointEqual from '../pointEqual.ts'
 import { epsilon } from '../math.ts'
+import type { GeoStream } from '../types.ts'
 
 class Intersection {
-  x: any
-  z: any
-  o: any
+  x: number[]
+  z: number[][] | null
+  o: Intersection | null
   e: boolean
   v: boolean
   n: Intersection | null
   p: Intersection | null
 
-  constructor(point: any, points: any, other: any, entry: boolean) {
+  constructor(point: number[], points: number[][] | null, other: Intersection | null, entry: boolean) {
     this.x = point
     this.z = points
     this.o = other
@@ -20,13 +21,19 @@ class Intersection {
   }
 }
 
-export default function clipRejoin(segments: any[], compareIntersection: any, startInside: any, interpolate: any, stream: any): void {
+export default function clipRejoin(
+  segments: number[][][],
+  compareIntersection: (a: { x: number[] }, b: { x: number[] }) => number,
+  startInside: boolean | number,
+  interpolate: (from: number[] | null, to: number[] | null, direction: number, stream: GeoStream) => void,
+  stream: GeoStream
+): void {
   const subject: Intersection[] = [],
       clip: Intersection[] = []
   let i: number,
       n: number
 
-  segments.forEach(function (segment: any) {
+  segments.forEach(function (segment: number[][]) {
     if ((n = segment.length - 1) <= 0) return
     let p0 = segment[0], p1 = segment[n], x: Intersection
 
@@ -57,37 +64,37 @@ export default function clipRejoin(segments: any[], compareIntersection: any, st
   }
 
   const start = subject[0]
-  let points: any,
-      point: any
+  let points: number[][] | null,
+      point: number[]
 
   while (1) {
-    let current: any = start,
+    let current: Intersection | null = start,
         isSubject = true
-    while (current.v) if ((current = current.n) === start) return
-    points = current.z
+    while (current!.v) if ((current = current!.n) === start) return
+    points = current!.z
     stream.lineStart()
     do {
-      current.v = current.o.v = true
-      if (current.e) {
+      current!.v = current!.o!.v = true
+      if (current!.e) {
         if (isSubject) {
-          for (i = 0, n = points.length; i < n; ++i) stream.point((point = points[i])[0], point[1])
+          for (i = 0, n = points!.length; i < n; ++i) stream.point((point = points![i])[0], point[1])
         } else {
-          interpolate(current.x, current.n.x, 1, stream)
+          interpolate(current!.x, current!.n!.x, 1, stream)
         }
-        current = current.n
+        current = current!.n
       } else {
         if (isSubject) {
-          points = current.p.z
-          for (i = points.length - 1; i >= 0; --i) stream.point((point = points[i])[0], point[1])
+          points = current!.p!.z
+          for (i = points!.length - 1; i >= 0; --i) stream.point((point = points![i])[0], point[1])
         } else {
-          interpolate(current.x, current.p.x, -1, stream)
+          interpolate(current!.x, current!.p!.x, -1, stream)
         }
-        current = current.p
+        current = current!.p
       }
-      current = current.o
-      points = current.z
+      current = current!.o
+      points = current!.z
       isSubject = !isSubject
-    } while (!current.v)
+    } while (!current!.v)
     stream.lineEnd()
   }
 }

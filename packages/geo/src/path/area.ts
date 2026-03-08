@@ -1,6 +1,7 @@
 import { Adder } from '@ts-charts/array'
 import { abs } from '../math.ts'
 import noop from '../noop.ts'
+import type { GeoStream } from '../types.ts'
 
 let areaSum = new Adder(),
     areaRingSum = new Adder(),
@@ -9,7 +10,7 @@ let areaSum = new Adder(),
     x0: number,
     y0: number
 
-const areaStream: any = {
+const areaStream: GeoStream & { result(): number } = {
   point: noop,
   lineStart: noop,
   lineEnd: noop,
@@ -19,11 +20,11 @@ const areaStream: any = {
   },
   polygonEnd: function (): void {
     areaStream.lineStart = areaStream.lineEnd = areaStream.point = noop
-    areaSum.add(abs(areaRingSum as any))
+    areaSum.add(abs(+areaRingSum))
     areaRingSum = new Adder()
   },
   result: function (): number {
-    const area = (areaSum as any) / 2
+    const area = +areaSum / 2
     areaSum = new Adder()
     return area
   }

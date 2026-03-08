@@ -173,9 +173,9 @@ describe('geoPath', () => {
 
   it('geoPath.context(null)(null) returns null', () => {
     const path = geoPath()
-    expect(path()).toBe(null)
-    expect(path(null)).toBe(null)
-    expect(path(undefined)).toBe(null)
+    expect(path({} as any)).toBe(null)
+    expect(path(null as any)).toBe(null)
+    expect(path(undefined as any)).toBe(null)
   })
 
   it('geoPath.context(null)(Unknown) returns null', () => {
@@ -228,9 +228,9 @@ describe('geoPath', () => {
     const path = geoPath()
     expect(path.digits(3.5).digits()).toBe(3)
     expect(path.digits(3.9).digits()).toBe(3)
-    expect(path.digits('3').digits()).toBe(3)
-    expect(path.digits(' 3').digits()).toBe(3)
-    expect(path.digits('').digits()).toBe(0)
+    expect(path.digits('3' as any).digits()).toBe(3)
+    expect(path.digits(' 3' as any).digits()).toBe(3)
+    expect(path.digits('' as any).digits()).toBe(0)
   })
 
   it('geoPath.digits(digits) throws if digits is not valid', () => {

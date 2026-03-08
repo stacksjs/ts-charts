@@ -9,7 +9,7 @@ describe('selection.sort', () => {
     const two = document.querySelector('#two')!
     const three = document.querySelector('#three')!
     const selection0 = selectAll([two, three, one]).datum(function (this: any) { return +this.getAttribute('data-value') })
-    const selection1 = selection0.sort(function (a: number, b: number) { return a - b })
+    const selection1 = selection0.sort(function (a: any, b: any) { return a - b })
     assertSelection(selection0, { groups: [[two, three, one]], parents: [null] })
     assertSelection(selection1, { groups: [[two, one, three]], parents: [null] })
     expect(two.nextSibling).toBe(one)
@@ -34,7 +34,7 @@ describe('selection.sort', () => {
     const one = document.querySelector('#one')!
     const two = document.querySelector('#two')!
     const sel = selectAll([two, one]).datum(function (_d: any, i: number) { return i })
-    assertSelection(sel.sort(function (a: number, b: number) { return b - a }), { groups: [[one, two]], parents: [null] })
+    assertSelection(sel.sort(function (a: any, b: any) { return b - a }), { groups: [[one, two]], parents: [null] })
     expect(one.nextSibling).toBe(two)
     expect(two.nextSibling).toBe(null)
     document.body.innerHTML = ''
@@ -45,7 +45,7 @@ describe('selection.sort', () => {
     const one = document.querySelector('#one')!
     const two = document.querySelector('#two')!
     const selection0 = selectAll([one, two]).datum(function (_d: any, i: number) { return i })
-    const selection1 = selection0.sort(function (a: number, b: number) { return b - a })
+    const selection1 = selection0.sort(function (a: any, b: any) { return b - a })
     const selection2 = selection1.sort()
     assertSelection(selection0, { groups: [[one, two]], parents: [null] })
     assertSelection(selection1, { groups: [[two, one]], parents: [null] })

@@ -1,71 +1,74 @@
-function streamGeometry(geometry: any, stream: any): void {
+import type { GeoStream, GeoObject } from './types.ts'
+
+function streamGeometry(geometry: GeoObject, stream: GeoStream): void {
   if (geometry && streamGeometryType.hasOwnProperty(geometry.type)) {
-    (streamGeometryType as any)[geometry.type](geometry, stream)
+    streamGeometryType[geometry.type](geometry, stream)
   }
 }
 
-const streamObjectType: any = {
-  Feature: function (object: any, stream: any): void {
-    streamGeometry(object.geometry, stream)
+const streamObjectType: Record<string, (object: GeoObject, stream: GeoStream) => void> = {
+  Feature: function (object: GeoObject, stream: GeoStream): void {
+    streamGeometry(object.geometry!, stream)
   },
-  FeatureCollection: function (object: any, stream: any): void {
-    const features = object.features
+  FeatureCollection: function (object: GeoObject, stream: GeoStream): void {
+    const features = object.features!
     let i = -1
     const n = features.length
-    while (++i < n) streamGeometry(features[i].geometry, stream)
+    while (++i < n) streamGeometry(features[i].geometry!, stream)
   }
 }
 
-const streamGeometryType: any = {
-  Sphere: function (_object: any, stream: any): void {
-    stream.sphere()
+const streamGeometryType: Record<string, (object: GeoObject, stream: GeoStream) => void> = {
+  Sphere: function (_object: GeoObject, stream: GeoStream): void {
+    stream.sphere!()
   },
-  Point: function (object: any, stream: any): void {
-    object = object.coordinates
-    stream.point(object[0], object[1], object[2])
+  Point: function (object: GeoObject, stream: GeoStream): void {
+    const c = object.coordinates as number[]
+    stream.point(c[0], c[1], c[2])
   },
-  MultiPoint: function (object: any, stream: any): void {
-    const coordinates = object.coordinates
+  MultiPoint: function (object: GeoObject, stream: GeoStream): void {
+    const coordinates = object.coordinates as number[][]
     let i = -1
     const n = coordinates.length
-    while (++i < n) object = coordinates[i], stream.point(object[0], object[1], object[2])
+    let c: number[]
+    while (++i < n) c = coordinates[i], stream.point(c[0], c[1], c[2])
   },
-  LineString: function (object: any, stream: any): void {
-    streamLine(object.coordinates, stream, 0)
+  LineString: function (object: GeoObject, stream: GeoStream): void {
+    streamLine(object.coordinates as number[][], stream, 0)
   },
-  MultiLineString: function (object: any, stream: any): void {
-    const coordinates = object.coordinates
+  MultiLineString: function (object: GeoObject, stream: GeoStream): void {
+    const coordinates = object.coordinates as number[][][]
     let i = -1
     const n = coordinates.length
     while (++i < n) streamLine(coordinates[i], stream, 0)
   },
-  Polygon: function (object: any, stream: any): void {
-    streamPolygon(object.coordinates, stream)
+  Polygon: function (object: GeoObject, stream: GeoStream): void {
+    streamPolygon(object.coordinates as number[][][], stream)
   },
-  MultiPolygon: function (object: any, stream: any): void {
-    const coordinates = object.coordinates
+  MultiPolygon: function (object: GeoObject, stream: GeoStream): void {
+    const coordinates = object.coordinates as number[][][][]
     let i = -1
     const n = coordinates.length
     while (++i < n) streamPolygon(coordinates[i], stream)
   },
-  GeometryCollection: function (object: any, stream: any): void {
-    const geometries = object.geometries
+  GeometryCollection: function (object: GeoObject, stream: GeoStream): void {
+    const geometries = object.geometries!
     let i = -1
     const n = geometries.length
     while (++i < n) streamGeometry(geometries[i], stream)
   }
 }
 
-function streamLine(coordinates: any[], stream: any, closed: number): void {
+function streamLine(coordinates: number[][], stream: GeoStream, closed: number): void {
   let i = -1
   const n = coordinates.length - closed
-  let coordinate: any
+  let coordinate: number[]
   stream.lineStart()
   while (++i < n) coordinate = coordinates[i], stream.point(coordinate[0], coordinate[1], coordinate[2])
   stream.lineEnd()
 }
 
-function streamPolygon(coordinates: any[], stream: any): void {
+function streamPolygon(coordinates: number[][][], stream: GeoStream): void {
   let i = -1
   const n = coordinates.length
   stream.polygonStart()
@@ -73,7 +76,7 @@ function streamPolygon(coordinates: any[], stream: any): void {
   stream.polygonEnd()
 }
 
-export default function geoStream(object: any, stream: any): void {
+export default function geoStream(object: GeoObject, stream: GeoStream): void {
   if (object && streamObjectType.hasOwnProperty(object.type)) {
     streamObjectType[object.type](object, stream)
   } else {

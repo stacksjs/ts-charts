@@ -44,7 +44,7 @@ export default function polygonContains(polygon: number[][][], point: number[]):
       sum.add(atan2(k * signDelta * sin(absDelta), cosPhi0 * cosPhi1 + k * cos(absDelta)))
       angle += antimeridian ? delta + signDelta * tau : delta
 
-      if ((antimeridian as any) ^ (lambda0 >= lambda as any) ^ (lambda1 >= lambda as any)) {
+      if ((antimeridian ? 1 : 0) ^ (lambda0 >= lambda ? 1 : 0) ^ (lambda1 >= lambda ? 1 : 0)) {
         const arc = cartesianCross(cartesian(point0), cartesian(point1))
         cartesianNormalizeInPlace(arc)
         const intersection = cartesianCross(normal, arc)
@@ -57,5 +57,5 @@ export default function polygonContains(polygon: number[][][], point: number[]):
     }
   }
 
-  return (((angle < -epsilon || angle < epsilon && (sum as any) < -epsilon2) ? 1 : 0) ^ (winding & 1)) !== 0
+  return (((angle < -epsilon || angle < epsilon && +sum < -epsilon2) ? 1 : 0) ^ (winding & 1)) !== 0
 }

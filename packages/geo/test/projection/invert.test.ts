@@ -50,7 +50,7 @@ describe('projection invert', () => {
     it(`${name}(point) and ${name}.invert(point) are symmetric`, () => {
       const projection = factory()
       for (const point of [[0, 0], [30.3, 24.1], [-10, 42], [-2, -5]]) {
-        assertProjectionEqual(projection, point, projection(point))
+        assertProjectionEqual(projection, point, projection(point)!)
       }
     })
   }
@@ -58,7 +58,7 @@ describe('projection invert', () => {
   it('albersUsa(point) and albersUsa.invert(point) are symmetric', () => {
     const projection = geoAlbersUsa()
     for (const point of [[-122.4194, 37.7749], [-74.0059, 40.7128], [-149.9003, 61.2181], [-157.8583, 21.3069]]) {
-      assertProjectionEqual(projection, point, projection(point))
+      assertProjectionEqual(projection, point, projection(point)!)
     }
   })
 })

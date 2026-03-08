@@ -8,8 +8,8 @@ it('scaleBand() has the expected defaults', () => {
   expect(s.bandwidth()).toBe(1)
   expect(s.step()).toBe(1)
   expect(s.round()).toBe(false)
-  expect(s.paddingInner()).toBe(0)
-  expect(s.paddingOuter()).toBe(0)
+  expect(s.paddingInner!()).toBe(0)
+  expect(s.paddingOuter!()).toBe(0)
   expect(s.align()).toBe(0.5)
 })
 
@@ -173,10 +173,10 @@ it('band.paddingInner(p) specifies the inner padding p', () => {
 
 it('band.paddingInner(p) coerces p to a number <= 1', () => {
   const s = scaleBand()
-  expect(s.paddingInner('1.0').paddingInner()).toBe(1)
-  expect(s.paddingInner('-1.0').paddingInner()).toBe(-1)
-  expect(s.paddingInner('2.0').paddingInner()).toBe(1)
-  expect(Number.isNaN(s.paddingInner(NaN).paddingInner())).toBe(true)
+  expect(s.paddingInner!('1.0' as any).paddingInner!()).toBe(1)
+  expect(s.paddingInner!('-1.0' as any).paddingInner!()).toBe(-1)
+  expect(s.paddingInner!('2.0' as any).paddingInner!()).toBe(1)
+  expect(Number.isNaN(s.paddingInner!(NaN).paddingInner!())).toBe(true)
 })
 
 it('band.paddingOuter(p) specifies the outer padding p', () => {
@@ -190,10 +190,10 @@ it('band.paddingOuter(p) specifies the outer padding p', () => {
 
 it('band.paddingOuter(p) coerces p to a number', () => {
   const s = scaleBand()
-  expect(s.paddingOuter('1.0').paddingOuter()).toBe(1)
-  expect(s.paddingOuter('-1.0').paddingOuter()).toBe(-1)
-  expect(s.paddingOuter('2.0').paddingOuter()).toBe(2)
-  expect(Number.isNaN(s.paddingOuter(NaN).paddingOuter())).toBe(true)
+  expect(s.paddingOuter!('1.0' as any).paddingOuter!()).toBe(1)
+  expect(s.paddingOuter!('-1.0' as any).paddingOuter!()).toBe(-1)
+  expect(s.paddingOuter!('2.0' as any).paddingOuter!()).toBe(2)
+  expect(Number.isNaN(s.paddingOuter!(NaN).paddingOuter!())).toBe(true)
 })
 
 it('band.rangeRound(values) is an alias for band.range(values).round(true)', () => {

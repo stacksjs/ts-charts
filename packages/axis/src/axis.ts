@@ -14,31 +14,44 @@ function translateY(y: number): string {
   return 'translate(0,' + y + ')'
 }
 
-function number(scale: any, _offset: number): (d: any) => number {
-  return (d: any): number => +scale(d)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- scale call signatures vary widely (number, string, Date, etc.)
+export interface AxisScale {
+  (d: any): number
+  bandwidth?(): number
+  round?(): boolean
+  ticks?(...args: unknown[]): unknown[]
+  tickFormat?(...args: unknown[]): (d: unknown) => string
+  domain(): unknown[]
+  range(): number[]
+  copy?(): AxisScale
 }
 
-function center(scale: any, offset: number): (d: any) => number {
-  offset = Math.max(0, scale.bandwidth() - offset * 2) / 2
-  if (scale.round()) offset = Math.round(offset)
-  return (d: any): number => +scale(d) + offset
+function number(scale: AxisScale, _offset: number): (d: unknown) => number {
+  return (d: unknown): number => +scale(d)
 }
 
-function entering(this: any): boolean {
+function center(scale: AxisScale, offset: number): (d: unknown) => number {
+  offset = Math.max(0, scale.bandwidth!() - offset * 2) / 2
+  if (scale.round!()) offset = Math.round(offset)
+  return (d: unknown): number => +scale(d) + offset
+}
+
+function entering(this: Element & { __axis?: unknown }): boolean {
   return !this.__axis
 }
 
 export interface Axis {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 selection/transition context
   (context: any): void
-  scale(): any
-  scale(_: any): Axis
-  ticks(...args: any[]): Axis
-  tickArguments(): any[]
-  tickArguments(_: any[] | null): Axis
-  tickValues(): any[] | null
-  tickValues(_: Iterable<any> | null): Axis
-  tickFormat(): any
-  tickFormat(_: any): Axis
+  scale(): AxisScale
+  scale(_: AxisScale): Axis
+  ticks(...args: unknown[]): Axis
+  tickArguments(): unknown[]
+  tickArguments(_: unknown[] | null): Axis
+  tickValues(): unknown[] | null
+  tickValues(_: Iterable<unknown> | null): Axis
+  tickFormat(): ((d: unknown) => string) | null
+  tickFormat(_: ((d: unknown) => string) | null): Axis
   tickSize(): number
   tickSize(_: number): Axis
   tickSizeInner(): number
@@ -51,10 +64,10 @@ export interface Axis {
   offset(_: number): Axis
 }
 
-function axis(orient: number, scale: any): Axis {
-  let tickArguments: any[] = []
-  let tickValues: any[] | null = null
-  let tickFormat: any = null
+function axis(orient: number, scale: AxisScale): Axis {
+  let tickArguments: unknown[] = []
+  let tickValues: unknown[] | null = null
+  let tickFormat: ((d: unknown) => string) | null = null
   let tickSizeInner = 6
   let tickSizeOuter = 6
   let tickPadding = 3
@@ -63,6 +76,7 @@ function axis(orient: number, scale: any): Axis {
   const x = orient === left || orient === right ? 'x' : 'y'
   const transform = orient === top || orient === bottom ? translateX : translateY
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 selection/transition context
   function axis(context: any): void {
     const values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues
     const format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity) : tickFormat
@@ -70,7 +84,7 @@ function axis(orient: number, scale: any): Axis {
     const range = scale.range()
     const range0 = +range[0] + offset
     const range1 = +range[range.length - 1] + offset
-    const position = (scale.bandwidth ? center : number)(scale.copy(), offset)
+    const position = (scale.bandwidth ? center : number)(scale.copy ? scale.copy() : scale, offset)
     const selection = context.selection ? context.selection() : context
     let path = selection.selectAll('.domain').data([null])
     let tick = selection.selectAll('.tick').data(values, scale).order()
@@ -102,11 +116,11 @@ function axis(orient: number, scale: any): Axis {
 
       tickExit = tickExit.transition(context)
         .attr('opacity', epsilon)
-        .attr('transform', function (this: any, d: any) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute('transform') })
+        .attr('transform', function (this: Element, d: unknown) { let pos = +position(d); return isFinite(pos) ? transform(pos + offset) : (this as Element).getAttribute('transform') })
 
       tickEnter
         .attr('opacity', epsilon)
-        .attr('transform', function (this: any, d: any) { let p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset) })
+        .attr('transform', function (this: Element & { parentNode: Element & { __axis?: (d: unknown) => number } }, d: unknown) { let p: number | undefined = (this.parentNode as Element & { __axis?: (d: unknown) => number }).__axis?.(d); return transform(((p !== undefined && isFinite(p)) ? p : position(d)) + offset) })
     }
 
     tickExit.remove()
@@ -118,7 +132,7 @@ function axis(orient: number, scale: any): Axis {
 
     tick
       .attr('opacity', 1)
-      .attr('transform', (d: any) => transform(position(d) + offset))
+      .attr('transform', (d: unknown) => transform(position(d) + offset))
 
     line
       .attr(x + '2', k * tickSizeInner)
@@ -134,65 +148,65 @@ function axis(orient: number, scale: any): Axis {
       .attr('text-anchor', orient === right ? 'start' : orient === left ? 'end' : 'middle')
 
     selection
-      .each(function (this: any) { this.__axis = position })
+      .each(function (this: Element & { __axis?: unknown }) { this.__axis = position })
   }
 
-  axis.scale = function (_?: any): any {
-    return arguments.length ? (scale = _, axis) : scale
+  axis.scale = function (_?: AxisScale): AxisScale | Axis {
+    return arguments.length ? (scale = _!, axis as unknown as Axis) : scale
   }
 
-  axis.ticks = function (...args: any[]): Axis {
+  axis.ticks = function (...args: unknown[]): Axis {
     tickArguments = Array.from(args)
     return axis as unknown as Axis
   }
 
-  axis.tickArguments = function (_?: any[] | null): any {
-    return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis) : tickArguments.slice()
+  axis.tickArguments = function (_?: unknown[] | null): unknown[] | Axis {
+    return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis as unknown as Axis) : tickArguments.slice()
   }
 
-  axis.tickValues = function (_?: Iterable<any> | null): any {
-    return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis) : tickValues && tickValues.slice()
+  axis.tickValues = function (_?: Iterable<unknown> | null): unknown[] | null | Axis {
+    return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis as unknown as Axis) : tickValues && tickValues.slice()
   }
 
-  axis.tickFormat = function (_?: any): any {
-    return arguments.length ? (tickFormat = _, axis) : tickFormat
+  axis.tickFormat = function (_?: ((d: unknown) => string) | null): ((d: unknown) => string) | null | Axis {
+    return arguments.length ? (tickFormat = _!, axis as unknown as Axis) : tickFormat
   }
 
-  axis.tickSize = function (_?: number): any {
-    return arguments.length ? (tickSizeInner = tickSizeOuter = +_!, axis) : tickSizeInner
+  axis.tickSize = function (_?: number): number | Axis {
+    return arguments.length ? (tickSizeInner = tickSizeOuter = +_!, axis as unknown as Axis) : tickSizeInner
   }
 
-  axis.tickSizeInner = function (_?: number): any {
-    return arguments.length ? (tickSizeInner = +_!, axis) : tickSizeInner
+  axis.tickSizeInner = function (_?: number): number | Axis {
+    return arguments.length ? (tickSizeInner = +_!, axis as unknown as Axis) : tickSizeInner
   }
 
-  axis.tickSizeOuter = function (_?: number): any {
-    return arguments.length ? (tickSizeOuter = +_!, axis) : tickSizeOuter
+  axis.tickSizeOuter = function (_?: number): number | Axis {
+    return arguments.length ? (tickSizeOuter = +_!, axis as unknown as Axis) : tickSizeOuter
   }
 
-  axis.tickPadding = function (_?: number): any {
-    return arguments.length ? (tickPadding = +_!, axis) : tickPadding
+  axis.tickPadding = function (_?: number): number | Axis {
+    return arguments.length ? (tickPadding = +_!, axis as unknown as Axis) : tickPadding
   }
 
-  axis.offset = function (_?: number): any {
-    return arguments.length ? (offset = +_!, axis) : offset
+  axis.offset = function (_?: number): number | Axis {
+    return arguments.length ? (offset = +_!, axis as unknown as Axis) : offset
   }
 
   return axis as unknown as Axis
 }
 
-export function axisTop(scale: any): Axis {
+export function axisTop(scale: AxisScale): Axis {
   return axis(top, scale)
 }
 
-export function axisRight(scale: any): Axis {
+export function axisRight(scale: AxisScale): Axis {
   return axis(right, scale)
 }
 
-export function axisBottom(scale: any): Axis {
+export function axisBottom(scale: AxisScale): Axis {
   return axis(bottom, scale)
 }
 
-export function axisLeft(scale: any): Axis {
+export function axisLeft(scale: AxisScale): Axis {
   return axis(left, scale)
 }

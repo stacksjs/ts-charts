@@ -10,15 +10,15 @@ function defaultFilter(event: MouseEvent): boolean {
   return !event.ctrlKey && !event.button
 }
 
-function defaultContainer(this: any): any {
-  return this.parentNode
+function defaultContainer(this: Element): Element | null {
+  return this.parentNode as Element | null
 }
 
-function defaultSubject(event: any, d: any): any {
+function defaultSubject(event: { x: number, y: number }, d: unknown): unknown {
   return d == null ? { x: event.x, y: event.y } : d
 }
 
-function defaultTouchable(this: any): boolean {
+function defaultTouchable(this: Element): boolean {
   return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
@@ -27,13 +27,13 @@ export default function drag(): any {
   let container: any = defaultContainer
   let subject: any = defaultSubject
   let touchable: any = defaultTouchable
-  const gestures: any = {}
+  const gestures: Record<string | number, (type: string, event: Event, touch?: Touch) => void> = {}
   let listeners = dispatch('start', 'drag', 'end')
   let active = 0
   let mousedownx: number
   let mousedowny: number
   let mousemoving: boolean
-  let touchending: any
+  let touchending: ReturnType<typeof setTimeout> | null
   let clickDistance2 = 0
 
   function dragFn(selection: any): void {
@@ -47,7 +47,7 @@ export default function drag(): any {
         .style('-webkit-tap-highlight-color', 'rgba(0,0,0,0)')
   }
 
-  function mousedowned(this: any, event: any, d: any): void {
+  function mousedowned(this: Element, event: MouseEvent, d: unknown): void {
     if (touchending || !filter.call(this, event, d)) return
     const gesture = beforestart(this, container.call(this, event, d), event, d, 'mouse')
     if (!gesture) return
@@ -62,7 +62,7 @@ export default function drag(): any {
     gesture('start', event)
   }
 
-  function mousemoved(event: any): void {
+  function mousemoved(event: MouseEvent): void {
     noevent(event)
     if (!mousemoving) {
       const dx = event.clientX - mousedownx
@@ -72,14 +72,14 @@ export default function drag(): any {
     gestures.mouse('drag', event)
   }
 
-  function mouseupped(event: any): void {
+  function mouseupped(event: MouseEvent): void {
     select(event.view).on('mousemove.drag mouseup.drag', null)
     yesdrag(event.view, mousemoving)
     noevent(event)
     gestures.mouse('end', event)
   }
 
-  function touchstarted(this: any, event: any, d: any): void {
+  function touchstarted(this: Element, event: TouchEvent, d: unknown): void {
     if (!filter.call(this, event, d)) return
     const touches = event.changedTouches
     const c = container.call(this, event, d)
@@ -95,7 +95,7 @@ export default function drag(): any {
     }
   }
 
-  function touchmoved(event: any): void {
+  function touchmoved(event: TouchEvent): void {
     const touches = event.changedTouches
     const n = touches.length
     let i: number
@@ -109,7 +109,7 @@ export default function drag(): any {
     }
   }
 
-  function touchended(event: any): void {
+  function touchended(event: TouchEvent): void {
     const touches = event.changedTouches
     const n = touches.length
     let i: number
@@ -125,9 +125,9 @@ export default function drag(): any {
     }
   }
 
-  function beforestart(that: any, container: any, event: any, d: any, identifier: any, touch?: any): any {
+  function beforestart(that: Element, container: unknown, event: Event, d: unknown, identifier: string | number, touch?: Touch): any {
     const disp = listeners.copy()
-    let p = pointer(touch || event, container)
+    let p = pointer((touch || event) as Event, container as Element)
     let dx: number
     let dy: number
     let s: any
@@ -147,13 +147,13 @@ export default function drag(): any {
     dx = s.x - p[0] || 0
     dy = s.y - p[1] || 0
 
-    return function gesture(type: string, event: any, touch?: any): void {
+    return function gesture(type: string, event: Event, touch?: Touch): void {
       const p0 = p
       let n: number
       switch (type) {
         case 'start': gestures[identifier] = gesture, n = active++; break
-        case 'end': delete gestures[identifier], --active; p = pointer(touch || event, container), n = active; break
-        case 'drag': p = pointer(touch || event, container), n = active; break
+        case 'end': delete gestures[identifier], --active; p = pointer((touch || event) as Event, container as Element), n = active; break
+        case 'drag': p = pointer((touch || event) as Event, container as Element), n = active; break
       }
       disp.call(
         type,

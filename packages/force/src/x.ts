@@ -1,13 +1,16 @@
 import constant from './constant.ts'
 import type { ForceNode } from './center.ts'
 
-export default function forceX(x?: any): any {
-  let strength: any = constant(0.1)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessor can be function or constant
+type NodeAccessor = (...args: any[]) => number
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern
+export default function forceX(_x?: number | NodeAccessor): any {
+  let strength: NodeAccessor = constant(0.1)
   let nodes: ForceNode[]
   let strengths: number[]
   let xz: number[]
-
-  if (typeof x !== 'function') x = constant(x == null ? 0 : +x)
+  let x: NodeAccessor = typeof _x === 'function' ? _x : constant(_x == null ? 0 : +_x)
 
   function force(alpha: number): void {
     for (let i = 0, n = nodes.length, node: ForceNode; i < n; ++i) {
@@ -32,12 +35,12 @@ export default function forceX(x?: any): any {
     initialize()
   }
 
-  force.strength = function (_?: any): any {
-    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_), initialize(), force) : strength
+  force.strength = function (_?: number | NodeAccessor): NodeAccessor | typeof force {
+    return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_!), initialize(), force) : strength
   }
 
-  force.x = function (_?: any): any {
-    return arguments.length ? (x = typeof _ === 'function' ? _ : constant(+_), initialize(), force) : x
+  force.x = function (_?: number | NodeAccessor): typeof x | typeof force {
+    return arguments.length ? (x = typeof _ === 'function' ? _ : constant(+_!), initialize(), force) : x
   }
 
   return force

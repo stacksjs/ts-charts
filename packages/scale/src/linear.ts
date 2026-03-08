@@ -1,22 +1,22 @@
 import { ticks, tickIncrement } from '@ts-charts/array'
-import continuous, { copy } from './continuous.ts'
+import continuous, { copy, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
 import tickFormat from './tickFormat.ts'
 
-export function linearish(scale: any): any {
-  const domain = scale.domain
+export function linearish<T extends ContinuousScale>(scale: T): T {
+  const domain = scale.domain as (() => number[])
 
   scale.ticks = function (count?: number): number[] {
     const d = domain()
     return ticks(d[0], d[d.length - 1], count == null ? 10 : count)
   }
 
-  scale.tickFormat = function (count?: number, specifier?: any): any {
+  scale.tickFormat = function (count?: number, specifier?: string): (d: number) => string {
     const d = domain()
     return tickFormat(d[0], d[d.length - 1], count == null ? 10 : count, specifier)
   }
 
-  scale.nice = function (count?: number): any {
+  scale.nice = function (count?: number): ContinuousScale {
     if (count == null) count = 10
 
     const d = domain()
@@ -38,7 +38,7 @@ export function linearish(scale: any): any {
       if (step === prestep) {
         d[i0] = start
         d[i1] = stop
-        return domain(d)
+        return (scale.domain as (d: number[]) => ContinuousScale)(d)
       } else if (step > 0) {
         start = Math.floor(start / step) * step
         stop = Math.ceil(stop / step) * step
@@ -57,14 +57,14 @@ export function linearish(scale: any): any {
   return scale
 }
 
-export default function linear(..._args: any[]): any {
+export default function linear(..._args: unknown[]): ContinuousScale {
   const scale = continuous()
 
-  scale.copy = function (): any {
+  scale.copy = function (): ContinuousScale {
     return copy(scale, linear())
   }
 
-  initRange.apply(scale, arguments as any)
+  initRange.apply(scale, arguments as unknown as [])
 
   return linearish(scale)
 }

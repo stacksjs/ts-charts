@@ -21,19 +21,19 @@ it('threshold(x) maps a number to a discrete value in the range', () => {
 
 it('threshold(x) returns undefined if the specified value x is not orderable', () => {
   const x = scaleThreshold().domain([1/3, 2/3]).range(['a', 'b', 'c'])
-  expect(x()).toBe(undefined)
-  expect(x(undefined)).toBe(undefined)
+  expect((x as Function)()).toBe(undefined)
+  expect(x(undefined as any)).toBe(undefined)
   expect(x(NaN)).toBe(undefined)
-  expect(x(null)).toBe(undefined)
+  expect(x(null as any)).toBe(undefined)
 })
 
 it('threshold.domain() supports arbitrary orderable values', () => {
   const x = scaleThreshold().domain(['10', '2']).range([0, 1, 2])
   expect(x.domain()[0]).toBe('10')
   expect(x.domain()[1]).toBe('2')
-  expect(x('0')).toBe(0)
-  expect(x('12')).toBe(1)
-  expect(x('3')).toBe(2)
+  expect(x('0' as any)).toBe(0)
+  expect(x('12' as any)).toBe(1)
+  expect(x('3' as any)).toBe(2)
 })
 
 it('threshold.domain() accepts an iterable', () => {

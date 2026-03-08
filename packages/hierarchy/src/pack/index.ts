@@ -22,7 +22,7 @@ export default function pack<T>(): PackLayout<T> {
   let radius: ((node: HierarchyNode<T>) => number) | null = null
   let dx = 1
   let dy = 1
-  let padding: (node: HierarchyNode<T>) => number = constantZero as any
+  let padding: (node: HierarchyNode<T>) => number = constantZero as unknown as (node: HierarchyNode<T>) => number
 
   function pack(root: HierarchyNode<T>): HierarchyNode<T> {
     const random = lcg()
@@ -34,23 +34,23 @@ export default function pack<T>(): PackLayout<T> {
           .eachBefore(translateChild(1))
     } else {
       root.eachBefore(radiusLeaf(defaultRadius))
-          .eachAfter(packChildrenRandom(constantZero as any, 1, random))
+          .eachAfter(packChildrenRandom(constantZero as unknown as (node: HierarchyNode<T>) => number, 1, random))
           .eachAfter(packChildrenRandom(padding, root.r! / Math.min(dx, dy), random))
           .eachBefore(translateChild(Math.min(dx, dy) / (2 * root.r!)))
     }
     return root
   }
 
-  pack.radius = function (x?: (node: HierarchyNode<T>) => number): any {
-    return arguments.length ? (radius = optional(x!) as any, pack) : radius
+  pack.radius = function (x?: (node: HierarchyNode<T>) => number): typeof radius | PackLayout<T> {
+    return arguments.length ? (radius = optional(x!) as typeof radius, pack as PackLayout<T>) : radius
   }
 
-  pack.size = function (x?: [number, number]): any {
-    return arguments.length ? (dx = +x![0], dy = +x![1], pack) : [dx, dy]
+  pack.size = function (x?: [number, number]): [number, number] | PackLayout<T> {
+    return arguments.length ? (dx = +x![0], dy = +x![1], pack as PackLayout<T>) : [dx, dy]
   }
 
-  pack.padding = function (x?: number | ((node: HierarchyNode<T>) => number)): any {
-    return arguments.length ? (padding = typeof x === 'function' ? x : constant(+x!) as any, pack) : padding
+  pack.padding = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof padding | PackLayout<T> {
+    return arguments.length ? (padding = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, pack as PackLayout<T>) : padding
   }
 
   return pack as PackLayout<T>

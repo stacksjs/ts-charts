@@ -1,8 +1,10 @@
 import { ticks } from '@ts-charts/array'
 import { format, formatSpecifier } from '@ts-charts/format'
 import nice from './nice.ts'
-import { copy, transformer } from './continuous.ts'
+import { copy, transformer, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
+
+type TransformFn = (x: number) => number
 
 function transformLog(x: number): number {
   return Math.log(x)
@@ -41,16 +43,16 @@ function reflect(f: (x: number, k?: number) => number): (x: number, k?: number) 
   return (x: number, k?: number): number => -f(-x, k)
 }
 
-export function loggish(transform: any): any {
+export function loggish(transform: (t: TransformFn, u: TransformFn) => ContinuousScale): ContinuousScale {
   const scale = transform(transformLog, transformExp)
-  const domain = scale.domain
+  const domain = scale.domain as (() => number[]) & ((_: Iterable<unknown>) => ContinuousScale)
   let base = 10
-  let logs: any
-  let pows: any
+  let logs: TransformFn
+  let pows: TransformFn
 
-  function rescale(): any {
+  function rescale(): ContinuousScale {
     logs = logp(base), pows = powp(base)
-    if (domain()[0] < 0) {
+    if ((domain() as number[])[0] < 0) {
       logs = reflect(logs), pows = reflect(pows)
       transform(transformLogn, transformExpn)
     } else {
@@ -59,16 +61,16 @@ export function loggish(transform: any): any {
     return scale
   }
 
-  scale.base = function (_?: any): any {
-    return arguments.length ? (base = +_, rescale()) : base
+  scale.base = function (_?: number): number | ContinuousScale {
+    return arguments.length ? (base = +_!, rescale()) : base
   }
 
-  scale.domain = function (_?: any): any {
-    return arguments.length ? (domain(_), rescale()) : domain()
+  scale.domain = function (_?: Iterable<unknown>): number[] | ContinuousScale {
+    return arguments.length ? (domain(_!), rescale()) : domain()
   }
 
   scale.ticks = (count?: number): number[] => {
-    const d = domain()
+    const d = (domain() as number[])
     let u = d[0]
     let v = d[d.length - 1]
     const r = v < u
@@ -106,24 +108,28 @@ export function loggish(transform: any): any {
     return r ? z.reverse() : z
   }
 
-  scale.tickFormat = (count?: number, specifier?: any): any => {
+  scale.tickFormat = (count?: number, specifier?: string): (d: number) => string => {
     if (count == null) count = 10
+    let formatFn: (d: number) => string
     if (specifier == null) specifier = base === 10 ? 's' : ','
     if (typeof specifier !== 'function') {
-      if (!(base % 1) && (specifier = formatSpecifier(specifier)).precision == null) specifier.trim = true
-      specifier = format(specifier)
+      const spec = formatSpecifier(specifier)
+      if (!(base % 1) && spec.precision == null) spec.trim = true
+      formatFn = format(spec.toString()) as (d: number) => string
+    } else {
+      formatFn = specifier as unknown as (d: number) => string
     }
-    if (count === Infinity) return specifier
-    const k = Math.max(1, base * count / scale.ticks().length) // TODO fast estimate?
+    if (count === Infinity) return formatFn
+    const k = Math.max(1, base * count / scale.ticks!().length) // TODO fast estimate?
     return (d: number): string => {
       let i = d / pows(Math.round(logs(d)))
       if (i * base < base - 0.5) i *= base
-      return i <= k ? specifier(d) : ''
+      return i <= k ? formatFn(d) : ''
     }
   }
 
-  scale.nice = (): any => {
-    return domain(nice(domain(), {
+  scale.nice = (): ContinuousScale => {
+    return domain(nice((domain() as number[]), {
       floor: (x: number): number => pows(Math.floor(logs(x))),
       ceil: (x: number): number => pows(Math.ceil(logs(x)))
     }))
@@ -132,9 +138,9 @@ export function loggish(transform: any): any {
   return scale
 }
 
-export default function log(): any {
-  const scale = loggish(transformer()).domain([1, 10])
-  scale.copy = (): any => copy(scale, log()).base(scale.base())
-  initRange.apply(scale, arguments as any)
+export default function log(): ContinuousScale {
+  const scale = loggish(transformer()).domain([1, 10]) as ContinuousScale
+  scale.copy = (): ContinuousScale => copy(scale, log()).base!(scale.base!())
+  initRange.apply(scale, arguments as unknown as [])
   return scale
 }

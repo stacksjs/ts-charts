@@ -6,7 +6,7 @@ export interface ForceNode {
   vy?: number
   fx?: number | null
   fy?: number | null
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface CenterForce {
@@ -51,16 +51,16 @@ export default function forceCenter(x?: number | null, y?: number | null): Cente
     nodes = _
   }
 
-  force.x = function (_?: number): any {
-    return arguments.length ? (x = +_!, force) : x
+  force.x = function (_?: number): number | CenterForce {
+    return arguments.length ? (x = +_!, force as CenterForce) : x as number
   }
 
-  force.y = function (_?: number): any {
-    return arguments.length ? (y = +_!, force) : y
+  force.y = function (_?: number): number | CenterForce {
+    return arguments.length ? (y = +_!, force as CenterForce) : y as number
   }
 
-  force.strength = function (_?: number): any {
-    return arguments.length ? (strength = +_!, force) : strength
+  force.strength = function (_?: number): number | CenterForce {
+    return arguments.length ? (strength = +_!, force as CenterForce) : strength
   }
 
   return force as CenterForce

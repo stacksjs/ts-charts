@@ -1,9 +1,11 @@
-import { lab as colorLab } from '@ts-charts/color'
+import { lab as colorLab, type Lab } from '@ts-charts/color'
 import color from './color.ts'
 
-export default function lab(start: any, end: any): (t: number) => string {
-  const s = colorLab(start) as any
-  const e = colorLab(end) as any
+type ColorSpecifier = string | { toString(): string } | null
+
+export default function lab(start: ColorSpecifier, end: ColorSpecifier): (t: number) => string {
+  const s = colorLab(start as string) as Lab
+  const e = colorLab(end as string) as Lab
   const l = color(s.l, e.l)
   const a = color(s.a, e.a)
   const b = color(s.b, e.b)

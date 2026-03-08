@@ -8,16 +8,18 @@ import string from './string.ts'
 import constant from './constant.ts'
 import numberArray, { isNumberArray } from './numberArray.ts'
 
-export default function interpolateValue(a: any, b: any): (t: number) => any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- runtime type dispatch; return type is any because output depends on b's type
+export default function interpolateValue(a: unknown, b: unknown): (t: number) => any {
   const t = typeof b
-  let c: any
+  let c: Color | null
   return b == null || t === 'boolean' ? constant(b)
       : (t === 'number' ? number
-      : t === 'string' ? ((c = color(b)) ? (b = c, rgb) : string)
+      : t === 'string' ? ((c = color(b as string)) ? (b = c, rgb) : string)
       : b instanceof Color ? rgb
       : b instanceof Date ? date
       : isNumberArray(b) ? numberArray
       : Array.isArray(b) ? genericArray
-      : typeof b.valueOf !== 'function' && typeof b.toString !== 'function' || isNaN(b) ? object
-      : number)(a, b) as (t: number) => any
+      : typeof (b as Record<string, unknown>).valueOf !== 'function' && typeof (b as Record<string, unknown>).toString !== 'function' || isNaN(b as number) ? object
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- runtime polymorphic dispatch
+      : number)(a as any, b as any) as (t: number) => unknown
 }

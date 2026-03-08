@@ -13,11 +13,11 @@ export default function jsdomit(message: string, htmlOrRun: string | (() => Prom
   }
 
   it(message, async () => {
-    const win = new Window({ url: 'http://localhost' })
+    const win = new Window({ url: 'http://localhost' }) as any
     const prevWindow = globalThis.window
     const prevDocument = globalThis.document
     try {
-      globalThis.window = win as any
+      globalThis.window = win
       globalThis.document = win.document as any
       if (html) {
         ;(win.document.body as any).innerHTML = html

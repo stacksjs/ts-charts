@@ -5,16 +5,17 @@ import { select, pointer } from '@ts-charts/selection'
 import { interrupt } from '@ts-charts/transition'
 import constant from './constant.ts'
 import ZoomEvent from './event.ts'
-import { Transform, identity } from './transform.ts'
+import { Transform, identity, type TransformInstance } from './transform.ts'
 import noevent, { nopropagation } from './noevent.ts'
 
 // Ignore right-click, since that should open the context menu.
 // except for pinch-to-zoom, which is sent as a wheel+ctrlKey event
-function defaultFilter(event: any): boolean {
-  return (!event.ctrlKey || event.type === 'wheel') && !event.button
+function defaultFilter(event: MouseEvent | WheelEvent): boolean {
+  return (!event.ctrlKey || event.type === 'wheel') && !(event as MouseEvent).button
 }
 
-function defaultExtent(this: any): [[number, number], [number, number]] {
+function defaultExtent(this: Element): [[number, number], [number, number]] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM element may be SVG with viewBox or HTML with clientWidth
   let e: any = this
   if (e instanceof SVGElement) {
     e = e.ownerSVGElement || e
@@ -27,19 +28,19 @@ function defaultExtent(this: any): [[number, number], [number, number]] {
   return [[0, 0], [e.clientWidth || 0, e.clientHeight || 0]]
 }
 
-function defaultTransform(this: any): any {
+function defaultTransform(this: Element & { __zoom?: TransformInstance }): TransformInstance {
   return this.__zoom || identity
 }
 
-function defaultWheelDelta(event: any): number {
+function defaultWheelDelta(event: WheelEvent): number {
   return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002) * (event.ctrlKey ? 10 : 1)
 }
 
-function defaultTouchable(this: any): boolean {
+function defaultTouchable(this: Element): boolean {
   return !!(navigator.maxTouchPoints || ('ontouchstart' in this))
 }
 
-function defaultConstrain(transform: any, extent: any, translateExtent: any): any {
+function defaultConstrain(transform: TransformInstance, extent: [[number, number], [number, number]], translateExtent: [[number, number], [number, number]]): TransformInstance {
   const dx0 = transform.invertX(extent[0][0]) - translateExtent[0][0]
   const dx1 = transform.invertX(extent[1][0]) - translateExtent[1][0]
   const dy0 = transform.invertY(extent[0][1]) - translateExtent[0][1]
@@ -59,11 +60,11 @@ export default function zoomBehavior(): any {
   const scaleExtent = [0, Infinity]
   const translateExtent: [[number, number], [number, number]] = [[-Infinity, -Infinity], [Infinity, Infinity]]
   let duration = 250
-  let interpolate: any = interpolateZoom
+  let interpolate: typeof interpolateZoom = interpolateZoom
   const listeners = dispatch('start', 'zoom', 'end')
-  let touchstarting: any
-  let touchfirst: any
-  let touchending: any
+  let touchstarting: ReturnType<typeof setTimeout> | null
+  let touchfirst: [number, number]
+  let touchending: ReturnType<typeof setTimeout> | null
   const touchDelay = 500
   const wheelDelay = 150
   let clickDistance2 = 0
@@ -138,18 +139,18 @@ export default function zoomBehavior(): any {
     }, p, event)
   }
 
-  function scale(transform: any, k: number): any {
+  function scale(transform: TransformInstance, k: number): TransformInstance {
     k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], k))
-    return k === transform.k ? transform : new (Transform as any)(k, transform.x, transform.y)
+    return k === transform.k ? transform : new (Transform as unknown as new (k: number, x: number, y: number) => TransformInstance)(k, transform.x, transform.y)
   }
 
-  function translate(transform: any, p0: any, p1: any): any {
+  function translate(transform: TransformInstance, p0: [number, number], p1: [number, number]): TransformInstance {
     const x = p0[0] - p1[0] * transform.k
     const y = p0[1] - p1[1] * transform.k
-    return x === transform.x && y === transform.y ? transform : new (Transform as any)(transform.k, x, y)
+    return x === transform.x && y === transform.y ? transform : new (Transform as unknown as new (k: number, x: number, y: number) => TransformInstance)(transform.k, x, y)
   }
 
-  function centroid(extent: any): [number, number] {
+  function centroid(extent: [[number, number], [number, number]]): [number, number] {
     return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2]
   }
 
@@ -232,7 +233,7 @@ export default function zoomBehavior(): any {
     },
   }
 
-  function wheeled(this: any, event: any, ..._args: any[]): void {
+  function wheeled(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: WheelEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
     let g = gesture(this, _args).event(event)
     const t = this.__zoom
@@ -268,9 +269,9 @@ export default function zoomBehavior(): any {
     }
   }
 
-  function mousedowned(this: any, event: any, ..._args: any[]): void {
+  function mousedowned(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: MouseEvent, ..._args: unknown[]): void {
     if (touchending || !filter.apply(this, arguments)) return
-    const currentTarget = event.currentTarget
+    const currentTarget = event.currentTarget as Element
     const g = gesture(this, _args, true).event(event)
     const v = select(event.view).on('mousemove.zoom', mousemoved, true).on('mouseup.zoom', mouseupped, true)
     const p = pointer(event, currentTarget)
@@ -283,7 +284,7 @@ export default function zoomBehavior(): any {
     interrupt(this)
     g.start()
 
-    function mousemoved(event: any): void {
+    function mousemoved(event: MouseEvent): void {
       noevent(event)
       if (!g.moved) {
         const dx = event.clientX - x0, dy = event.clientY - y0
@@ -293,7 +294,7 @@ export default function zoomBehavior(): any {
         .zoom('mouse', constrain(translate(g.that.__zoom, g.mouse[0] = pointer(event, currentTarget), g.mouse[1]), g.extent, translateExtent))
     }
 
-    function mouseupped(event: any): void {
+    function mouseupped(event: MouseEvent): void {
       v.on('mousemove.zoom mouseup.zoom', null)
       dragEnable(event.view, g.moved)
       noevent(event)
@@ -301,44 +302,45 @@ export default function zoomBehavior(): any {
     }
   }
 
-  function dblclicked(this: any, event: any, ..._args: any[]): void {
+  function dblclicked(this: Element & { __zoom: TransformInstance }, event: MouseEvent | TouchEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
     const t0 = this.__zoom
-    const p0 = pointer(event.changedTouches ? event.changedTouches[0] : event, this)
+    const p0 = pointer((event as TouchEvent).changedTouches ? (event as TouchEvent).changedTouches[0] as unknown as Event : event, this)
     const p1 = t0.invert(p0)
     const k1 = t0.k * (event.shiftKey ? 0.5 : 2)
     const t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, _args), translateExtent)
 
     noevent(event)
-    if (duration > 0) select(this).transition().duration(duration).call(schedule, t1, p0, event)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- duration() returns Transition when called with argument, but typed as union
+    if (duration > 0) (select(this).transition().duration(duration) as any).call(schedule, t1, p0, event)
     else select(this).call(zoom.transform, t1, p0, event)
   }
 
-  function touchstarted(this: any, event: any, ..._args: any[]): void {
+  function touchstarted(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: TouchEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
     const touches = event.touches
     const n = touches.length
     const g = gesture(this, _args, event.changedTouches.length === n).event(event)
-    let started: any, i: number, t: any, p: any
+    let started: boolean | undefined, i: number, t: Touch, p: any
 
     nopropagation(event)
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = pointer(t, this)
+      t = touches[i], p = pointer(t as unknown as Event, this)
       p = [p, this.__zoom.invert(p), t.identifier]
       if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + +!!touchstarting
       else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0
     }
 
-    if (touchstarting) touchstarting = clearTimeout(touchstarting)
+    if (touchstarting) clearTimeout(touchstarting), touchstarting = null
 
     if (started) {
-      if (g.taps < 2) touchfirst = p[0], touchstarting = setTimeout(() => { touchstarting = null }, touchDelay)
+      if (g.taps < 2) touchfirst = p![0], touchstarting = setTimeout(() => { touchstarting = null }, touchDelay)
       interrupt(this)
       g.start()
     }
   }
 
-  function touchmoved(this: any, event: any, ..._args: any[]): void {
+  function touchmoved(this: Element & { __zooming?: any; __zoom: TransformInstance }, event: TouchEvent, ..._args: unknown[]): void {
     if (!this.__zooming) return
     const g = gesture(this, _args).event(event)
     const touches = event.changedTouches
@@ -367,7 +369,7 @@ export default function zoomBehavior(): any {
     g.zoom('touch', constrain(translate(t, p, l), g.extent, translateExtent))
   }
 
-  function touchended(this: any, event: any, ..._args: any[]): void {
+  function touchended(this: Element & { __zooming?: any; __zoom: TransformInstance }, event: TouchEvent, ..._args: unknown[]): void {
     if (!this.__zooming) return
     const g = gesture(this, _args).event(event)
     const touches = event.changedTouches

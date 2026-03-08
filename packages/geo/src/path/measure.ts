@@ -1,6 +1,7 @@
 import { Adder } from '@ts-charts/array'
 import { sqrt } from '../math.ts'
 import noop from '../noop.ts'
+import type { GeoStream } from '../types.ts'
 
 let lengthSum = new Adder(),
     lengthRing: boolean | null,
@@ -9,7 +10,7 @@ let lengthSum = new Adder(),
     x0: number,
     y0: number
 
-const lengthStream: any = {
+const lengthStream: GeoStream & { result(): number } = {
   point: noop,
   lineStart: function (): void {
     lengthStream.point = lengthPointFirst

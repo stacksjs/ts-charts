@@ -3,16 +3,17 @@ import { areaStream, areaRingSum } from './area.ts'
 import { cartesian, cartesianCross, cartesianNormalizeInPlace, spherical } from './cartesian.ts'
 import { abs, degrees, epsilon, radians } from './math.ts'
 import stream from './stream.ts'
+import type { GeoStream, GeoObject } from './types.ts'
 
 let lambda0: number, phi0: number, lambda1: number, phi1: number,
     lambda2: number,
     lambda00: number, phi00: number,
-    p0: any,
-    deltaSum: any,
-    ranges: any[],
-    range: any
+    p0: number[] | null,
+    deltaSum: Adder,
+    ranges: number[][],
+    range: number[]
 
-const boundsStream: any = {
+const boundsStream: GeoStream = {
   point: boundsPoint,
   lineStart: boundsLineStart,
   lineEnd: boundsLineEnd,
@@ -29,8 +30,8 @@ const boundsStream: any = {
     boundsStream.lineStart = boundsLineStart
     boundsStream.lineEnd = boundsLineEnd
     if (+areaRingSum < 0) lambda0 = -(lambda1 = 180), phi0 = -(phi1 = 90)
-    else if (deltaSum > epsilon) phi1 = 90
-    else if (deltaSum < -epsilon) phi0 = -90
+    else if (+deltaSum > epsilon) phi1 = 90
+    else if (+deltaSum < -epsilon) phi0 = -90
     range[0] = lambda0, range[1] = lambda1
   },
   sphere: function (): void {
@@ -121,7 +122,7 @@ function boundsRingStart(): void {
 function boundsRingEnd(): void {
   boundsRingPoint(lambda00, phi00)
   areaStream.lineEnd()
-  if (abs(deltaSum) > epsilon) lambda0 = -(lambda1 = 180)
+  if (abs(+deltaSum) > epsilon) lambda0 = -(lambda1 = 180)
   range[0] = lambda0, range[1] = lambda1
   p0 = null
 }
@@ -138,8 +139,8 @@ function rangeContains(range: number[], x: number): boolean {
   return range[0] <= range[1] ? range[0] <= x && x <= range[1] : x < range[0] || range[1] < x
 }
 
-export default function geoBounds(feature: any): number[][] {
-  let i: number, n: number, a: any, b: any, merged: any[], deltaMax: number, delta: number
+export default function geoBounds(feature: GeoObject): number[][] {
+  let i: number, n: number, a: number[], b: number[], merged: number[][], deltaMax: number, delta: number
 
   phi1 = lambda1 = -(lambda0 = phi0 = Infinity)
   ranges = []
@@ -164,7 +165,7 @@ export default function geoBounds(feature: any): number[][] {
     }
   }
 
-  ranges = range = null as any
+  ranges = range = null!
 
   return lambda0 === Infinity || phi0 === Infinity
       ? [[NaN, NaN], [NaN, NaN]]

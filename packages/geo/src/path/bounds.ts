@@ -1,11 +1,12 @@
 import noop from '../noop.ts'
+import type { GeoStream } from '../types.ts'
 
 let x0 = Infinity,
     y0 = x0,
     x1 = -x0,
     y1 = x1
 
-const boundsStream: any = {
+const boundsStream: GeoStream & { result(): number[][] } = {
   point: boundsPoint,
   lineStart: noop,
   lineEnd: noop,

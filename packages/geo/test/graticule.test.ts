@@ -71,16 +71,16 @@ describe('geoGraticule', () => {
     const lines = geoGraticule().lines()
       .filter((line: any) => line.coordinates[0][0] === line.coordinates[1][0])
       .sort((a: any, b: any) => a.coordinates[0][0] - b.coordinates[0][0])
-    expect(lines[0].coordinates[0][0]).toBe(-180)
-    expect(lines[lines.length - 1].coordinates[0][0]).toBe(+170)
+    expect((lines[0].coordinates as number[][])[0][0]).toBe(-180)
+    expect((lines[lines.length - 1].coordinates as number[][])[0][0]).toBe(+170)
   })
 
   it('graticule.lines() default latitude ranges from 90S (exclusive) to 90N (exclusive)', () => {
     const lines = geoGraticule().lines()
       .filter((line: any) => line.coordinates[0][1] === line.coordinates[1][1])
       .sort((a: any, b: any) => a.coordinates[0][1] - b.coordinates[0][1])
-    expect(lines[0].coordinates[0][1]).toBe(-80)
-    expect(lines[lines.length - 1].coordinates[0][1]).toBe(+80)
+    expect((lines[0].coordinates as number[][])[0][1]).toBe(-80)
+    expect((lines[lines.length - 1].coordinates as number[][])[0][1]).toBe(+80)
   })
 
   it('graticule() returns a MultiLineString of all lines', () => {

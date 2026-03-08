@@ -1,10 +1,12 @@
-import { hsl as colorHsl } from '@ts-charts/color'
+import { hsl as colorHsl, type Hsl } from '@ts-charts/color'
 import color, { hue } from './color.ts'
 
-function hsl(hueFn: (a: number, b: number) => (t: number) => number): (start: any, end: any) => (t: number) => string {
-  return function (start: any, end: any): (t: number) => string {
-    const s = colorHsl(start) as any
-    const e = colorHsl(end) as any
+type ColorSpecifier = string | { toString(): string } | null
+
+function hsl(hueFn: (a: number, b: number) => (t: number) => number): (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string {
+  return function (start: ColorSpecifier, end: ColorSpecifier): (t: number) => string {
+    const s = colorHsl(start as string) as Hsl
+    const e = colorHsl(end as string) as Hsl
     const h = hueFn(s.h, e.h)
     const sat = color(s.s, e.s)
     const l = color(s.l, e.l)
@@ -19,5 +21,5 @@ function hsl(hueFn: (a: number, b: number) => (t: number) => number): (start: an
   }
 }
 
-export default hsl(hue) as (start: any, end: any) => (t: number) => string
-export const hslLong: (start: any, end: any) => (t: number) => string = hsl(color)
+export default hsl(hue) as (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string
+export const hslLong: (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string = hsl(color)

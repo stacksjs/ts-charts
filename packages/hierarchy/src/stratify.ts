@@ -9,12 +9,12 @@ const preroot: PrerootLike = { depth: -1 }
 const ambiguous = {}
 const imputed = {}
 
-function defaultId(d: any): string {
-  return d.id
+function defaultId(d: { id?: string }): string {
+  return d.id!
 }
 
-function defaultParentId(d: any): string {
-  return d.parentId
+function defaultParentId(d: { parentId?: string }): string {
+  return d.parentId!
 }
 
 export interface StratifyLayout<T> {
@@ -37,7 +37,7 @@ export default function stratify<T>(): StratifyLayout<T> {
     let currentId = id
     let currentParentId = parentId
     let n: number
-    let d: any
+    let d: unknown
     let i: number
     let root: HierarchyNode<T> | undefined
     let parent: any
@@ -47,7 +47,7 @@ export default function stratify<T>(): StratifyLayout<T> {
     const nodeByKey = new Map<string, any>()
 
     if (path != null) {
-      const I = nodes.map((d: any, i: number) => normalize(path(d, i, data)))
+      const I = nodes.map((d: unknown, i: number) => normalize(path(d, i, data)))
       const P = I.map(parentof)
       const S = new Set(I).add('')
       for (const pi of P) {
@@ -58,8 +58,8 @@ export default function stratify<T>(): StratifyLayout<T> {
           nodes.push(imputed)
         }
       }
-      currentId = (_: any, i: number) => I[i]
-      currentParentId = (_: any, i: number) => P[i]
+      currentId = (_: unknown, i: number) => I[i]
+      currentParentId = (_: unknown, i: number) => P[i]
     }
 
     for (i = 0, n = nodes.length; i < n; ++i) {
@@ -113,16 +113,16 @@ export default function stratify<T>(): StratifyLayout<T> {
     return root!
   }
 
-  stratify.id = function (x?: any): any {
-    return arguments.length ? (id = optional(x), stratify) : id
+  stratify.id = function (x?: ((d: T, i: number, data: Iterable<T>) => string | null | undefined) | null): typeof id | typeof stratify {
+    return arguments.length ? (id = optional(x as unknown), stratify) : id
   }
 
-  stratify.parentId = function (x?: any): any {
-    return arguments.length ? (parentId = optional(x), stratify) : parentId
+  stratify.parentId = function (x?: ((d: T, i: number, data: Iterable<T>) => string | null | undefined) | null): typeof parentId | typeof stratify {
+    return arguments.length ? (parentId = optional(x as unknown), stratify) : parentId
   }
 
-  stratify.path = function (x?: any): any {
-    return arguments.length ? (path = optional(x), stratify) : path
+  stratify.path = function (x?: ((d: T, i: number, data: Iterable<T>) => string) | null): typeof path | typeof stratify {
+    return arguments.length ? (path = optional(x as unknown), stratify) : path
   }
 
   return stratify as StratifyLayout<T>
@@ -131,7 +131,7 @@ export default function stratify<T>(): StratifyLayout<T> {
 // To normalize a path, we coerce to a string, strip the trailing slash if any
 // (as long as the trailing slash is not immediately preceded by another slash),
 // and add leading slash if missing.
-function normalize(path: any): string {
+function normalize(path: string): string {
   let p = `${path}`
   let i = p.length
   if (slash(p, i - 1) && !slash(p, i - 2)) p = p.slice(0, -1)

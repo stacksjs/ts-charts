@@ -89,8 +89,8 @@ describe('geoCentroid', () => {
     assertInDelta(geoCentroid({
       type: 'MultiPolygon',
       coordinates: [
-        circle.radius(45).center([90, 0])().coordinates,
-        circle.radius(60).center([-90, 0])().coordinates
+        circle.radius(45).center([90, 0])().coordinates as number[][][],
+        circle.radius(60).center([-90, 0])().coordinates as number[][][]
       ]
     }), [-90, 0], 1e-6)
   })
@@ -125,8 +125,8 @@ describe('geoCentroid', () => {
 
   it('the centroid of a small circle is its center: concentric rings', () => {
     const circle = geoCircle().center([0, 45])
-    const coordinates = circle.radius(60)().coordinates
-    coordinates.push(circle.radius(45)().coordinates[0].reverse())
+    const coordinates = circle.radius(60)().coordinates as number[][][]
+    coordinates.push((circle.radius(45)().coordinates as number[][][])[0].reverse())
     assertInDelta(geoCentroid({ type: 'Polygon', coordinates: coordinates }), [0, 45], 1e-6)
   })
 

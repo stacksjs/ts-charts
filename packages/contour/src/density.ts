@@ -3,11 +3,11 @@ import { slice } from './array.ts'
 import constant from './constant.ts'
 import Contours from './contours.ts'
 
-function defaultX(d: any): number {
+function defaultX(d: [number, number]): number {
   return d[0]
 }
 
-function defaultY(d: any): number {
+function defaultY(d: [number, number]): number {
   return d[1]
 }
 
@@ -15,10 +15,11 @@ function defaultWeight(): number {
   return 1
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern
 export default function contourDensity(): any {
-  let x: any = defaultX
-  let y: any = defaultY
-  let weight: any = defaultWeight
+  let x: (d: unknown, i: number, data: unknown) => number = defaultX as (d: unknown, i: number, data: unknown) => number
+  let y: (d: unknown, i: number, data: unknown) => number = defaultY as (d: unknown, i: number, data: unknown) => number
+  let weight: (d: unknown, i: number, data: unknown) => number = defaultWeight as unknown as (d: unknown, i: number, data: unknown) => number
   let dx = 960
   let dy = 500
   let r = 20 // blur radius
@@ -26,9 +27,9 @@ export default function contourDensity(): any {
   let o = r * 3 // grid offset, to pad for blur
   let n = (dx + o * 2) >> k // grid width
   let m = (dy + o * 2) >> k // grid height
-  let threshold: any = constant(20)
+  let threshold: ((values: Float32Array) => number | number[]) = constant(20) as unknown as (values: Float32Array) => number
 
-  function grid(data: any): Float32Array {
+  function grid(data: Iterable<unknown>): Float32Array {
     const values = new Float32Array(n * m)
     const pow2k = Math.pow(2, -k)
     let i = -1
@@ -53,14 +54,14 @@ export default function contourDensity(): any {
     return values
   }
 
-  function density(data: any): any[] {
+  function density(data: Iterable<unknown>): any[] {
     const values = grid(data)
-    let tz = threshold(values)
+    let tz: number | number[] = threshold(values)
     const pow4k = Math.pow(2, 2 * k)
 
     // Convert number of thresholds into uniform thresholds.
     if (!Array.isArray(tz)) {
-      tz = ticks(Number.MIN_VALUE, max(values)! / pow4k, tz)
+      tz = ticks(Number.MIN_VALUE, max(values)! / pow4k, tz as number)
     }
 
     return Contours()
@@ -70,7 +71,7 @@ export default function contourDensity(): any {
         .map((c: any, i: number) => (c.value = +tz[i], transform(c)))
   }
 
-  density.contours = function (data: any): any {
+  density.contours = function (data: Iterable<unknown>): any {
     const values = grid(data)
     const contoursObj = Contours().size([n, m])
     const pow4k = Math.pow(2, 2 * k)
@@ -89,11 +90,11 @@ export default function contourDensity(): any {
     return geometry
   }
 
-  function transformPolygon(coordinates: any[]): void {
+  function transformPolygon(coordinates: number[][][]): void {
     coordinates.forEach(transformRing)
   }
 
-  function transformRing(coordinates: any[]): void {
+  function transformRing(coordinates: number[][]): void {
     coordinates.forEach(transformPoint)
   }
 
@@ -103,7 +104,7 @@ export default function contourDensity(): any {
     coordinates[1] = coordinates[1] * Math.pow(2, k) - o
   }
 
-  function resize(): any {
+  function resize(): typeof density {
     o = r * 3
     n = (dx + o * 2) >> k
     m = (dy + o * 2) >> k

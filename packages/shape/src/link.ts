@@ -4,11 +4,11 @@ import { bumpX, bumpY, bumpRadial } from './curve/bump.ts'
 import { withPath } from './path.ts'
 import { x as pointX, y as pointY } from './point.ts'
 
-function linkSource(d: any): any {
+function linkSource(d: Record<string, unknown>): unknown {
   return d.source
 }
 
-function linkTarget(d: any): any {
+function linkTarget(d: Record<string, unknown>): unknown {
   return d.target
 }
 
@@ -22,7 +22,7 @@ export function link(curve?: any): any {
   const path = withPath(link)
 
   function link(this: any): any {
-    let buffer: any
+    let buffer: ReturnType<typeof path> | undefined
     const argv = slice.call(arguments)
     const s = source.apply(this, argv)
     const t = target.apply(this, argv)

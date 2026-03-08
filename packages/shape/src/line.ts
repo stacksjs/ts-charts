@@ -19,7 +19,7 @@ export default function(x?: any, y?: any): any {
     const n = (data = array(data)).length
     let d: any
     let defined0 = false
-    let buffer: any
+    let buffer: ReturnType<typeof path> | undefined
 
     if (context == null) output = curve(buffer = path())
 

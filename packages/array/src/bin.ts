@@ -32,7 +32,7 @@ export default function bin(): BinGenerator<any> {
 
     let i: number
     const n = data.length
-    let x: any
+    let x: number
     let step: number | undefined
     const values = new Array(n)
 
@@ -87,12 +87,12 @@ export default function bin(): BinGenerator<any> {
     while (tz[b - 1] > x1) --b
     if (a || b < m) tz = tz.slice(a, b), m = b - a
 
-    const bins: any[] = new Array(m + 1)
-    let binItem: any
+    const bins: Bin<unknown>[] = new Array(m + 1)
+    let binItem: Bin<unknown>
 
     // Initialize bins.
     for (i = 0; i <= m; ++i) {
-      binItem = bins[i] = [] as any
+      binItem = bins[i] = [] as unknown as Bin<unknown>
       binItem.x0 = i > 0 ? tz[i - 1] : x0
       binItem.x1 = i < m ? tz[i] : x1
     }

@@ -3,7 +3,7 @@ import { parseCss, parseSvg } from './parse.ts'
 import type { DecomposeResult } from './decompose.ts'
 
 function interpolateTransform(
-  parse: (value: any) => DecomposeResult,
+  parse: (value: string) => DecomposeResult,
   pxComma: string,
   pxParen: string,
   degParen: string,
@@ -48,7 +48,7 @@ function interpolateTransform(
     }
   }
 
-  return function (a: any, b: any): (t: number) => string {
+  return function (a: string, b: string): (t: number) => string {
     const s: (string | null)[] = [] // string constants and placeholders
     const q: { i: number, x: (t: number) => number }[] = [] // number interpolators
     const pa = parse(a)
@@ -67,5 +67,5 @@ function interpolateTransform(
   }
 }
 
-export const interpolateTransformCss: (a: any, b: any) => (t: number) => string = interpolateTransform(parseCss, 'px, ', 'px)', 'deg)')
-export const interpolateTransformSvg: (a: any, b: any) => (t: number) => string = interpolateTransform(parseSvg, ', ', ')', ')')
+export const interpolateTransformCss: (a: string, b: string) => (t: number) => string = interpolateTransform(parseCss, 'px, ', 'px)', 'deg)')
+export const interpolateTransformSvg: (a: string, b: string) => (t: number) => string = interpolateTransform(parseSvg as (value: string) => DecomposeResult, ', ', ')', ')')

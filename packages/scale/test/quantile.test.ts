@@ -115,10 +115,10 @@ it('quantile.invertExtent() returns the first match if duplicate values exist in
 
 it('quantile.unknown(value) sets the return value for undefined, null, and NaN input', () => {
   const s = scaleQuantile().domain([3, 6, 7, 8, 8, 10, 13, 15, 16, 20]).range([0, 1, 2, 3]).unknown(-1)
-  expect(s(undefined)).toBe(-1)
-  expect(s(null)).toBe(-1)
+  expect(s(undefined as any)).toBe(-1)
+  expect(s(null as any)).toBe(-1)
   expect(s(NaN)).toBe(-1)
-  expect(s('N/A')).toBe(-1)
+  expect(s('N/A' as any)).toBe(-1)
   expect(s(2)).toBe(0)
   expect(s(3)).toBe(0)
   expect(s(21)).toBe(3)

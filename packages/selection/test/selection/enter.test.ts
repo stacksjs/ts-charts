@@ -11,7 +11,7 @@ describe('selection.enter', () => {
   it('selection.enter() contains EnterNodes', () => {
     document.body.innerHTML = ''
     const s = select(document.body).selectAll('div').data([1, 2, 3])
-    expect(s.enter().node()._parent).toBe(document.body)
+    expect((s.enter().node() as any)._parent).toBe(document.body)
   })
 
   it('selection.enter() shares the update selection\'s parents', () => {
@@ -50,9 +50,9 @@ describe('selection.enter', () => {
     const root = select(document.body).append('div')
     const svg = root.append('svg')
     const g = svg.selectAll('g').data(['foo']).enter().append('g')
-    expect(root.node().namespaceURI).toBe('http://www.w3.org/1999/xhtml')
-    expect(svg.node().namespaceURI).toBe('http://www.w3.org/2000/svg')
-    expect(g.node().namespaceURI).toBe('http://www.w3.org/2000/svg')
+    expect(root.node()!.namespaceURI).toBe('http://www.w3.org/1999/xhtml')
+    expect(svg.node()!.namespaceURI).toBe('http://www.w3.org/2000/svg')
+    expect(g.node()!.namespaceURI).toBe('http://www.w3.org/2000/svg')
     document.body.innerHTML = ''
   })
 
@@ -62,9 +62,9 @@ describe('selection.enter', () => {
     const root = select(document.body).append('div')
     const svg = root.append('svg')
     const g = svg.selectAll('g').data(['foo']).enter().append('xhtml:g')
-    expect(root.node().namespaceURI).toBe('http://www.w3.org/1999/xhtml')
-    expect(svg.node().namespaceURI).toBe('http://www.w3.org/2000/svg')
-    expect(g.node().namespaceURI).toBe('http://www.w3.org/1999/xhtml')
+    expect(root.node()!.namespaceURI).toBe('http://www.w3.org/1999/xhtml')
+    expect(svg.node()!.namespaceURI).toBe('http://www.w3.org/2000/svg')
+    expect(g.node()!.namespaceURI).toBe('http://www.w3.org/1999/xhtml')
     document.body.innerHTML = ''
   })
 

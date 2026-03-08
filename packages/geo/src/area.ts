@@ -2,6 +2,7 @@ import { Adder } from '@ts-charts/array'
 import { atan2, cos, quarterPi, radians, sin, tau } from './math.ts'
 import noop from './noop.ts'
 import stream from './stream.ts'
+import type { GeoStream, GeoObject } from './types.ts'
 
 export let areaRingSum: Adder = new Adder()
 
@@ -12,7 +13,7 @@ let lambda0: number
 let cosPhi0: number
 let sinPhi0: number
 
-export const areaStream: any = {
+export const areaStream: GeoStream = {
   point: noop,
   lineStart: noop,
   lineEnd: noop,
@@ -21,7 +22,7 @@ export const areaStream: any = {
     areaStream.lineStart = areaRingStart
     areaStream.lineEnd = areaRingEnd
   },
-  polygonEnd: function (this: any): void {
+  polygonEnd: function (this: GeoStream): void {
     const areaRing = +areaRingSum
     areaSum.add(areaRing < 0 ? tau + areaRing : areaRing)
     this.lineStart = this.lineEnd = this.point = noop
@@ -63,8 +64,8 @@ function areaPoint(lambda: number, phi: number): void {
   lambda0 = lambda, cosPhi0 = cosPhi, sinPhi0 = sinPhi
 }
 
-export default function geoArea(object: any): number {
+export default function geoArea(object: GeoObject): number {
   areaSum = new Adder()
   stream(object, areaStream)
-  return (areaSum as any) * 2
+  return +areaSum * 2
 }

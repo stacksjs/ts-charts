@@ -1,6 +1,7 @@
 import none from './none.ts'
+import type { StackSeries } from './none.ts'
 
-export default function offsetSilhouette(series: any[], order: number[]): void {
+export default function offsetSilhouette(series: StackSeries[], order: number[]): void {
   let n: number
   if (!((n = series.length) > 0)) return
   for (let j = 0, s0 = series[order[0]], m = s0.length; j < m; ++j) {

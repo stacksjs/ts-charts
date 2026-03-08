@@ -11,12 +11,12 @@ it('scalePow() has the expected defaults', () => {
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
   expect(s.clamp()).toBe(false)
-  expect(s.exponent()).toBe(1)
+  expect(s.exponent!()).toBe(1)
   expect(s.interpolate()({array: ['red']}, {array: ['blue']})(0.5)).toEqual({array: ['rgb(128, 0, 128)']})
 })
 
 it('pow(x) maps a domain value x to a range value y', () => {
-  expect(scalePow().exponent(0.5)(0.5)).toBe(Math.SQRT1_2)
+  expect(scalePow().exponent!(0.5)(0.5)).toBe(Math.SQRT1_2)
 })
 
 it('pow(x) ignores extra range values if the domain is smaller than the range', () => {
@@ -78,7 +78,8 @@ it('pow.invert(y) maps an empty range to the middle of the domain', () => {
 
 it('pow.invert(y) coerces range values to numbers', () => {
   expect(scalePow().range(['0', '2']).invert('1')).toBe(0.5)
-  expect(scalePow().range([new Date(1990, 0, 1), new Date(1991, 0, 1)]).invert(new Date(1990, 6, 2, 13))).toBe(0.5)
+  const d0 = new Date(1990, 0, 1), d1 = new Date(1991, 0, 1)
+  expect(scalePow().range([d0, d1]).invert(new Date(+d0 + (+d1 - +d0) / 2))).toBe(0.5)
 })
 
 it('pow.invert(y) returns NaN if the range is not coercible to number', () => {
@@ -87,32 +88,32 @@ it('pow.invert(y) returns NaN if the range is not coercible to number', () => {
 })
 
 it('pow.exponent(exponent) sets the exponent to the specified value', () => {
-  const x = scalePow().exponent(0.5).domain([1, 2])
+  const x = scalePow().exponent!(0.5).domain([1, 2])
   assertInDelta(x(1), 0, 1e-6)
   assertInDelta(x(1.5), 0.5425821, 1e-6)
   assertInDelta(x(2), 1, 1e-6)
-  expect(x.exponent()).toBe(0.5)
-  x.exponent(2).domain([1, 2])
+  expect(x.exponent!()).toBe(0.5)
+  x.exponent!(2).domain([1, 2])
   assertInDelta(x(1), 0, 1e-6)
   assertInDelta(x(1.5), 0.41666667, 1e-6)
   assertInDelta(x(2), 1, 1e-6)
-  expect(x.exponent()).toBe(2)
-  x.exponent(-1).domain([1, 2])
+  expect(x.exponent!()).toBe(2)
+  x.exponent!(-1).domain([1, 2])
   assertInDelta(x(1), 0, 1e-6)
   assertInDelta(x(1.5), 0.6666667, 1e-6)
   assertInDelta(x(2), 1, 1e-6)
-  expect(x.exponent()).toBe(-1)
+  expect(x.exponent!()).toBe(-1)
 })
 
 it('pow.exponent(exponent) changing the exponent does not change the domain or range', () => {
   const x = scalePow().domain([1, 2]).range([3, 4])
-  x.exponent(0.5)
+  x.exponent!(0.5)
   expect(x.domain()).toEqual([1, 2])
   expect(x.range()).toEqual([3, 4])
-  x.exponent(2)
+  x.exponent!(2)
   expect(x.domain()).toEqual([1, 2])
   expect(x.range()).toEqual([3, 4])
-  x.exponent(-1)
+  x.exponent!(-1)
   expect(x.domain()).toEqual([1, 2])
   expect(x.range()).toEqual([3, 4])
 })
@@ -124,7 +125,7 @@ it('pow.domain(domain) accepts an array of numbers', () => {
 })
 
 it('pow.domain(domain) coerces domain values to numbers', () => {
-  expect(scalePow().domain([new Date(1990, 0, 1), new Date(1991, 0, 1)]).domain()).toEqual([631180800000, 662716800000])
+  expect(scalePow().domain([new Date(1990, 0, 1), new Date(1991, 0, 1)]).domain()).toEqual([+new Date(1990, 0, 1), +new Date(1991, 0, 1)])
   expect(scalePow().domain(['0.0', '1.0']).domain()).toEqual([0, 1])
   expect(scalePow().domain([new Number(0), new Number(1)]).domain()).toEqual([0, 1])
 })
@@ -250,39 +251,39 @@ it('pow.nice(count) nicing a polypow domain only affects the extent', () => {
 })
 
 it('pow.nice(count) accepts a tick count to control nicing step', () => {
-  expect(scalePow().domain([12, 87]).nice(5).domain()).toEqual([0, 100])
+  expect(scalePow().domain([12, 87]).nice!(5).domain()).toEqual([0, 100])
   expect(scalePow().domain([12, 87]).nice(10).domain()).toEqual([10, 90])
   expect(scalePow().domain([12, 87]).nice(100).domain()).toEqual([12, 87])
 })
 
 it('pow.ticks(count) returns the expected ticks for an ascending domain', () => {
   const s = scalePow()
-  expect(s.ticks(10).map(roundEpsilon)).toEqual([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+  expect(s.ticks!(10).map(roundEpsilon)).toEqual([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
   s.domain([-100, 100])
-  expect(s.ticks(10)).toEqual([-100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100])
+  expect(s.ticks!(10)).toEqual([-100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100])
 })
 
 it('pow.ticks(count) returns the empty array if count is not a positive integer', () => {
   const s = scalePow()
-  expect(s.ticks(NaN)).toEqual([])
-  expect(s.ticks(0)).toEqual([])
-  expect(s.ticks(-1)).toEqual([])
-  expect(s.ticks(Infinity)).toEqual([])
+  expect(s.ticks!(NaN)).toEqual([])
+  expect(s.ticks!(0)).toEqual([])
+  expect(s.ticks!(-1)).toEqual([])
+  expect(s.ticks!(Infinity)).toEqual([])
 })
 
 it('pow.ticks() is an alias for pow.ticks(10)', () => {
   const s = scalePow()
-  expect(s.ticks()).toEqual(s.ticks(10))
+  expect(s.ticks!()).toEqual(s.ticks!(10))
 })
 
 it('pow.tickFormat() is an alias for pow.tickFormat(10)', () => {
-  expect(scalePow().tickFormat()(0.2)).toBe('0.2')
+  expect(scalePow().tickFormat!()(0.2)).toBe('0.2')
   expect(scalePow().domain([-100, 100]).tickFormat()(-20)).toBe('\u221220')
 })
 
 it('pow.tickFormat(count) returns a format suitable for the ticks', () => {
-  expect(scalePow().tickFormat(10)(0.2)).toBe('0.2')
-  expect(scalePow().tickFormat(20)(0.2)).toBe('0.20')
+  expect(scalePow().tickFormat!(10)(0.2)).toBe('0.2')
+  expect(scalePow().tickFormat!(20)(0.2)).toBe('0.20')
   expect(scalePow().domain([-100, 100]).tickFormat(10)(-20)).toBe('\u221220')
 })
 
@@ -298,7 +299,7 @@ it('pow.copy() returns a copy with changes to the domain are isolated', () => {
   expect(x.domain()).toEqual([1, 2])
   expect(y.domain()).toEqual([2, 3])
   const y2 = x.domain([1, 1.9]).copy()
-  x.nice(5)
+  x.nice!(5)
   expect(x.domain()).toEqual([1, 2])
   expect(y2.domain()).toEqual([1, 1.9])
 })
@@ -316,14 +317,14 @@ it('pow.copy() returns a copy with changes to clamping are isolated', () => {
 })
 
 it('pow().clamp(true).invert(x) cannot return a value outside the domain', () => {
-  const x = scalePow().exponent(0.5).domain([1, 20]).clamp(true)
+  const x = scalePow().exponent!(0.5).domain([1, 20]).clamp(true)
   expect(x.invert(0)).toBe(1)
   expect(x.invert(1)).toBe(20)
 })
 
 it('scaleSqrt() is an alias for pow().exponent(0.5)', () => {
   const s = scaleSqrt()
-  expect(s.exponent()).toBe(0.5)
+  expect(s.exponent!()).toBe(0.5)
   assertInDelta(s(0.5), Math.SQRT1_2, 1e-6)
   assertInDelta(s.invert(Math.SQRT1_2), 0.5, 1e-6)
 })

@@ -3,18 +3,24 @@ import clipRejoin from './rejoin.ts'
 import { epsilon, halfPi } from '../math.ts'
 import polygonContains from '../polygonContains.ts'
 import { merge } from '@ts-charts/array'
+import type { GeoStream, GeoStreamFactory, ClipLine } from '../types.ts'
 
-export default function clip(pointVisible: any, clipLine: any, interpolate: any, start: any): (sink: any) => any {
-  return function (sink: any): any {
+export default function clip(
+  pointVisible: (lambda: number, phi: number) => boolean,
+  clipLine: (stream: GeoStream) => ClipLine,
+  interpolate: (from: number[] | null, to: number[] | null, direction: number, stream: GeoStream) => void,
+  start: number[]
+): GeoStreamFactory {
+  return function (sink: GeoStream): GeoStream {
     const line = clipLine(sink),
         ringBuffer = clipBuffer(),
         ringSink = clipLine(ringBuffer)
     let polygonStarted = false,
-        polygon: any,
-        segments: any,
-        ring: any
+        polygon: number[][][],
+        segments: number[][][][],
+        ring: number[][]
 
-    const clipObj: any = {
+    const clipObj: GeoStream = {
       point: point,
       lineStart: lineStart,
       lineEnd: lineEnd,
@@ -29,11 +35,11 @@ export default function clip(pointVisible: any, clipLine: any, interpolate: any,
         clipObj.point = point
         clipObj.lineStart = lineStart
         clipObj.lineEnd = lineEnd
-        segments = merge(segments)
+        const mergedSegments = merge(segments) as number[][][]
         const startInside = polygonContains(polygon, start)
-        if (segments.length) {
+        if (mergedSegments.length) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
-          clipRejoin(segments, compareIntersection, startInside, interpolate, sink)
+          clipRejoin(mergedSegments, compareIntersection, startInside, interpolate, sink)
         } else if (startInside) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
           sink.lineStart()
@@ -41,7 +47,7 @@ export default function clip(pointVisible: any, clipLine: any, interpolate: any,
           sink.lineEnd()
         }
         if (polygonStarted) sink.polygonEnd(), polygonStarted = false
-        segments = polygon = null
+        segments = polygon = null!
       },
       sphere: function (): void {
         sink.polygonStart()
@@ -87,12 +93,12 @@ export default function clip(pointVisible: any, clipLine: any, interpolate: any,
       const clean = ringSink.clean(),
           ringSegments = ringBuffer.result()
       let i: number, n = ringSegments.length, m: number,
-          segment: any,
-          pt: any
+          segment: number[][],
+          pt: number[]
 
       ring.pop()
       polygon.push(ring)
-      ring = null
+      ring = null!
 
       if (!n) return
 
@@ -109,7 +115,7 @@ export default function clip(pointVisible: any, clipLine: any, interpolate: any,
       }
 
       // Rejoin connected segments.
-      if (n > 1 && clean & 2) ringSegments.push(ringSegments.pop().concat(ringSegments.shift()))
+      if (n > 1 && clean & 2) ringSegments.push(ringSegments.pop()!.concat(ringSegments.shift()!))
 
       segments.push(ringSegments.filter(validSegment))
     }
@@ -118,13 +124,16 @@ export default function clip(pointVisible: any, clipLine: any, interpolate: any,
   }
 }
 
-function validSegment(segment: any): boolean {
+function validSegment(segment: number[][]): boolean {
   return segment.length > 1
 }
 
 // Intersections are sorted along the clip edge. For both antimeridian cutting
 // and circle clipping, the same comparison is used.
-function compareIntersection(a: any, b: any): number {
-  return ((a = a.x)[0] < 0 ? a[1] - halfPi - epsilon : halfPi - a[1])
-       - ((b = b.x)[0] < 0 ? b[1] - halfPi - epsilon : halfPi - b[1])
+// Intersections are sorted along the clip edge. The parameters are Intersection
+// objects from rejoin.ts with an `.x` (number[]) property.
+function compareIntersection(a: { x: number[] }, b: { x: number[] }): number {
+  const ax = a.x, bx = b.x
+  return (ax[0] < 0 ? ax[1] - halfPi - epsilon : halfPi - ax[1])
+       - (bx[0] < 0 ? bx[1] - halfPi - epsilon : halfPi - bx[1])
 }

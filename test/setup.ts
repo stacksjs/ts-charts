@@ -10,7 +10,7 @@ if (!globalThis.document) {
   globalThis.navigator = win.navigator
   globalThis.Element = win.Element
   globalThis.HTMLElement = win.HTMLElement
-  globalThis.SVGElement = win.SVGElement || class SVGElement {}
+  globalThis.SVGElement = win.SVGElement
   globalThis.Node = win.Node
   globalThis.Text = win.Text
   globalThis.Comment = win.Comment

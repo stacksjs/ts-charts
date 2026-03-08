@@ -22,7 +22,7 @@ describe('selection.filter', () => {
     const two = document.querySelector('#two')!
     const three = document.querySelector('#three')!
     const four = document.querySelector('#four')!
-    assertSelection(selectAll([one, two, three, four]).filter(function (_d: any, i: number) { return i & 1 }), { groups: [[two, four]], parents: [null] })
+    assertSelection(selectAll([one, two, three, four]).filter(function (_d: any, i: number) { return !!(i & 1) }), { groups: [[two, four]], parents: [null] })
     document.body.innerHTML = ''
   })
 
@@ -39,7 +39,7 @@ describe('selection.filter', () => {
       .datum(function (_d: any, i: number) { return 'parent-' + i })
       .selectAll('child')
       .data(function (_d: any, i: number) { return [0, 1].map(function (j) { return 'child-' + i + '-' + j }) })
-      .filter(function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]) })
+      .filter(function (this: any, d: any, i: number, nodes: any) { results.push([this, d, i, nodes]); return true })
 
     expect(results).toEqual([
       [three, 'child-0-0', 0, [three, four]],

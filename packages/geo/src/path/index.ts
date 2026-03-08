@@ -6,71 +6,84 @@ import pathCentroid from './centroid.ts'
 import PathContext from './context.ts'
 import pathMeasure from './measure.ts'
 import PathString from './string.ts'
+import type { GeoStream, GeoStreamFactory, GeoObject, GeoProjection, GeoPathContext } from '../types.ts'
 
-export default function geoPath(projection?: any, context?: any): any {
-  let digits = 3,
-      pointRadius: any = 4.5,
-      projectionStream: any,
-      contextStream: any
+interface GeoPathGenerator {
+  (this: unknown, object: GeoObject): string | null
+  area(object: GeoObject): number
+  measure(object: GeoObject): number
+  bounds(object: GeoObject): number[][]
+  centroid(object: GeoObject): number[]
+  projection(_?: GeoProjection | null): any
+  context(_?: GeoPathContext | null): any
+  pointRadius(_?: number | ((this: unknown, ...args: unknown[]) => number)): any
+  digits(_?: number | null): any
+}
 
-  function path(this: any, object: any): any {
+export default function geoPath(projection?: GeoProjection | null, context?: GeoPathContext | null): GeoPathGenerator {
+  let digits: number | null = 3,
+      pointRadius: number | ((this: unknown, ...args: unknown[]) => number) = 4.5,
+      projectionStream: GeoStreamFactory,
+      contextStream: PathString | PathContext
+
+  function path(this: unknown, object: GeoObject): string | null {
     if (object) {
-      if (typeof pointRadius === 'function') contextStream.pointRadius(+pointRadius.apply(this, arguments))
-      stream(object, projectionStream(contextStream))
+      if (typeof pointRadius === 'function') contextStream.pointRadius(+pointRadius.apply(this, arguments as unknown as unknown[]))
+      stream(object, projectionStream(contextStream as unknown as GeoStream))
     }
-    return contextStream.result()
+    return contextStream.result() as string | null
   }
 
-  path.area = function (object: any): number {
+  path.area = function (object: GeoObject): number {
     stream(object, projectionStream(pathArea))
     return pathArea.result()
   }
 
-  path.measure = function (object: any): number {
+  path.measure = function (object: GeoObject): number {
     stream(object, projectionStream(pathMeasure))
     return pathMeasure.result()
   }
 
-  path.bounds = function (object: any): number[][] {
+  path.bounds = function (object: GeoObject): number[][] {
     stream(object, projectionStream(pathBounds))
     return pathBounds.result()
   }
 
-  path.centroid = function (object: any): number[] {
+  path.centroid = function (object: GeoObject): number[] {
     stream(object, projectionStream(pathCentroid))
     return pathCentroid.result()
   }
 
-  path.projection = function (_: any): any {
-    if (!arguments.length) return projection
-    projectionStream = _ == null ? (projection = null, identity) : (projection = _).stream
-    return path
+  path.projection = function (_?: GeoProjection | null): GeoPathGenerator | GeoProjection | null {
+    if (!arguments.length) return projection ?? null
+    projectionStream = _ == null ? (projection = null, identity) : (projection = _).stream as unknown as GeoStreamFactory
+    return path as unknown as GeoPathGenerator
   }
 
-  path.context = function (_: any): any {
-    if (!arguments.length) return context
+  path.context = function (_?: GeoPathContext | null): GeoPathGenerator | GeoPathContext | null {
+    if (!arguments.length) return context ?? null
     contextStream = _ == null ? (context = null, new PathString(digits)) : new PathContext(context = _)
     if (typeof pointRadius !== 'function') contextStream.pointRadius(pointRadius)
-    return path
+    return path as unknown as GeoPathGenerator
   }
 
-  path.pointRadius = function (_: any): any {
+  path.pointRadius = function (_?: number | ((this: unknown, ...args: unknown[]) => number)): GeoPathGenerator | number | ((this: unknown, ...args: unknown[]) => number) {
     if (!arguments.length) return pointRadius
-    pointRadius = typeof _ === 'function' ? _ : (contextStream.pointRadius(+_), +_)
-    return path
+    pointRadius = typeof _ === 'function' ? _ : (contextStream.pointRadius(+_!), +_!)
+    return path as unknown as GeoPathGenerator
   }
 
-  path.digits = function (_: any): any {
+  path.digits = function (_?: number | null): GeoPathGenerator | number | null {
     if (!arguments.length) return digits
-    if (_ == null) digits = null as any
+    if (_ == null) digits = null
     else {
       const d = Math.floor(_)
       if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`)
       digits = d
     }
     if (context === null) contextStream = new PathString(digits)
-    return path
+    return path as unknown as GeoPathGenerator
   }
 
-  return path.projection(projection).digits(digits).context(context)
+  return (path as unknown as GeoPathGenerator).projection(projection!).digits(digits).context(context!)
 }

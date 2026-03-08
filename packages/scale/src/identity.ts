@@ -1,28 +1,30 @@
+import { type ContinuousScale } from './continuous.ts'
 import { linearish } from './linear.ts'
 import number from './number.ts'
 
-export default function identity(domain?: any): any {
-  let unknown: any
+export default function identity(domain?: Iterable<unknown>): ContinuousScale {
+  let unknown: unknown
+  let _domain: number[]
 
-  function scale(x: any): any {
-    return x == null || isNaN(x = +x) ? unknown : x
+  function scale(x: number): number {
+    return x == null || isNaN(x = +x) ? unknown as number : x
   }
 
   scale.invert = scale
 
-  scale.domain = scale.range = function (_?: any): any {
-    return arguments.length ? (domain = Array.from(_, number), scale) : domain.slice()
+  scale.domain = scale.range = function (_?: Iterable<unknown>): number[] | ContinuousScale {
+    return arguments.length ? (_domain = Array.from(_!, number), scale as unknown as ContinuousScale) : _domain.slice()
   }
 
-  scale.unknown = function (_?: any): any {
-    return arguments.length ? (unknown = _, scale) : unknown
+  scale.unknown = function (_?: unknown): unknown | ContinuousScale {
+    return arguments.length ? (unknown = _, scale as unknown as ContinuousScale) : unknown
   }
 
-  scale.copy = function (): any {
-    return identity(domain).unknown(unknown)
+  scale.copy = function (): ContinuousScale {
+    return identity(_domain).unknown(unknown)
   }
 
-  domain = arguments.length ? Array.from(domain, number) : [0, 1]
+  _domain = arguments.length ? Array.from(domain!, number) : [0, 1]
 
-  return linearish(scale)
+  return linearish(scale as unknown as ContinuousScale)
 }

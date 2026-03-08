@@ -1,6 +1,17 @@
 import type { CurveContext, CurveGenerator } from './linear.ts'
 
-export function point(that: any, x: number, y: number): void {
+interface CardinalState {
+  _context: CurveContext
+  _k: number
+  _x0: number
+  _x1: number
+  _x2: number
+  _y0: number
+  _y1: number
+  _y2: number
+}
+
+export function point(that: CardinalState, x: number, y: number): void {
   that._context.bezierCurveTo(
     that._x1 + that._k * (that._x2 - that._x0),
     that._y1 + that._k * (that._y2 - that._y0),

@@ -1,21 +1,26 @@
 import { timeYear, timeMonth, timeWeek, timeDay, timeHour, timeMinute, timeSecond, timeTicks, timeTickInterval } from '@ts-charts/time'
 import { timeFormat } from '@ts-charts/time-format'
-import continuous, { copy } from './continuous.ts'
+import continuous, { copy, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
 import nice from './nice.ts'
+
+type TimeInterval = (date: Date) => Date
+type TicksFn = (start: number, stop: number, count: number) => Date[]
+type TickIntervalFn = (start: number, stop: number, count: number) => { range: (start: Date, stop: Date) => Date[], floor: (x: number) => number, ceil: (x: number) => number }
+type FormatFn = (specifier: string) => (date: Date) => string
 
 function date(t: number): Date {
   return new Date(t)
 }
 
-function number(t: any): number {
-  return t instanceof Date ? +t : +new Date(+t)
+function number(t: unknown): number {
+  return t instanceof Date ? +t : +new Date(+(t as number))
 }
 
-export function calendar(ticks: any, tickInterval: any, year: any, month: any, week: any, day: any, hour: any, minute: any, second: any, format: any): any {
+export function calendar(ticks: TicksFn, tickInterval: TickIntervalFn, year: TimeInterval, month: TimeInterval, week: TimeInterval, day: TimeInterval, hour: TimeInterval, minute: TimeInterval, second: TimeInterval, format: FormatFn): ContinuousScale {
   const scale = continuous()
   const invert = scale.invert
-  const domain = scale.domain
+  const domain = scale.domain as (() => number[]) & ((_: Iterable<unknown>) => ContinuousScale)
 
   const formatMillisecond = format('.%L')
   const formatSecond = format(':%S')
@@ -36,36 +41,46 @@ export function calendar(ticks: any, tickInterval: any, year: any, month: any, w
       : formatYear)(date)
   }
 
-  scale.invert = function (y: any): Date {
+  scale.invert = function (y: number): Date {
     return new Date(invert(y))
+  } as unknown as ContinuousScale['invert']
+
+  scale.domain = function (_?: Iterable<unknown>): Date[] | ContinuousScale {
+    return arguments.length ? domain(Array.from(_!, number)) : (domain() as number[]).map(date)
   }
 
-  scale.domain = function (_?: any): any {
-    return arguments.length ? domain(Array.from(_, number)) : domain().map(date)
-  }
-
-  scale.ticks = function (interval?: any): Date[] {
-    const d = domain()
+  scale.ticks = function (interval?: number): Date[] {
+    const d = domain() as number[]
     return ticks(d[0], d[d.length - 1], interval == null ? 10 : interval)
-  }
+  } as unknown as ContinuousScale['ticks']
 
-  scale.tickFormat = function (count?: any, specifier?: string): any {
+  scale.tickFormat = function (_count?: number, specifier?: string): (date: Date) => string {
     return specifier == null ? tickFormat : format(specifier)
   }
 
-  scale.nice = function (interval?: any): any {
-    const d = domain()
-    if (!interval || typeof interval.range !== 'function') interval = tickInterval(d[0], d[d.length - 1], interval == null ? 10 : interval)
-    return interval ? domain(nice(d, interval)) : scale
+  scale.nice = function (interval?: number | { range: Function }): ContinuousScale {
+    const d = domain() as number[]
+    let iv = interval as { range: Function, floor: (x: number) => number, ceil: (x: number) => number } | undefined
+    if (!iv || typeof iv.range !== 'function') iv = tickInterval(d[0], d[d.length - 1], interval == null ? 10 : interval as number)
+    return iv ? domain(nice(d, iv)) : scale
   }
 
-  scale.copy = function (): any {
+  scale.copy = function (): ContinuousScale {
     return copy(scale, calendar(ticks, tickInterval, year, month, week, day, hour, minute, second, format))
   }
 
   return scale
 }
 
-export default function time(): any {
-  return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, timeWeek, timeDay, timeHour, timeMinute, timeSecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments as any)
+export default function time(): ContinuousScale {
+  // The time module functions are compatible at runtime; cast needed due to complex overload signatures
+  const cal = calendar(
+    timeTicks as unknown as TicksFn, timeTickInterval as unknown as TickIntervalFn,
+    timeYear as unknown as TimeInterval, timeMonth as unknown as TimeInterval,
+    timeWeek as unknown as TimeInterval, timeDay as unknown as TimeInterval,
+    timeHour as unknown as TimeInterval, timeMinute as unknown as TimeInterval,
+    timeSecond as unknown as TimeInterval, timeFormat as unknown as FormatFn
+  )
+  const scaled = cal.domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]) as ContinuousScale
+  return initRange.apply(scaled, arguments as unknown as []) as unknown as ContinuousScale
 }

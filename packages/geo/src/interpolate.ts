@@ -1,6 +1,7 @@
 import { asin, atan2, cos, degrees, haversin, radians, sin, sqrt } from './math.ts'
+import type { GeoInterpolator } from './types.ts'
 
-export default function geoInterpolate(a: number[], b: number[]): any {
+export default function geoInterpolate(a: number[], b: number[]): GeoInterpolator {
   const x0 = a[0] * radians,
       y0 = a[1] * radians,
       x1 = b[0] * radians,
@@ -16,7 +17,7 @@ export default function geoInterpolate(a: number[], b: number[]): any {
       d = 2 * asin(sqrt(haversin(y1 - y0) + cy0 * cy1 * haversin(x1 - x0))),
       k = sin(d)
 
-  const interpolate: any = d ? function (t: number): number[] {
+  const interpolate = (d ? function (t: number): number[] {
     const B = sin(t *= d) / k,
         A = sin(d - t) / k,
         x = A * kx0 + B * kx1,
@@ -28,7 +29,7 @@ export default function geoInterpolate(a: number[], b: number[]): any {
     ]
   } : function (): number[] {
     return [x0 * degrees, y0 * degrees]
-  }
+  }) as GeoInterpolator
 
   interpolate.distance = d
 

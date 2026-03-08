@@ -128,7 +128,7 @@ export default class Delaunator {
       }
       this.hull = hull.subarray(0, j)
       this.triangles = new Uint32Array(0)
-      this.halfedges = new Int32Array(0) as any
+      this.halfedges = new Int32Array(0)
       return
     }
 

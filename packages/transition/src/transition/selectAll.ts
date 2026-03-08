@@ -2,7 +2,11 @@ import { selectorAll } from '@ts-charts/selection'
 import { Transition } from './index.ts'
 import schedule, { get } from './schedule.ts'
 
-export default function (this: any, select: any): any {
+interface TransitionNode extends Element {
+  __data__?: unknown
+}
+
+export default function (this: Transition, select: string | Function): Transition {
   const name = this._name
   const id = this._id
 
@@ -10,21 +14,21 @@ export default function (this: any, select: any): any {
 
   const groups = this._groups
   const m = groups.length
-  const subgroups: any[] = []
-  const parents: any[] = []
+  const subgroups: Array<Array<Element | null>> = []
+  const parents: Array<Element | null> = []
   for (let j = 0; j < m; ++j) {
     const group = groups[j]
     const n = group.length
-    for (let node, i = 0; i < n; ++i) {
+    for (let node: Element | null, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        const children = select.call(node, node.__data__, i, group)
+        const children = select.call(node, (node as TransitionNode).__data__, i, group) as ArrayLike<Element>
         const inherit = get(node, id)
-        for (let child, k = 0, l = children.length; k < l; ++k) {
+        for (let child: Element | null, k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
-            schedule(child, name, id, k, children, inherit)
+            schedule(child, name, id, k, children as unknown as Array<Element | null>, inherit)
           }
         }
-        subgroups.push(children)
+        subgroups.push(Array.from(children) as Array<Element | null>)
         parents.push(node)
       }
     }

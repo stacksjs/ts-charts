@@ -1,17 +1,17 @@
 import { InternSet } from '@ts-charts/internmap'
 
 export default function intersection(values: Iterable<any>, ...others: Iterable<any>[]): InternSet {
-  values = new InternSet(values) as any
+  const set = new InternSet(values)
   const otherSets = others.map(toSet)
-  out: for (const value of values as any) {
+  out: for (const value of set) {
     for (const other of otherSets) {
       if (!other.has(value)) {
-        (values as any).delete(value)
+        set.delete(value)
         continue out
       }
     }
   }
-  return values as any
+  return set
 }
 
 function toSet(values: Iterable<any>): InternSet {

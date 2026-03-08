@@ -3,7 +3,7 @@ import constant from './constant.ts'
 import offsetNone from './offset/none.ts'
 import orderNone from './order/none.ts'
 
-function stackValue(d: any, key: string): any {
+function stackValue(d: Record<string, unknown>, key: string): unknown {
   return d[key]
 }
 

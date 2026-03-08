@@ -9,9 +9,9 @@ export function groups(values: Iterable<any>, ...keys: Array<(value: any, index:
   return nest(values, Array.from, identity, keys)
 }
 
-function flatten(groups: any[], keys: any[]): any[] {
+function flatten(groups: unknown[][], keys: unknown[]): unknown[][] {
   for (let i = 1, n = keys.length; i < n; ++i) {
-    groups = groups.flatMap((g: any) => g.pop().map(([key, value]: [any, any]) => [...g, key, value]))
+    groups = groups.flatMap((g: unknown[]) => (g.pop() as [unknown, unknown][]).map(([key, value]: [unknown, unknown]) => [...g, key, value]))
   }
   return groups
 }
@@ -40,7 +40,7 @@ export function indexes(values: Iterable<any>, ...keys: Array<(value: any, index
   return nest(values, Array.from, unique, keys)
 }
 
-function unique(values: any[]): any {
+function unique(values: unknown[]): unknown {
   if (values.length !== 1) throw new Error('duplicate key')
   return values[0]
 }

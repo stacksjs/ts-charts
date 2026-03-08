@@ -5,31 +5,31 @@ import { assertInDelta, assertPathEqual } from '../helpers/asserts.ts'
 describe('transverseMercator', () => {
   it('transverseMercator.clipExtent(null) sets the default automatic clip extent', () => {
     const projection = geoTransverseMercator().translate([0, 0]).scale(1).clipExtent(null).precision(0)
-    assertPathEqual(geoPath(projection)({ type: 'Sphere' }), 'M3.141593,3.141593L0,3.141593L-3.141593,3.141593L-3.141593,-3.141593L-3.141593,-3.141593L0,-3.141593L3.141593,-3.141593L3.141593,3.141593Z')
+    assertPathEqual(geoPath(projection)({ type: 'Sphere' })!, 'M3.141593,3.141593L0,3.141593L-3.141593,3.141593L-3.141593,-3.141593L-3.141593,-3.141593L0,-3.141593L3.141593,-3.141593L3.141593,3.141593Z')
     expect(projection.clipExtent()).toBe(null)
   })
 
   it('transverseMercator.center(center) sets the correct automatic clip extent', () => {
     const projection = geoTransverseMercator().translate([0, 0]).scale(1).center([10, 10]).precision(0)
-    assertPathEqual(geoPath(projection)({ type: 'Sphere' }), 'M2.966167,3.316126L-0.175426,3.316126L-3.317018,3.316126L-3.317019,-2.967060L-3.317019,-2.967060L-0.175426,-2.967060L2.966167,-2.967060L2.966167,3.316126Z')
+    assertPathEqual(geoPath(projection)({ type: 'Sphere' })!, 'M2.966167,3.316126L-0.175426,3.316126L-3.317018,3.316126L-3.317019,-2.967060L-3.317019,-2.967060L-0.175426,-2.967060L2.966167,-2.967060L2.966167,3.316126Z')
     expect(projection.clipExtent()).toBe(null)
   })
 
   it('transverseMercator.clipExtent(extent) intersects the specified clip extent with the automatic clip extent', () => {
     const projection = geoTransverseMercator().translate([0, 0]).scale(1).clipExtent([[-10, -10], [10, 10]]).precision(0)
-    assertPathEqual(geoPath(projection)({ type: 'Sphere' }), 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
+    assertPathEqual(geoPath(projection)({ type: 'Sphere' })!, 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
     expect(projection.clipExtent()).toEqual([[-10, -10], [10, 10]])
   })
 
   it('transverseMercator.clipExtent(extent).scale(scale) updates the intersected clip extent', () => {
     const projection = geoTransverseMercator().translate([0, 0]).clipExtent([[-10, -10], [10, 10]]).scale(1).precision(0)
-    assertPathEqual(geoPath(projection)({ type: 'Sphere' }), 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
+    assertPathEqual(geoPath(projection)({ type: 'Sphere' })!, 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
     expect(projection.clipExtent()).toEqual([[-10, -10], [10, 10]])
   })
 
   it('transverseMercator.clipExtent(extent).translate(translate) updates the intersected clip extent', () => {
     const projection = geoTransverseMercator().scale(1).clipExtent([[-10, -10], [10, 10]]).translate([0, 0]).precision(0)
-    assertPathEqual(geoPath(projection)({ type: 'Sphere' }), 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
+    assertPathEqual(geoPath(projection)({ type: 'Sphere' })!, 'M10,3.141593L0,3.141593L-10,3.141593L-10,-3.141593L-10,-3.141593L0,-3.141593L10,-3.141593L10,3.141593Z')
     expect(projection.clipExtent()).toEqual([[-10, -10], [10, 10]])
   })
 

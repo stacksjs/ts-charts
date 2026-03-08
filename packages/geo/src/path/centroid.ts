@@ -1,4 +1,5 @@
 import { sqrt } from '../math.ts'
+import type { GeoStream } from '../types.ts'
 
 let X0 = 0,
     Y0 = 0,
@@ -14,7 +15,7 @@ let X0 = 0,
     x0: number,
     y0: number
 
-const centroidStream: any = {
+const centroidStream: GeoStream & { result(): number[] } = {
   point: centroidPoint,
   lineStart: centroidLineStart,
   lineEnd: centroidLineEnd,

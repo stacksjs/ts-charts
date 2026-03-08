@@ -25,18 +25,24 @@ const cases: number[][][][] = [
   []
 ]
 
+interface Fragment {
+  start: number
+  end: number
+  ring: number[][]
+}
+
 export default function Contours(): any {
   let dx = 1
   let dy = 1
-  let threshold: any = thresholdSturges
-  let smooth: any = smoothLinear
+  let threshold: ((values: ArrayLike<number>) => number | number[]) = thresholdSturges as (values: ArrayLike<number>) => number
+  let smooth: ((ring: number[][], values: ArrayLike<number>, value: number) => void) = smoothLinear
 
   function contours(values: ArrayLike<number>): any[] {
     let tz = threshold(values)
 
     // Convert number of thresholds into uniform thresholds.
     if (!Array.isArray(tz)) {
-      const e = extent(values as any, finite)
+      const e = extent(values as unknown as Iterable<number>, finite)
       tz = ticks(...nice(e[0] as number, e[1] as number, tz), tz)
       while (tz[tz.length - 1] >= (e[1] as number)) tz.pop()
       while (tz[1] < (e[0] as number)) tz.shift()
@@ -48,7 +54,7 @@ export default function Contours(): any {
   }
 
   // Accumulate, smooth contour rings, assign holes to exterior rings.
-  function contour(values: ArrayLike<number>, value: any): any {
+  function contour(values: ArrayLike<number>, value: number): { type: string; value: number; coordinates: number[][][][] } {
     const v = value == null ? NaN : +value
     if (isNaN(v)) throw new Error(`invalid value: ${value}`)
 
@@ -79,9 +85,11 @@ export default function Contours(): any {
 
   // Marching squares with isolines stitched into rings.
   function isorings(values: ArrayLike<number>, value: number, callback: (ring: number[][]) => void): void {
-    const fragmentByStart: any = new Array()
-    const fragmentByEnd: any = new Array()
-    let x: number, y: number, t0: any, t1: any, t2: any, t3: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- sparse arrays with dynamic computed keys, delete, and conditional assignment
+    const fragmentByStart: any = Object.create(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fragmentByEnd: any = Object.create(null)
+    let x: number, y: number, t0: number, t1: number, t2: number, t3: number
 
     // Special case for the first row (y = -1, t2 = t3 = 0).
     x = y = -1
@@ -112,7 +120,7 @@ export default function Contours(): any {
 
     // Special case for the last row (y = dy - 1, t0 = t1 = 0).
     x = -1
-    t2 = (values as any)[y * dx] >= value
+    t2 = above(values[y * dx], value)
     cases[t2 << 2].forEach(stitch)
     while (++x < dx - 1) {
       t3 = t2
@@ -126,7 +134,7 @@ export default function Contours(): any {
       const end = [line[1][0] + x, line[1][1] + y]
       const startIndex = index(start)
       const endIndex = index(end)
-      let f: any, g: any
+      let f: Fragment | undefined, g: Fragment | undefined
       if (f = fragmentByEnd[startIndex]) {
         if (g = fragmentByStart[endIndex]) {
           delete fragmentByEnd[f.end]
@@ -185,19 +193,19 @@ export default function Contours(): any {
 
   contours.contour = contour
 
-  contours.size = function (_?: [number, number]): any {
+  contours.size = function (_?: [number, number]): [number, number] | typeof contours {
     if (!arguments.length) return [dx, dy]
     const _0 = Math.floor(_![0]), _1 = Math.floor(_![1])
     if (!(_0 >= 0 && _1 >= 0)) throw new Error('invalid size')
     return dx = _0, dy = _1, contours
   }
 
-  contours.thresholds = function (_?: any): any {
-    return arguments.length ? (threshold = typeof _ === 'function' ? _ : Array.isArray(_) ? constant(slice.call(_)) : constant(_), contours) : threshold
+  contours.thresholds = function (_?: number | number[] | ((values: ArrayLike<number>) => number | number[])): typeof threshold | typeof contours {
+    return arguments.length ? (threshold = typeof _ === 'function' ? _ : Array.isArray(_) ? constant(slice.call(_)) as unknown as typeof threshold : constant(_ as number) as unknown as typeof threshold, contours) : threshold
   }
 
-  contours.smooth = function (_?: boolean): any {
-    return arguments.length ? (smooth = _ ? smoothLinear : noop, contours) : smooth === smoothLinear
+  contours.smooth = function (_?: boolean): boolean | typeof contours {
+    return arguments.length ? (smooth = _ ? smoothLinear : noop as unknown as typeof smooth, contours) : smooth === smoothLinear
   }
 
   return contours
@@ -210,12 +218,12 @@ function finite(x: number): number {
 
 // Is the (possibly invalid) x greater than or equal to the (known valid) value?
 // Treat any invalid value as below negative infinity.
-function above(x: any, value: number): any {
-  return x == null ? false : +x >= value
+function above(x: number, value: number): number {
+  return x == null ? 0 : +x >= value ? 1 : 0
 }
 
 // During smoothing, treat any invalid value as negative infinity.
-function valid(v: any): number {
+function valid(v: number): number {
   return v == null || isNaN(v = +v) ? -Infinity : v
 }
 

@@ -74,7 +74,7 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
     const n = matrix.length
     const groupSums = new Array<number>(n)
     const groupIndex = range(0, n)
-    let chords = new Array<Chord>(n * n) as any
+    let chords: any = new Array<Chord>(n * n)
     const groups = new Array<ChordGroup>(n)
     let k = 0
     let dx: number
@@ -145,19 +145,19 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
     return sortChords ? chords.sort(sortChords) : chords
   }
 
-  chord.padAngle = function (_?: number): any {
+  chord.padAngle = function (_?: number): number | typeof chord {
     return _ !== undefined ? (padAngle = max(0, _), chord) : padAngle
   }
 
-  chord.sortGroups = function (_?: Comparator | null): any {
+  chord.sortGroups = function (_?: Comparator | null): Comparator | null | typeof chord {
     return _ !== undefined ? (sortGroups = _, chord) : sortGroups
   }
 
-  chord.sortSubgroups = function (_?: Comparator | null): any {
+  chord.sortSubgroups = function (_?: Comparator | null): Comparator | null | typeof chord {
     return _ !== undefined ? (sortSubgroups = _, chord) : sortSubgroups
   }
 
-  chord.sortChords = function (_?: Comparator | null): any {
+  chord.sortChords = function (_?: Comparator | null): Comparator | null | typeof chord {
     return _ !== undefined ? (_ == null ? sortChords = null : (sortChords = compareValue(_))._ = _, chord) : sortChords && sortChords._
   }
 

@@ -343,55 +343,55 @@ it('scaleUtc.ticks(count) returns one tick for an empty domain', () => {
 })
 
 it('scaleUtc.tickFormat()(date) formats year on New Year\'s', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 0, 1))).toBe('2011')
   expect(f(utc(2012, 0, 1))).toBe('2012')
   expect(f(utc(2013, 0, 1))).toBe('2013')
 })
 
 it('scaleUtc.tickFormat()(date) formats month on the 1st of each month', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 1))).toBe('February')
   expect(f(utc(2011, 2, 1))).toBe('March')
   expect(f(utc(2011, 3, 1))).toBe('April')
 })
 
 it('scaleUtc.tickFormat()(date) formats week on Sunday midnight', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 6))).toBe('Feb 06')
   expect(f(utc(2011, 1, 13))).toBe('Feb 13')
   expect(f(utc(2011, 1, 20))).toBe('Feb 20')
 })
 
 it('scaleUtc.tickFormat()(date) formats date on midnight', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 2))).toBe('Wed 02')
   expect(f(utc(2011, 1, 3))).toBe('Thu 03')
   expect(f(utc(2011, 1, 4))).toBe('Fri 04')
 })
 
 it('scaleUtc.tickFormat()(date) formats hour on minute zero', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 2, 11))).toBe('11 AM')
   expect(f(utc(2011, 1, 2, 12))).toBe('12 PM')
   expect(f(utc(2011, 1, 2, 13))).toBe('01 PM')
 })
 
 it('scaleUtc.tickFormat()(date) formats minute on second zero', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 2, 11, 59))).toBe('11:59')
   expect(f(utc(2011, 1, 2, 12,  1))).toBe('12:01')
   expect(f(utc(2011, 1, 2, 12,  2))).toBe('12:02')
 })
 
 it('scaleUtc.tickFormat()(date) otherwise, formats second', () => {
-  const f = scaleUtc().tickFormat()
+  const f = scaleUtc().tickFormat!()
   expect(f(utc(2011, 1, 2, 12,  1,  9))).toBe(':09')
   expect(f(utc(2011, 1, 2, 12,  1, 10))).toBe(':10')
   expect(f(utc(2011, 1, 2, 12,  1, 11))).toBe(':11')
 })
 
 it('scaleUtc.tickFormat(count, specifier) returns a time format for the specified specifier', () => {
-  const f = scaleUtc().tickFormat(10, '%c')
+  const f = scaleUtc().tickFormat!(10, '%c')
   expect(f(utc(2011, 1, 2, 12))).toBe('2/2/2011, 12:00:00 PM')
 })
