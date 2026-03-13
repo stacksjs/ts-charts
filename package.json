@@ -28,7 +28,7 @@
     "lint:fix": "bunx --bun pickier . --fix",
     "changelog": "bunx --bun logsmith --verbose",
     "changelog:generate": "bunx --bun logsmith --output CHANGELOG.md",
-    "release": "bun run changelog:generate && bunx --bun bumpx prompt --recursive",
+    "release": "bun --bun run changelog:generate && bunx --bun bumpx prompt --recursive",
     "dev:docs": "bunx --bun bunpress dev docs",
     "build:docs": "bunx --bun bunpress build docs",
     "preview:docs": "bunx --bun bunpress preview docs",
