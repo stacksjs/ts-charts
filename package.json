@@ -35,7 +35,7 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.7",
     "bunfig": "^0.15.6",
     "very-happy-dom": "^0.0.9"
   },
