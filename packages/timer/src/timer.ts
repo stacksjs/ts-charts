@@ -8,7 +8,7 @@ let clockLast = 0
 let clockNow = 0
 let clockSkew = 0
 const clock: { now(): number } = typeof performance === 'object' && typeof performance.now === 'function' ? performance : Date
-const setFrame: (f: () => void) => void = typeof window === 'object' && window.requestAnimationFrame
+const setFrame: (f: () => void) => void = typeof window === 'object' && typeof window.requestAnimationFrame === 'function'
   ? window.requestAnimationFrame.bind(window)
   : (f: () => void) => { setTimeout(f, 17) }
 

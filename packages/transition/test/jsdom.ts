@@ -14,6 +14,8 @@ export default function jsdomit(message: string, htmlOrRun: string | (() => Prom
 
   it(message, async () => {
     const win = new Window({ url: 'http://localhost' }) as any
+    win.requestAnimationFrame = undefined
+    win.cancelAnimationFrame = undefined
     const prevWindow = globalThis.window
     const prevDocument = globalThis.document
     try {
