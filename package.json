@@ -21,6 +21,7 @@
     "bun"
   ],
   "scripts": {
+    "build": "bun run --filter '*' build",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "test": "TZ=America/Los_Angeles bun test",
     "lint": "bunx --bun pickier .",
