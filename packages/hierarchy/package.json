@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/hierarchy",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Layout algorithms for visualizing hierarchical data.",
   "exports": {

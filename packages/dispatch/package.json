@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/dispatch",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Register named callbacks and call them with arguments.",
   "exports": {
