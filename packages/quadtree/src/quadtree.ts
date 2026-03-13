@@ -156,13 +156,25 @@ export class Quadtree<T = [number, number]> {
         z *= 2
         switch (i) {
           // eslint-disable-next-line pickier/no-unused-vars
-          case 0: x1 = x0 + z; y1 = y0 + z; break
+          case 0:
+            x1 = x0 + z
+            y1 = y0 + z
+            break
           // eslint-disable-next-line pickier/no-unused-vars
-          case 1: x0 = x1 - z; y1 = y0 + z; break
+          case 1:
+            x0 = x1 - z
+            y1 = y0 + z
+            break
           // eslint-disable-next-line pickier/no-unused-vars
-          case 2: x1 = x0 + z; y0 = y1 - z; break
+          case 2:
+            x1 = x0 + z
+            y0 = y1 - z
+            break
           // eslint-disable-next-line pickier/no-unused-vars
-          case 3: x0 = x1 - z; y0 = y1 - z; break
+          case 3:
+            x0 = x1 - z
+            y0 = y1 - z
+            break
         }
       }
 
@@ -293,11 +305,15 @@ export class Quadtree<T = [number, number]> {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         right = x >= (xm = (x0 + x1) / 2)
-        // eslint-disable-next-line pickier/no-unused-vars
-        if (right) x0 = xm; else x1 = xm
+        if (right)
+          x0 = xm
+        else
+          x1 = xm
         bottom = y >= (ym = (y0 + y1) / 2)
-        // eslint-disable-next-line pickier/no-unused-vars
-        if (bottom) y0 = ym; else y1 = ym
+        if (bottom)
+          y0 = ym
+        else
+          y1 = ym
         i = ((bottom as unknown as number) << 1 | (right as unknown as number))
         parent = node as QuadtreeInternalNode<T>
         node = (node as QuadtreeInternalNode<T>)[i]
@@ -320,8 +336,10 @@ export class Quadtree<T = [number, number]> {
     if (next) delete (leaf as Partial<QuadtreeLeaf<T>>).next
 
     if (previous) {
-      // eslint-disable-next-line pickier/no-unused-vars
-      if (next) previous.next = next; else delete previous.next
+      if (next)
+        previous.next = next
+      else
+        delete previous.next
       return this
     }
 
@@ -330,8 +348,10 @@ export class Quadtree<T = [number, number]> {
       return this
     }
 
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (next) parent![i] = next; else delete (parent as Record<number, unknown>)[i]
+    if (next)
+      parent![i] = next
+    else
+      delete (parent as Record<number, unknown>)[i]
 
     const remaining = ((parent![0] || parent![1] || parent![2] || parent![3]) as QuadtreeNode<T> | undefined)
     if (remaining
@@ -467,11 +487,15 @@ function addToTree<T>(tree: Quadtree<T>, x: number, y: number, d: T): Quadtree<T
 
   while (isInternalNode(node)) {
     right = x >= (xm = (x0 + x1) / 2)
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (right) x0 = xm; else x1 = xm
+    if (right)
+      x0 = xm
+    else
+      x1 = xm
     bottom = y >= (ym = (y0 + y1) / 2)
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (bottom) y0 = ym; else y1 = ym
+    if (bottom)
+      y0 = ym
+    else
+      y1 = ym
     i = (bottom as unknown as number) << 1 | (right as unknown as number)
     parent = node
     node = node[i]!
@@ -485,22 +509,30 @@ function addToTree<T>(tree: Quadtree<T>, x: number, y: number, d: T): Quadtree<T
   yp = +tree._y.call(null, (node as QuadtreeLeaf<T>).data)
   if (x === xp && y === yp) {
     leaf.next = node as QuadtreeLeaf<T>
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (parent) parent[i] = leaf; else tree._root = leaf
+    if (parent)
+      parent[i] = leaf
+    else
+      tree._root = leaf
     return tree
   }
 
   do {
     const newNode = new Array(4) as QuadtreeInternalNode<T>
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (parent) parent[i] = newNode; else tree._root = newNode
+    if (parent)
+      parent[i] = newNode
+    else
+      tree._root = newNode
     parent = newNode
     right = x >= (xm = (x0 + x1) / 2)
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (right) x0 = xm; else x1 = xm
+    if (right)
+      x0 = xm
+    else
+      x1 = xm
     bottom = y >= (ym = (y0 + y1) / 2)
-    // eslint-disable-next-line pickier/no-unused-vars
-    if (bottom) y0 = ym; else y1 = ym
+    if (bottom)
+      y0 = ym
+    else
+      y1 = ym
     i = (bottom as unknown as number) << 1 | (right as unknown as number)
     j = ((yp >= ym) as unknown as number) << 1 | ((xp >= xm) as unknown as number)
   } while (i === j)

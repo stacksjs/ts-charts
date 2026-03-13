@@ -13,7 +13,8 @@ export default function interpolateObject(a: any, b: any): (t: number) => Record
     if (k in a) {
       i[k] = value(a[k], b[k])
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       c[k] = b[k]
     }
   }

@@ -11,7 +11,7 @@ function zero(b: string): () => string {
 
 function one(b: (t: number) => number): (t: number) => string {
   return function (t: number): string {
-    return b(t) + ''
+    return `${b(t)}`
   }
 }
 
@@ -26,9 +26,9 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
 
   // Coerce inputs to strings.
   // eslint-disable-next-line pickier/no-unused-vars
-  let sa = a + ''
+  const sa = `${a}`
   // eslint-disable-next-line pickier/no-unused-vars
-  let sb = b + ''
+  const sb = `${b}`
 
   // Interpolate pairs of numbers in a & b.
   while ((am = reA.exec(sa))
@@ -42,7 +42,8 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
       if (s[i]) s[i] += bm[0] // coalesce with previous string
       else s[++i] = bm[0]
     // eslint-disable-next-line pickier/no-unused-vars
-    } else { // interpolate non-matching numbers
+    }
+    else { // interpolate non-matching numbers
       s[++i] = null
       q.push({ i, x: number(+am[0], +bm[0]) })
     }

@@ -11,7 +11,7 @@ function interpolateTransform(
 ): (a: any, b: any) => (t: number) => string {
 
   function pop(s: (string | null)[]): string {
-    return s.length ? s.pop() + ' ' : ''
+    return s.length ? `${s.pop()} ` : ''
   }
 
   function translate(xa: number, ya: number, xb: number, yb: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
@@ -19,9 +19,10 @@ function interpolateTransform(
       const i = s.push('translate(', null, pxComma, null, pxParen)
       q.push({ i: i - 4, x: number(xa, xb) }, { i: i - 2, x: number(ya, yb) })
     // eslint-disable-next-line pickier/no-unused-vars
-    } else if (xb || yb) {
+    }
+    else if (xb || yb) {
       // eslint-disable-next-line pickier/no-unused-vars
-      s.push('translate(' + xb + pxComma + yb + pxParen)
+      s.push(`translate(${xb}${pxComma}${yb}${pxParen}`)
     }
   }
 
@@ -29,32 +30,35 @@ function interpolateTransform(
     if (a !== b) {
       // eslint-disable-next-line pickier/no-unused-vars
       if (a - b > 180) b += 360; else if (b - a > 180) a += 360 // shortest path
-      q.push({ i: s.push(pop(s) + 'rotate(', null, degParen) - 2, x: number(a, b) })
+      q.push({ i: s.push(`${pop(s)}rotate(`, null, degParen) - 2, x: number(a, b) })
     // eslint-disable-next-line pickier/no-unused-vars
-    } else if (b) {
+    }
+    else if (b) {
       // eslint-disable-next-line pickier/no-unused-vars
-      s.push(pop(s) + 'rotate(' + b + degParen)
+      s.push(`${pop(s)}rotate(${b}${degParen}`)
     }
   }
 
   function skewX(a: number, b: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
     if (a !== b) {
-      q.push({ i: s.push(pop(s) + 'skewX(', null, degParen) - 2, x: number(a, b) })
+      q.push({ i: s.push(`${pop(s)}skewX(`, null, degParen) - 2, x: number(a, b) })
     // eslint-disable-next-line pickier/no-unused-vars
-    } else if (b) {
+    }
+    else if (b) {
       // eslint-disable-next-line pickier/no-unused-vars
-      s.push(pop(s) + 'skewX(' + b + degParen)
+      s.push(`${pop(s)}skewX(${b}${degParen}`)
     }
   }
 
   function scale(xa: number, ya: number, xb: number, yb: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
     if (xa !== xb || ya !== yb) {
-      const i = s.push(pop(s) + 'scale(', null, ',', null, ')')
+      const i = s.push(`${pop(s)}scale(`, null, ',', null, ')')
       q.push({ i: i - 4, x: number(xa, xb) }, { i: i - 2, x: number(ya, yb) })
     // eslint-disable-next-line pickier/no-unused-vars
-    } else if (xb !== 1 || yb !== 1) {
+    }
+    else if (xb !== 1 || yb !== 1) {
       // eslint-disable-next-line pickier/no-unused-vars
-      s.push(pop(s) + 'scale(' + xb + ',' + yb + ')')
+      s.push(`${pop(s)}scale(${xb},${yb})`)
     }
   }
 

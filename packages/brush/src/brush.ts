@@ -477,27 +477,65 @@ function brush(dim: BrushDim): any {
       switch (mode) {
         case MODE_SPACE:
         case MODE_DRAG: {
-          if (signX) dx = max(W - w0, min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx
-          if (signY) dy = max(N - n0, min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy
+          if (signX) {
+            dx = max(W - w0, min(E - e0, dx))
+            w1 = w0 + dx
+            e1 = e0 + dx
+          }
+          if (signY) {
+            dy = max(N - n0, min(S - s0, dy))
+            n1 = n0 + dy
+            s1 = s0 + dy
+          }
           break
         }
         case MODE_HANDLE: {
           if (points[1]) {
-            if (signX) w1 = max(W, min(E, points[0][0])), e1 = max(W, min(E, points[1][0])), signX = 1
-            if (signY) n1 = max(N, min(S, points[0][1])), s1 = max(N, min(S, points[1][1])), signY = 1
+            if (signX) {
+              w1 = max(W, min(E, points[0][0]))
+              e1 = max(W, min(E, points[1][0]))
+              signX = 1
+            }
+            if (signY) {
+              n1 = max(N, min(S, points[0][1]))
+              s1 = max(N, min(S, points[1][1]))
+              signY = 1
+            }
           // eslint-disable-next-line pickier/no-unused-vars
           }
           else {
-            if (signX < 0) dx = max(W - w0, min(E - w0, dx)), w1 = w0 + dx, e1 = e0
-            else if (signX > 0) dx = max(W - e0, min(E - e0, dx)), w1 = w0, e1 = e0 + dx
-            if (signY < 0) dy = max(N - n0, min(S - n0, dy)), n1 = n0 + dy, s1 = s0
-            else if (signY > 0) dy = max(N - s0, min(S - s0, dy)), n1 = n0, s1 = s0 + dy
+            if (signX < 0) {
+              dx = max(W - w0, min(E - w0, dx))
+              w1 = w0 + dx
+              e1 = e0
+            }
+            else if (signX > 0) {
+              dx = max(W - e0, min(E - e0, dx))
+              w1 = w0
+              e1 = e0 + dx
+            }
+            if (signY < 0) {
+              dy = max(N - n0, min(S - n0, dy))
+              n1 = n0 + dy
+              s1 = s0
+            }
+            else if (signY > 0) {
+              dy = max(N - s0, min(S - s0, dy))
+              n1 = n0
+              s1 = s0 + dy
+            }
           }
           break
         }
         case MODE_CENTER: {
-          if (signX) w1 = max(W, min(E, w0 - dx * signX)), e1 = max(W, min(E, e0 + dx * signX))
-          if (signY) n1 = max(N, min(S, n0 - dy * signY)), s1 = max(N, min(S, s0 + dy * signY))
+          if (signX) {
+            w1 = max(W, min(E, w0 - dx * signX))
+            e1 = max(W, min(E, e0 + dx * signX))
+          }
+          if (signY) {
+            n1 = max(N, min(S, n0 - dy * signY))
+            s1 = max(N, min(S, s0 + dy * signY))
+          }
           break
         }
       }
@@ -525,8 +563,14 @@ function brush(dim: BrushDim): any {
       }
 
       if (state.selection) selection = state.selection // May be set by brush.move!
-      if (lockX) w1 = selection[0][0], e1 = selection[1][0]
-      if (lockY) n1 = selection[0][1], s1 = selection[1][1]
+      if (lockX) {
+        w1 = selection[0][0]
+        e1 = selection[1][0]
+      }
+      if (lockY) {
+        n1 = selection[0][1]
+        s1 = selection[1][1]
+      }
 
       if (selection[0][0] !== w1
         || selection[0][1] !== n1
@@ -568,8 +612,14 @@ function brush(dim: BrushDim): any {
         }
         case 18: { // ALT
           if (mode === MODE_HANDLE) {
-            if (signX) e0 = e1 - dx * signX, w0 = w1 + dx * signX
-            if (signY) s0 = s1 - dy * signY, n0 = n1 + dy * signY
+            if (signX) {
+              e0 = e1 - dx * signX
+              w0 = w1 + dx * signX
+            }
+            if (signY) {
+              s0 = s1 - dy * signY
+              n0 = n1 + dy * signY
+            }
             mode = MODE_CENTER
             move(event)
           }
@@ -577,10 +627,10 @@ function brush(dim: BrushDim): any {
         }
         case 32: { // SPACE; takes priority over ALT
           if (mode === MODE_HANDLE || mode === MODE_CENTER) {
-            // eslint-disable-next-line pickier/no-unused-vars
-            if (signX < 0) e0 = e1 - dx; else if (signX > 0) w0 = w1 - dx
-            // eslint-disable-next-line pickier/no-unused-vars
-            if (signY < 0) s0 = s1 - dy; else if (signY > 0) n0 = n1 - dy
+            if (signX < 0) e0 = e1 - dx
+            else if (signX > 0) w0 = w1 - dx
+            if (signY < 0) s0 = s1 - dy
+            else if (signY > 0) n0 = n1 - dy
             mode = MODE_SPACE
             overlay.attr('cursor', cursors.selection)
             move(event)
@@ -603,10 +653,10 @@ function brush(dim: BrushDim): any {
         }
         case 18: { // ALT
           if (mode === MODE_CENTER) {
-            // eslint-disable-next-line pickier/no-unused-vars
-            if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1
-            // eslint-disable-next-line pickier/no-unused-vars
-            if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1
+            if (signX < 0) e0 = e1
+            else if (signX > 0) w0 = w1
+            if (signY < 0) s0 = s1
+            else if (signY > 0) n0 = n1
             mode = MODE_HANDLE
             move(event)
           }
@@ -615,16 +665,22 @@ function brush(dim: BrushDim): any {
         case 32: { // SPACE
           if (mode === MODE_SPACE) {
             if (event.altKey) {
-              if (signX) e0 = e1 - dx * signX, w0 = w1 + dx * signX
-              if (signY) s0 = s1 - dy * signY, n0 = n1 + dy * signY
+              if (signX) {
+                e0 = e1 - dx * signX
+                w0 = w1 + dx * signX
+              }
+              if (signY) {
+                s0 = s1 - dy * signY
+                n0 = n1 + dy * signY
+              }
               mode = MODE_CENTER
             // eslint-disable-next-line pickier/no-unused-vars
             }
             else {
-              // eslint-disable-next-line pickier/no-unused-vars
-              if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1
-              // eslint-disable-next-line pickier/no-unused-vars
-              if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1
+              if (signX < 0) e0 = e1
+              else if (signX > 0) w0 = w1
+              if (signY < 0) s0 = s1
+              else if (signY > 0) n0 = n1
               mode = MODE_HANDLE
             }
             overlay.attr('cursor', cursors[type])

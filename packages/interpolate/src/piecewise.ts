@@ -5,7 +5,10 @@ type Interpolator = (a: unknown, b: unknown) => (t: number) => unknown
 
 export default function piecewise(interpolate: Interpolator | unknown[], values?: unknown[]): (t: number) => unknown {
   // eslint-disable-next-line pickier/no-unused-vars
-  if (values === undefined) { values = interpolate as unknown[]; interpolate = value }
+  if (values === undefined) {
+    values = interpolate as unknown[]
+    interpolate = value
+  }
   let i = 0
   const n = values.length - 1
   let v = values[0]

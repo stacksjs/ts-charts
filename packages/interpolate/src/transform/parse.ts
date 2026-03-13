@@ -5,7 +5,7 @@ let svgNode: SVGGElement
 /* eslint-disable no-undef */
 export function parseCss(value: string): DecomposeResult {
   // eslint-disable-next-line pickier/no-unused-vars
-  const m = new (typeof DOMMatrix === 'function' ? DOMMatrix : (globalThis as any).WebKitCSSMatrix)(value + '')
+  const m = new (typeof DOMMatrix === 'function' ? DOMMatrix : (globalThis as any).WebKitCSSMatrix)(`${value}`)
   return m.isIdentity ? identity : decompose(m.a, m.b, m.c, m.d, m.e, m.f)
 }
 

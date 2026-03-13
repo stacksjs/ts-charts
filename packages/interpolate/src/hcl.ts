@@ -17,7 +17,7 @@ function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: Co
       s.l = l(t)
       s.opacity = opacity(t)
       // eslint-disable-next-line pickier/no-unused-vars
-      return s + ''
+      return `${s}`
     }
   }
 }

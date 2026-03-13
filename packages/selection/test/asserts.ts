@@ -15,7 +15,8 @@ export function assertSelection(actual: any, expected: any): void {
     expectedEnter = (expected as any)._enter
     expectedExit = (expected as any)._exit
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     expectedGroups = expected.groups
     expectedParents = expected.parents ?? Array.from(expectedGroups, () => null)
     expectedEnter = expected.enter
@@ -40,7 +41,8 @@ export function assertSelection(actual: any, expected: any): void {
       if (a instanceof EnterNode || e instanceof EnterNode) {
         assertEnterNode(a, e)
       // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         expect(a).toBe(e)
       }
     }
@@ -61,13 +63,15 @@ export function assertSelection(actual: any, expected: any): void {
           if (a instanceof EnterNode || e instanceof EnterNode) {
             assertEnterNode(a, e)
           // eslint-disable-next-line pickier/no-unused-vars
-          } else {
+          }
+          else {
             expect(a).toBe(e)
           }
         }
       }
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       expect(actualEnter).toBe(expectedEnter)
     }
   }
@@ -81,7 +85,8 @@ export function assertSelection(actual: any, expected: any): void {
         }
       }
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       expect(actualExit).toBe(expectedExit)
     }
   }

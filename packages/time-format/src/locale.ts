@@ -273,8 +273,8 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
           d.y = week.getUTCFullYear()
           d.m = week.getUTCMonth()
           d.d = week.getUTCDate() + (d.w! + 6) % 7
-        // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           week = localDate(newDate(d.y, 0, 1))
           day = week.getDay()
           week = day > 4 || day === 0 ? timeMonday.ceil(week) : timeMonday(week)
@@ -283,8 +283,8 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
           d.m = week.getMonth()
           d.d = week.getDate() + (d.w! + 6) % 7
         }
-      // eslint-disable-next-line pickier/no-unused-vars
-      } else if ('W' in d || 'U' in d) {
+      }
+      else if ('W' in d || 'U' in d) {
         if (!('w' in d)) d.w = 'u' in d ? d.u! % 7 : 'W' in d ? 1 : 0
         day = 'Z' in d ? utcDate(newDate(d.y, 0, 1)).getUTCDay() : localDate(newDate(d.y, 0, 1)).getDay()
         d.m = 0
@@ -318,8 +318,8 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
         c = specifier.charAt(i++)
         parse = parses[(c as string) in pads ? specifier.charAt(i++) : (c as string)]
         if (!parse || ((j = parse(d, string, j)) < 0)) return -1
-      // eslint-disable-next-line pickier/no-unused-vars
-      } else if (c != string.charCodeAt(j++)) {
+      }
+      else if (c != string.charCodeAt(j++)) {
         return -1
       }
     }
@@ -440,7 +440,7 @@ const requoteRe = /[\\^$*+?|[\]().{}]/g
 
 function pad(value: number, fill: string, width: number): string {
   const sign = value < 0 ? '-' : ''
-  const string = (sign ? -value : value) + ''
+  const string = `${sign ? -value : value}`
   const length = string.length
   return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string)
 }

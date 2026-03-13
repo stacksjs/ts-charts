@@ -88,8 +88,8 @@ export default function zoomBehavior(): any {
     selection.property('__zoom', defaultTransform)
     if (collection !== selection) {
       schedule(collection, transform, point, event)
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       selection.interrupt().each(function (this: any) {
         gesture(this, arguments)
           .event(event)
@@ -170,9 +170,14 @@ export default function zoomBehavior(): any {
         const b = typeof transform === 'function' ? transform.apply(that, args) : transform
         const i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k))
         return function (t: number): void {
-          if (t === 1) t = b // Avoid rounding error on end.
-          // eslint-disable-next-line pickier/no-unused-vars
-          else { const l = i(t), k = w / l[2]; t = new (Transform as any)(k, p[0] - l[0] * k, p[1] - l[1] * k) }
+          if (t === 1) {
+            t = b // Avoid rounding error on end.
+          }
+          else {
+            const l = i(t)
+            const k = w / l[2]
+            t = new (Transform as any)(k, p[0] - l[0] * k, p[1] - l[1] * k)
+          }
           g.zoom(null, t)
         }
       })
@@ -238,7 +243,7 @@ export default function zoomBehavior(): any {
   // eslint-disable-next-line pickier/no-unused-vars
   function wheeled(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: WheelEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
-    let g = gesture(this, _args).event(event)
+    const g = gesture(this, _args).event(event)
     const t = this.__zoom
     const k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments))))
     const p = pointer(event)
@@ -291,7 +296,8 @@ export default function zoomBehavior(): any {
     function mousemoved(event: MouseEvent): void {
       noevent(event)
       if (!g.moved) {
-        const dx = event.clientX - x0, dy = event.clientY - y0
+        const dx = event.clientX - x0
+        const dy = event.clientY - y0
         g.moved = dx * dx + dy * dy > clickDistance2
       }
       g.event(event)
@@ -326,20 +332,37 @@ export default function zoomBehavior(): any {
     const touches = event.touches
     const n = touches.length
     const g = gesture(this, _args, event.changedTouches.length === n).event(event)
-    let started: boolean | undefined, i: number, t: Touch, p: any
+    let started: boolean | undefined
+    let i: number
+    let t: Touch
+    let p: any
 
     nopropagation(event)
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = pointer(t as unknown as Event, this)
+      t = touches[i]
+      p = pointer(t as unknown as Event, this)
       p = [p, this.__zoom.invert(p), t.identifier]
-      if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + +!!touchstarting
-      else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0
+      if (!g.touch0) {
+        g.touch0 = p
+        started = true
+        g.taps = 1 + +!!touchstarting
+      }
+      else if (!g.touch1 && g.touch0[2] !== p[2]) {
+        g.touch1 = p
+        g.taps = 0
+      }
     }
 
-    if (touchstarting) clearTimeout(touchstarting), touchstarting = null
+    if (touchstarting) {
+      clearTimeout(touchstarting)
+      touchstarting = null
+    }
 
     if (started) {
-      if (g.taps < 2) touchfirst = p![0], touchstarting = setTimeout(() => { touchstarting = null }, touchDelay)
+      if (g.taps < 2) {
+        touchfirst = p![0]
+        touchstarting = setTimeout(() => { touchstarting = null }, touchDelay)
+      }
       interrupt(this)
       g.start()
     }
@@ -355,14 +378,17 @@ export default function zoomBehavior(): any {
 
     noevent(event)
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = pointer(t, this)
+      t = touches[i]
+      p = pointer(t, this)
       if (g.touch0 && g.touch0[2] === t.identifier) g.touch0[0] = p
       else if (g.touch1 && g.touch1[2] === t.identifier) g.touch1[0] = p
     }
     t = g.that.__zoom
     if (g.touch1) {
-      const p0 = g.touch0[0], l0 = g.touch0[1]
-      const p1 = g.touch1[0], l1 = g.touch1[1]
+      const p0 = g.touch0[0]
+      const l0 = g.touch0[1]
+      const p1 = g.touch1[0]
+      const l1 = g.touch1[1]
       // eslint-disable-next-line pickier/no-unused-vars
       var dp: any = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp
       // eslint-disable-next-line pickier/no-unused-vars
@@ -371,7 +397,10 @@ export default function zoomBehavior(): any {
       p = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
       l = [(l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2]
     }
-    else if (g.touch0) p = g.touch0[0], l = g.touch0[1]
+    else if (g.touch0) {
+      p = g.touch0[0]
+      l = g.touch0[1]
+    }
     else return
 
     g.zoom('touch', constrain(translate(t, p, l), g.extent, translateExtent))
@@ -393,7 +422,10 @@ export default function zoomBehavior(): any {
       if (g.touch0 && g.touch0[2] === t.identifier) delete g.touch0
       else if (g.touch1 && g.touch1[2] === t.identifier) delete g.touch1
     }
-    if (g.touch1 && !g.touch0) g.touch0 = g.touch1, delete g.touch1
+    if (g.touch1 && !g.touch0) {
+      g.touch0 = g.touch1
+      delete g.touch1
+    }
     if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0])
     else {
       g.end()

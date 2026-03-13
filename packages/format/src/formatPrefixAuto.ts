@@ -14,9 +14,7 @@ export default function formatPrefixAuto(x: number, p: number): string {
   const i = exponentVal - prefixExponent + 1
   const n = coefficient.length
   return i === n ? coefficient
-    : i > n ? coefficient + new Array(i - n + 1).join('0')
-      // eslint-disable-next-line pickier/no-unused-vars
-      : i > 0 ? coefficient.slice(0, i) + '.' + coefficient.slice(i)
-        // eslint-disable-next-line pickier/no-unused-vars
-        : '0.' + new Array(1 - i).join('0') + formatDecimalParts(x, Math.max(0, p + i - 1))![0] // less than 1y!
+    : i > n ? `${coefficient}${new Array(i - n + 1).join('0')}`
+      : i > 0 ? `${coefficient.slice(0, i)}.${coefficient.slice(i)}`
+        : `0.${new Array(1 - i).join('0')}${formatDecimalParts(x, Math.max(0, p + i - 1))![0]}` // less than 1y!
 }

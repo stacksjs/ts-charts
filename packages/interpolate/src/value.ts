@@ -11,6 +11,7 @@ import numberArray, { isNumberArray } from './numberArray.ts'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- runtime type dispatch; return type is any because output depends on b's type
 export default function interpolateValue(a: unknown, b: unknown): (t: number) => any {
   const t = typeof b
+  // eslint-disable-next-line pickier/no-unused-vars
   let c: Color | null
   return b == null || t === 'boolean' ? constant(b)
       : (t === 'number' ? number

@@ -4,12 +4,17 @@ export default function formatTrim(s: string): string {
   let i1 = 0
   out: for (let n = s.length, i = 1; i < n; ++i) {
     switch (s[i]) {
-      // eslint-disable-next-line pickier/no-unused-vars
-      case '.': i0 = i1 = i; break
-      // eslint-disable-next-line pickier/no-unused-vars
-      case '0': if (i0 === 0) i0 = i; i1 = i; break
-      // eslint-disable-next-line pickier/no-unused-vars
-      default: if (!+s[i]) break out; if (i0 > 0) i0 = 0; break
+      case '.':
+        i0 = i1 = i
+        break
+      case '0':
+        if (i0 === 0) i0 = i
+        i1 = i
+        break
+      default:
+        if (!+s[i]) break out
+        if (i0 > 0) i0 = 0
+        break
     }
   }
   return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s

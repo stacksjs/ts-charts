@@ -63,8 +63,14 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
           let y = yi - data.y - data.vy
           let l = x * x + y * y
           if (l < r * r) {
-            if (x === 0) x = jiggle(random), l += x * x
-            if (y === 0) y = jiggle(random), l += y * y
+            if (x === 0) {
+              x = jiggle(random)
+              l += x * x
+            }
+            if (y === 0) {
+              y = jiggle(random)
+              l += y * y
+            }
             l = (r - (l = Math.sqrt(l))) / l * strength
             node.vx! += (x *= l) * (r = (rj *= rj) / (ri2 + rj))
             node.vy! += (y *= l) * r
@@ -81,7 +87,10 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node with dynamically added 'r' property
   function prepare(quad: any): void {
     // eslint-disable-next-line pickier/no-unused-vars
-    if (quad.data) { quad.r = radii[quad.data.index]; return }
+    if (quad.data) {
+      quad.r = radii[quad.data.index]
+      return
+    }
     for (let i = quad.r = 0; i < 4; ++i) {
       if (quad[i] && quad[i].r > quad.r) {
         quad.r = quad[i].r
@@ -95,7 +104,10 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
     const n = nodes.length
     let node: ForceNode
     radii = new Array(n)
-    for (i = 0; i < n; ++i) node = nodes[i], radii[node.index!] = +(radius as Function)(node, i, nodes)
+    for (i = 0; i < n; ++i) {
+      node = nodes[i]
+      radii[node.index!] = +(radius as Function)(node, i, nodes)
+    }
   }
 
   force.initialize = function (_nodes: ForceNode[], _random: () => number): void {

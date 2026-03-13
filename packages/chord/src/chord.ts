@@ -145,7 +145,7 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
 
     // Remove empty chords.
     chords = Object.values(chords) as Chord[]
-    // eslint-disable-next-line pickier/no-unused-vars
+    // eslint-disable-next-line pickier/no-unused-vars, max-statements-per-line
     ;(chords as Chords).groups = groups
     return sortChords ? chords.sort(sortChords) : chords
   }
@@ -163,7 +163,17 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
   }
 
   chord.sortChords = function (_?: Comparator | null): Comparator | null | typeof chord {
-    return _ !== undefined ? (_ == null ? sortChords = null : (sortChords = compareValue(_))._ = _, chord) : sortChords && sortChords._
+    if (_ !== undefined) {
+      if (_ == null) {
+        sortChords = null
+      }
+      else {
+        sortChords = compareValue(_)
+        sortChords._ = _
+      }
+      return chord
+    }
+    return sortChords && sortChords._
   }
 
   return chord as unknown as ChordLayout

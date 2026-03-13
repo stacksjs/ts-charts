@@ -26,7 +26,7 @@ export default (function rgbGamma(y: number): RgbInterpolator {
       s.b = b(t)
       s.opacity = opacity(t)
       // eslint-disable-next-line pickier/no-unused-vars
-      return s + ''
+      return `${s}`
     }
   }
 
@@ -58,7 +58,7 @@ function rgbSpline(spline: (values: number[]) => (t: number) => number): (colors
       color.g = gInterp(t)
       color.b = bInterp(t)
       // eslint-disable-next-line pickier/no-unused-vars
-      return color + ''
+      return `${color}`
     }
   }
 }

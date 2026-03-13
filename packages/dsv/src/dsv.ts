@@ -89,13 +89,14 @@ function formatDate(date: Date): string {
       : '')
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function dsvFormat(delimiter: string): DSV {
   const reFormat = new RegExp(`["${delimiter}\n\r]`)
   const DELIMITER = delimiter.charCodeAt(0)
 
   // eslint-disable-next-line ts/no-explicit-any -- generic parse returns caller-determined type
   function parse(text: string, f?: DSVRowConverter<any>): DSVParsedArray<any> {
-    // eslint-disable-next-line ts/no-explicit-any
+    // eslint-disable-next-line ts/no-explicit-any, pickier/no-unused-vars
     let convert: ((row: string[], i: number) => any) | undefined
     let columns: string[] | undefined
     const rows = parseRows(text, function (row: string[], i: number) {
@@ -200,6 +201,7 @@ export default function dsvFormat(delimiter: string): DSV {
     return row.map(formatValue).join(delimiter)
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function formatValue(value: unknown): string {
     return value == null ? ''
       : value instanceof Date ? formatDate(value)

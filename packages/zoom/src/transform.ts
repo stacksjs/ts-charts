@@ -61,8 +61,7 @@ Transform.prototype = {
     return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y))
   },
   toString(this: TransformInstance): string {
-    // eslint-disable-next-line pickier/no-unused-vars
-    return 'translate(' + this.x + ',' + this.y + ') scale(' + this.k + ')'
+    return `translate(${this.x},${this.y}) scale(${this.k})`
   },
 }
 
