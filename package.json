@@ -1,7 +1,7 @@
 {
   "name": "ts-charts",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "A complete TypeScript rewrite of D3.js as a Bun-first monorepo.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/selection",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "description": "Transform the DOM by selecting elements and joining to data.",
   "exports": {

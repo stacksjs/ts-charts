@@ -1,36 +1,3 @@
-### 🐛 Bug Fixes
-
-- resolve remaining test failures with very-happy-dom polyfills ([8662ee6](https://github.com/stacksjs/ts-charts/commit/8662ee6))
-- inline DOM polyfills via globalThis to fix CI import resolution ([69f02ab](https://github.com/stacksjs/ts-charts/commit/69f02ab))
-- add DOM polyfills for very-happy-dom test environment ([af2507d](https://github.com/stacksjs/ts-charts/commit/af2507d))
-- disable requestAnimationFrame in test environments ([e0673fb](https://github.com/stacksjs/ts-charts/commit/e0673fb))
-- resolve all lint and typecheck errors across packages ([340abe3](https://github.com/stacksjs/ts-charts/commit/340abe3))
-
-### 🧹 Chores
-
-- add prepublishOnly script to all packages for publish builds ([7f42911](https://github.com/stacksjs/ts-charts/commit/7f42911))
-- fix release script to use bun --bun prefix ([f49607e](https://github.com/stacksjs/ts-charts/commit/f49607e))
-- update release workflow to use pantry and action-releaser v1.2.9 ([792422b](https://github.com/stacksjs/ts-charts/commit/792422b))
-- update better-dx to ^0.2.7 ([7786395](https://github.com/stacksjs/ts-charts/commit/7786395))
-- add root build script ([9591366](https://github.com/stacksjs/ts-charts/commit/9591366))
-- wip ([0205554](https://github.com/stacksjs/ts-charts/commit/0205554))
-- wip ([44588e4](https://github.com/stacksjs/ts-charts/commit/44588e4))
-- wip ([d065f56](https://github.com/stacksjs/ts-charts/commit/d065f56))
-- wip ([5c7b364](https://github.com/stacksjs/ts-charts/commit/5c7b364))
-- wip ([4fc5043](https://github.com/stacksjs/ts-charts/commit/4fc5043))
-- wip ([9487455](https://github.com/stacksjs/ts-charts/commit/9487455))
-- wip ([06a963c](https://github.com/stacksjs/ts-charts/commit/06a963c))
-- wip ([71e7253](https://github.com/stacksjs/ts-charts/commit/71e7253))
-- wip ([97d39b9](https://github.com/stacksjs/ts-charts/commit/97d39b9))
-- wip ([a6c8b40](https://github.com/stacksjs/ts-charts/commit/a6c8b40))
-- wip ([99c05bd](https://github.com/stacksjs/ts-charts/commit/99c05bd))
-- wip ([e68c014](https://github.com/stacksjs/ts-charts/commit/e68c014))
-- initial commit ([93e06d3](https://github.com/stacksjs/ts-charts/commit/93e06d3))
-
-### Contributors
-
-- Chris <chrisbreuer93@gmail.com>
-- glennmichael123 <gtorregosa@gmail.com>
 
 ## v0.3.1...main
 

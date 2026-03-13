@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/timer",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "description": "An efficient queue for managing thousands of concurrent animations.",
   "exports": {

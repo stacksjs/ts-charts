@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/format",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "description": "Format numbers for human consumption.",
   "exports": {

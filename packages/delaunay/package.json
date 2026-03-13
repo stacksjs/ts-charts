@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/delaunay",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "description": "Compute the Voronoi diagram of a set of two-dimensional points.",
   "dependencies": {
