@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/delaunator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Fast Delaunay triangulation of 2D points",
   "exports": {

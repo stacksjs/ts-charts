@@ -1,3 +1,24 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.1.0...v0.1.1)
+
+### 🧹 Chores
+
+- release v0.1.1 ([2bb025c](https://github.com/stacksjs/ts-charts/commit/2bb025c))
+- rename umbrella package to @ts-charts/charts ([ab62bc7](https://github.com/stacksjs/ts-charts/commit/ab62bc7))
+
+### Contributors
+
+- glennmichael123 <gtorregosa@gmail.com>
+
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.1.0...HEAD)
+
+### 🧹 Chores
+
+- rename umbrella package to @ts-charts/charts ([ab62bc7](https://github.com/stacksjs/ts-charts/commit/ab62bc7))
+
+### Contributors
+
+- glennmichael123 <gtorregosa@gmail.com>
+
 ### 🐛 Bug Fixes
 
 - resolve remaining test failures with very-happy-dom polyfills ([8662ee6](https://github.com/stacksjs/ts-charts/commit/8662ee6))
