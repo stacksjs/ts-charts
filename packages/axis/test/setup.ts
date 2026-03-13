@@ -1,5 +1,4 @@
 import { Window } from 'very-happy-dom'
-import { patchDomApis } from '../../../test/dom-polyfills.ts'
 
 const win: any = new Window({ url: 'http://localhost' })
 win.requestAnimationFrame = undefined
@@ -13,4 +12,4 @@ globalThis.Text = win.Text
 globalThis.Event = win.Event
 globalThis.CustomEvent = win.CustomEvent
 
-patchDomApis()
+;(globalThis as any).__patchDomApis?.()
