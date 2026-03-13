@@ -17,9 +17,9 @@ const defaultTiming: TransitionTiming = {
 
 function inherit(node: Element, id: number): TransitionTiming {
   let timing: TransitionSchedule | undefined
-  let current: Element | null = node
+  let current: Node | null = node
   while (!(timing = (current as TransitionNode).__transition?.[id])) {
-    if (!(current = current.parentElement)) {
+    if (!(current = current.parentNode) || current.nodeType === 9) {
       throw new Error(`transition ${id} not found`)
     }
   }

@@ -9,7 +9,7 @@ interface TweenFn {
 
 function styleInterpolate(name: string, i: (t: number) => string, priority: string): (t: number) => void {
   return function (this: HTMLElement, t: number): void {
-    this.style.setProperty(name, i.call(this, t), priority)
+    this.style.setProperty(name, `${i.call(this, t)}`, priority)
   }
 }
 

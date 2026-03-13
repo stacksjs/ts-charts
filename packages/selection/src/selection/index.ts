@@ -95,15 +95,17 @@ function styleFunction(name: string, value: ValueFn<string | null>, priority: st
   return function (this: HTMLElement | SVGElement): void {
     const v = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
     if (v == null) this.style.removeProperty(name)
-    else this.style.setProperty(name, v, priority)
+    else this.style.setProperty(name, `${v}`, priority)
   }
 }
 
 export function styleValue(node: Element, name: string): string {
   const value = (node as HTMLElement | SVGElement).style.getPropertyValue(name)
-  if (value) return value
+  if (value != null && value !== '') return `${value}`
   const win = defaultView(node) || (typeof window !== 'undefined' ? window : undefined)
-  return win ? win.getComputedStyle(node, null).getPropertyValue(name) : ''
+  if (!win || typeof win.getComputedStyle !== 'function') return ''
+  const computed = win.getComputedStyle(node, null).getPropertyValue(name)
+  return computed != null && computed !== '' ? `${computed}` : ''
 }
 
 // ── property helpers ──

@@ -55,6 +55,93 @@ function patchDomApis(): void {
       return this.hasAttribute(name)
     }
   }
+
+  // Patch setAttribute to coerce values to strings (per DOM spec)
+  const origSetAttribute = proto.setAttribute
+  if (origSetAttribute) {
+    proto.setAttribute = function (name: string, value: unknown): void {
+      origSetAttribute.call(this, name, String(value))
+    }
+  }
+
+  // Add getComputedStyle if missing — very-happy-dom doesn't provide it.
+  // Falls back to parsing the inline style attribute since very-happy-dom
+  // doesn't populate the style object from inline styles.
+  if (typeof globalThis.window !== 'undefined' && !(globalThis.window as any).getComputedStyle) {
+    (globalThis.window as any).getComputedStyle = function (node: any): any {
+      return {
+        getPropertyValue(name: string): string {
+          // First check the live style object
+          const val = node.style?.getPropertyValue?.(name)
+          if (val != null && val !== '') return `${val}`
+          // Fall back to parsing the style attribute
+          const attr = node.getAttribute?.('style')
+          if (attr) {
+            const re = new RegExp(`(?:^|;)\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*([^;]+)`, 'i')
+            const m = attr.match(re)
+            if (m) return m[1].trim()
+          }
+          return ''
+        },
+      }
+    }
+  }
+
+  // Polyfill getPropertyPriority on style objects by wrapping setProperty to track priorities.
+  // very-happy-dom style objects have null prototype with own methods, so we use the
+  // element prototype's style getter descriptor to intercept and patch each style instance.
+  addStylePriorityTracking(proto)
+}
+
+function addStylePriorityTracking(elementProto: any): void {
+  let styleDesc: PropertyDescriptor | undefined
+  let p = elementProto
+  while (p) {
+    styleDesc = Object.getOwnPropertyDescriptor(p, 'style')
+    if (styleDesc) break
+    p = Object.getPrototypeOf(p)
+  }
+  if (!styleDesc || !styleDesc.get) return
+
+  const origStyleGet = styleDesc.get
+  // Store priorities on the element since style getter returns new objects each time
+  const priorityStore = new WeakMap<object, Record<string, string>>()
+
+  Object.defineProperty(p, 'style', {
+    get() {
+      const rawStyle = origStyleGet.call(this)
+      if (!rawStyle) return rawStyle
+
+      const element = this
+      if (!priorityStore.has(element)) priorityStore.set(element, {})
+      const priorities = priorityStore.get(element)!
+
+      return new Proxy(rawStyle, {
+        get(target: any, prop: string | symbol): unknown {
+          if (prop === 'getPropertyPriority') {
+            return (name: string): string => priorities[name] || ''
+          }
+          if (prop === 'setProperty') {
+            return (name: string, value: unknown, priority?: string): void => {
+              // Reject invalid CSS values like NaN/undefined (real browsers silently ignore these)
+              const strVal = value == null ? '' : `${value}`
+              if (strVal === 'NaN' || strVal === 'undefined' || strVal === 'null') return
+              target.setProperty(name, value, priority)
+              if (priority) priorities[name] = priority
+              else delete priorities[name]
+            }
+          }
+          const val = target[prop]
+          return typeof val === 'function' ? val.bind(target) : val
+        },
+        set(target: any, prop: string | symbol, value: unknown): boolean {
+          target[prop] = value
+          return true
+        },
+      })
+    },
+    configurable: true,
+  })
 }
 
 // Make patchDomApis available globally for per-package setups

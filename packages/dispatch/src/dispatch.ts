@@ -96,7 +96,7 @@ export class Dispatch {
 
   copy(): Dispatch {
     const copy: TypeMap = {}
-    for (const t in this._) copy[t] = this._[t].slice()
+    for (const t of Object.keys(this._)) copy[t] = this._[t].slice()
     return new Dispatch(copy)
   }
 
