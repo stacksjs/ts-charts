@@ -17,7 +17,7 @@ function defaultFilter(event: MouseEvent | WheelEvent): boolean {
 function defaultExtent(this: Element): [[number, number], [number, number]] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM element may be SVG with viewBox or HTML with clientWidth
   let e: any = this
-  if (e instanceof SVGElement) {
+  if (typeof SVGElement !== 'undefined' && e instanceof SVGElement) {
     e = e.ownerSVGElement || e
     if (e.hasAttribute('viewBox')) {
       e = e.viewBox.baseVal

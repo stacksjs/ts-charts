@@ -1,4 +1,6 @@
 import { Window } from 'very-happy-dom'
+import { patchDomApis } from '../../../test/dom-polyfills.ts'
+
 const win = new Window({ url: 'http://localhost' }) as any
 win.requestAnimationFrame = undefined
 win.cancelAnimationFrame = undefined
@@ -13,3 +15,5 @@ g.Text = (win as any).Text
 g.Event = (win as any).Event
 globalThis.CustomEvent = win.CustomEvent as any
 globalThis.SVGElement = (win as any).SVGElement || class SVGElement {} as any
+
+patchDomApis()

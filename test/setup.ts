@@ -1,4 +1,5 @@
 import { Window } from 'very-happy-dom'
+import { patchDomApis } from './dom-polyfills.ts'
 
 if (!globalThis.document) {
   const win: any = new Window({ url: 'http://localhost' })
@@ -19,3 +20,5 @@ if (!globalThis.document) {
   globalThis.CustomEvent = win.CustomEvent
   globalThis.MutationObserver = win.MutationObserver
 }
+
+patchDomApis()
