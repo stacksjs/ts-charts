@@ -1,5 +1,5 @@
 {
-  "name": "ts-charts",
+  "name": "@ts-charts/charts",
   "version": "0.1.0",
   "type": "module",
   "description": "A complete TypeScript rewrite of D3.js — umbrella package re-exporting all sub-packages.",
