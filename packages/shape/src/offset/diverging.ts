@@ -7,8 +7,10 @@ export default function offsetDiverging(series: StackSeries[], order: number[]):
     for (yp = yn = 0, i = 0; i < n; ++i) {
       if ((dy = (d = series[order[i]][j])[1] - d[0]) > 0) {
         d[0] = yp, d[1] = yp += dy
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if (dy < 0) {
         d[1] = yn, d[0] = yn += dy
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         d[0] = 0, d[1] = dy
       }

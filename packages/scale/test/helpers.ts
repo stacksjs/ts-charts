@@ -3,8 +3,10 @@ import { expect } from 'bun:test'
 export function assertInDelta(actual: number, expected: number, delta = 1e-6): void {
   if (Array.isArray(expected)) {
     assertInDeltaArray(actual as any, expected as any, delta)
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (typeof expected === 'object' && expected !== null) {
     assertInDeltaObject(actual as any, expected as any, delta)
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     expect(Math.abs((actual as number) - (expected as number))).toBeLessThan(delta)
   }

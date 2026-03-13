@@ -20,6 +20,7 @@ export default function jsdomit(message: string, htmlOrRun: string | (() => Prom
       globalThis.window = win
       globalThis.document = win.document as any
       if (html) {
+        // eslint-disable-next-line pickier/no-unused-vars
         ;(win.document.body as any).innerHTML = html
       }
       await fn()

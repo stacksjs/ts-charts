@@ -24,6 +24,7 @@ Natural.prototype = {
       this._line ? this._context.lineTo(x[0], y[0]) : this._context.moveTo(x[0], y[0])
       if (n === 2) {
         this._context.lineTo(x[1], y[1])
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         const px = controlPoints(x)
         const py = controlPoints(y)

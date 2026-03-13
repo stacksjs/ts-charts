@@ -56,7 +56,9 @@ function resample(project: GeoRawProjection, delta2: number): GeoStreamFactory {
       point: point,
       lineStart: lineStart,
       lineEnd: lineEnd,
+      // eslint-disable-next-line pickier/no-unused-vars
       polygonStart: function (): void { stream.polygonStart(); resampleStream.lineStart = ringStart },
+      // eslint-disable-next-line pickier/no-unused-vars
       polygonEnd: function (): void { stream.polygonEnd(); resampleStream.lineStart = lineStart }
     }
 

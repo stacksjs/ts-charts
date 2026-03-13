@@ -34,6 +34,7 @@ export function squarifyRatio(ratio: number, parent: TileParent & TileNode, x0: 
     dy = y1 - y0
 
     // Find the next non-empty node.
+    // eslint-disable-next-line pickier/no-unused-vars
     do sumValue = nodes[i1++].value!; while (!sumValue && i1 < n)
     minValue = maxValue = sumValue
     alpha = Math.max(dy / dx, dx / dy) / (value * ratio)
@@ -47,6 +48,7 @@ export function squarifyRatio(ratio: number, parent: TileParent & TileNode, x0: 
       if (nodeValue > maxValue) maxValue = nodeValue
       beta = sumValue * sumValue * alpha
       newRatio = Math.max(maxValue / beta, beta / minValue)
+      // eslint-disable-next-line pickier/no-unused-vars
       if (newRatio > minRatio) { sumValue -= nodeValue; break }
       minRatio = newRatio
     }

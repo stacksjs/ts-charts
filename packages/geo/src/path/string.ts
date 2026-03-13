@@ -1,3 +1,4 @@
+// eslint-disable-next-line pickier/no-unused-vars
 type AppendFn = (this: PathString, strings: TemplateStringsArray, ...values: number[]) => void
 
 let cacheDigits: number, cacheAppend: AppendFn, cacheRadius: number, cacheCircle: string

@@ -4,6 +4,7 @@ import lcg from './lcg.ts'
 import type { ForceNode } from './center.ts'
 
 export function x(d: ForceNode): number {
+  // eslint-disable-next-line pickier/no-unused-vars
   return d.x!
 }
 
@@ -40,7 +41,9 @@ export interface Simulation {
   force(name: string): Force | undefined
   force(name: string, _: Force | null): Simulation
   find(x: number, y: number, radius?: number): ForceNode | undefined
+  // eslint-disable-next-line pickier/no-unused-vars
   on(name: string): ((...args: unknown[]) => void) | undefined
+  // eslint-disable-next-line pickier/no-unused-vars
   on(name: string, _: ((...args: unknown[]) => void) | null): Simulation
 }
 

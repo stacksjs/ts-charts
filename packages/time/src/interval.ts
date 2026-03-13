@@ -5,6 +5,7 @@ export interface TimeInterval {
   round: (date: Date | number) => Date
   offset: (date: Date | number, step?: number) => Date
   range: (start: Date | number, stop: Date | number, step?: number) => Date[]
+  // eslint-disable-next-line pickier/no-unused-vars
   filter: (test: (date: Date) => boolean) => TimeInterval
   count?: (start: Date | number, end: Date | number) => number
   every?: (step: number) => TimeInterval | null

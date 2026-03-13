@@ -4,6 +4,7 @@ import defaultSource from './defaultSource.ts'
 export interface RandomWeibull {
   (k: number, a?: number, b?: number): () => number
   source(source: RandomSource): RandomWeibull
+// eslint-disable-next-line pickier/no-unused-vars
 }
 
 function sourceRandomWeibull(source: RandomSource): RandomWeibull {
@@ -12,7 +13,9 @@ function sourceRandomWeibull(source: RandomSource): RandomWeibull {
     let kk = +k
     if (kk === 0) {
       outerFunc = (x: number): number => -Math.log(x)
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       kk = 1 / kk
       outerFunc = (x: number): number => Math.pow(x, kk)
     }

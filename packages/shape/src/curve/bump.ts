@@ -76,6 +76,7 @@ class BumpRadial {
     x = +x, y = +y
     if (this._point === 0) {
       this._point = 1
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       const p0 = pointRadial(this._x0, this._y0)
       const p1 = pointRadial(this._x0, this._y0 = (this._y0 + y) / 2)

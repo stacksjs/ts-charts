@@ -6,6 +6,7 @@ export default function sum(values: Iterable<any>, valueof?: (value: any, index:
         sum += value
       }
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     let index = -1
     for (let value of values) {

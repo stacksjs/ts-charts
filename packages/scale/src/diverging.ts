@@ -7,7 +7,9 @@ import { copy } from './sequential.ts'
 import { symlogish } from './symlog.ts'
 import { powish } from './pow.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type TransformFn = (x: number) => number
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolatorFn = (t: number) => number
 
 function transformer(): (t: TransformFn) => ContinuousScale {
@@ -44,10 +46,12 @@ function transformer(): (t: TransformFn) => ContinuousScale {
   function range(interpolateFn: (a: number, b: number) => (t: number) => number): (_?: Iterable<number>) => [number, number, number] | ContinuousScale {
     return function (_?: Iterable<number>): [number, number, number] | ContinuousScale {
       let r0: number, r1: number, r2: number
+      // eslint-disable-next-line pickier/no-unused-vars
       return arguments.length ? ([r0, r1, r2] = Array.from(_!) as [number, number, number], interpolator = piecewise(interpolateFn as (a: unknown, b: unknown) => (t: number) => unknown, [r0, r1, r2]) as unknown as InterpolatorFn, scale as unknown as ContinuousScale) : [interpolator(0), interpolator(0.5), interpolator(1)]
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   scale.range = range(interpolate as unknown as (a: number, b: number) => (t: number) => number)
 
   scale.rangeRound = range(interpolateRound)

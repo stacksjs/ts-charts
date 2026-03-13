@@ -11,15 +11,19 @@ bun add @ts-charts/shape
 ## Exports
 
 ### Generators
+
 `arc`, `area`, `line`, `pie`, `areaRadial`, `lineRadial`, `pointRadial`, `link`, `linkHorizontal`, `linkVertical`, `linkRadial`
 
 ### Symbols
+
 `symbol`, `symbols`, `symbolsFill`, `symbolsStroke`, `symbolAsterisk`, `symbolCircle`, `symbolCross`, `symbolDiamond`, `symbolDiamond2`, `symbolPlus`, `symbolSquare`, `symbolSquare2`, `symbolStar`, `symbolTriangle`, `symbolTriangle2`, `symbolWye`, `symbolTimes`, `symbolX`
 
 ### Curves
+
 `curveBasis`, `curveBasisClosed`, `curveBasisOpen`, `curveBundle`, `curveBumpX`, `curveBumpY`, `curveCardinal`, `curveCardinalClosed`, `curveCardinalOpen`, `curveCatmullRom`, `curveCatmullRomClosed`, `curveCatmullRomOpen`, `curveLinear`, `curveLinearClosed`, `curveMonotoneX`, `curveMonotoneY`, `curveNatural`, `curveStep`, `curveStepAfter`, `curveStepBefore`
 
 ### Stacks
+
 `stack`, `stackOffsetExpand`, `stackOffsetDiverging`, `stackOffsetNone`, `stackOffsetSilhouette`, `stackOffsetWiggle`, `stackOrderAppearance`, `stackOrderAscending`, `stackOrderDescending`, `stackOrderInsideOut`, `stackOrderNone`, `stackOrderReverse`
 
 ## Usage

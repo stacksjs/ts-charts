@@ -4,6 +4,7 @@ export interface QuadtreeLeaf<T> {
 }
 
 export type QuadtreeInternalNode<T> = [
+  // eslint-disable-next-line pickier/no-unused-vars
   QuadtreeNode<T> | undefined,
   QuadtreeNode<T> | undefined,
   QuadtreeNode<T> | undefined,
@@ -20,4 +21,5 @@ export type QuadtreeNodeCallback<T> = (
   y1: number,
 ) => boolean | void
 
+// eslint-disable-next-line pickier/no-unused-vars
 export type Accessor<T> = (d: T) => number

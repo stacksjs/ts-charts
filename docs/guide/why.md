@@ -1,4 +1,4 @@
-# Why ts-charts?
+# Why ts-charts
 
 D3.js is the gold standard for data visualization on the web. So why rewrite it?
 

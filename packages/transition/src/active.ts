@@ -13,6 +13,7 @@ export default function active(node: Element, name?: string | null): Transition 
   let i: string
 
   if (schedules) {
+    // eslint-disable-next-line pickier/no-unused-vars
     const n = name == null ? null : name + ''
     for (i in schedules) {
       if ((schedule = schedules[i]).state > SCHEDULED && schedule.name === n) {

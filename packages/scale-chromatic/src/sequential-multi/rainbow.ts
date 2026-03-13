@@ -13,5 +13,6 @@ export default function rainbow(t: number): string {
   c.h = 360 * t - 100
   c.s = 1.5 - 1.5 * ts
   c.l = 0.8 - 0.9 * ts
+  // eslint-disable-next-line pickier/no-unused-vars
   return c + ''
 }

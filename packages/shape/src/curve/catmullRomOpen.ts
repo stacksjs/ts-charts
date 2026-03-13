@@ -35,10 +35,15 @@ CatmullRomOpen.prototype = {
     }
 
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 0: this._point = 1; break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 1: this._point = 2; break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 3: this._point = 4; point(this, x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       default: point(this, x, y); break
     }
 

@@ -41,7 +41,9 @@ Cardinal.prototype = {
   },
   lineEnd(): void {
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._context.lineTo(this._x2, this._y2); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 3: point(this, this._x1, this._y1); break
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath()
@@ -50,9 +52,13 @@ Cardinal.prototype = {
   point(x: number, y: number): void {
     x = +x, y = +y
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 1: this._point = 2; this._x1 = x, this._y1 = y; break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._point = 3; point(this, x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       default: point(this, x, y); break
     }
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x

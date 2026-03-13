@@ -31,6 +31,7 @@ export default function(x?: any, y?: any): any {
       if (defined0) output.point(+x(d, i, data), +y(d, i, data))
     }
 
+    // eslint-disable-next-line pickier/no-unused-vars
     if (buffer) return output = null, buffer + '' || null
   }
 

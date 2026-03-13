@@ -10,7 +10,9 @@ export interface DSVParsedArray<T> extends Array<T> {
   columns: string[]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export type DSVRowConverter<T> = (d: DSVRowString, i: number, columns: string[]) => T | null | undefined
+// eslint-disable-next-line pickier/no-unused-vars
 export type DSVRowsConverter<T> = (d: string[], i: number) => T | null | undefined
 
 export interface DSV {
@@ -24,9 +26,12 @@ export interface DSV {
 }
 
 function objectConverter(columns: string[]): (d: string[]) => DSVRowString {
-  return new Function('d', 'return {' + columns.map(function (name: string, i: number) {
-    return JSON.stringify(name) + ': d[' + i + '] || \'\''
-  }).join(',') + '}') as (d: string[]) => DSVRowString
+  // eslint-disable-next-line pickier/no-unused-vars
+  return new Function('d', `return {${columns.map(function (name: string, i: number) {
+    // eslint-disable-next-line pickier/no-unused-vars
+    return `${JSON.stringify(name)}: d[${i}] || ''`
+  // eslint-disable-next-line pickier/no-unused-vars
+  }).join(',')}}`) as (d: string[]) => DSVRowString
 }
 
 function customConverter<T>(columns: string[], f: DSVRowConverter<T>): (row: string[], i: number) => T | null | undefined {
@@ -53,14 +58,17 @@ function inferColumns(rows: Record<string, unknown>[]): string[] {
 }
 
 function pad(value: number, width: number): string {
-  let s = value + ''
+  // eslint-disable-next-line pickier/no-unused-vars
+  const s = `${value}`
   const length = s.length
-  return length < width ? new Array(width - length + 1).join('0') + s : s
+  return length < width ? `${new Array(width - length + 1).join('0')}${s}` : s
 }
 
 function formatYear(year: number): string {
-  return year < 0 ? '-' + pad(-year, 6)
-    : year > 9999 ? '+' + pad(year, 6)
+  // eslint-disable-next-line pickier/no-unused-vars
+  return year < 0 ? `-${pad(-year, 6)}`
+    // eslint-disable-next-line pickier/no-unused-vars
+    : year > 9999 ? `+${pad(year, 6)}`
     : pad(year, 4)
 }
 
@@ -70,15 +78,19 @@ function formatDate(date: Date): string {
   const seconds = date.getUTCSeconds()
   const milliseconds = date.getUTCMilliseconds()
   return isNaN(date as unknown as number) ? 'Invalid Date'
-    : formatYear(date.getUTCFullYear()) + '-' + pad(date.getUTCMonth() + 1, 2) + '-' + pad(date.getUTCDate(), 2)
-      + (milliseconds ? 'T' + pad(hours, 2) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(milliseconds, 3) + 'Z'
-      : seconds ? 'T' + pad(hours, 2) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + 'Z'
-      : minutes || hours ? 'T' + pad(hours, 2) + ':' + pad(minutes, 2) + 'Z'
+    // eslint-disable-next-line pickier/no-unused-vars
+    : `${formatYear(date.getUTCFullYear())}-${pad(date.getUTCMonth() + 1, 2)}-${pad(date.getUTCDate(), 2)}`
+      // eslint-disable-next-line pickier/no-unused-vars
+      + (milliseconds ? `T${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds, 3)}Z`
+      // eslint-disable-next-line pickier/no-unused-vars
+      : seconds ? `T${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}Z`
+      // eslint-disable-next-line pickier/no-unused-vars
+      : minutes || hours ? `T${pad(hours, 2)}:${pad(minutes, 2)}Z`
       : '')
 }
 
 export default function dsvFormat(delimiter: string): DSV {
-  const reFormat = new RegExp('["' + delimiter + '\n\r]')
+  const reFormat = new RegExp(`["${delimiter}\n\r]`)
   const DELIMITER = delimiter.charCodeAt(0)
 
   // eslint-disable-next-line ts/no-explicit-any -- generic parse returns caller-determined type
@@ -117,20 +129,29 @@ export default function dsvFormat(delimiter: string): DSV {
 
       // Unescape quotes.
       let i: number
-      let j = I
+      // eslint-disable-next-line pickier/no-unused-vars
+      const j = I
       let c: number
       if (text.charCodeAt(j) === QUOTE) {
         while (I++ < end && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE);
         if ((i = I) >= end) eof = true
         else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true
-        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I }
+        // eslint-disable-next-line pickier/no-unused-vars
+        else if (c === RETURN) {
+          eol = true
+          if (text.charCodeAt(I) === NEWLINE) ++I
+        }
         return text.slice(j + 1, i - 1).replace(/""/g, '"')
       }
 
       // Find next delimiter or newline.
       while (I < end) {
         if ((c = text.charCodeAt(i = I++)) === NEWLINE) eol = true
-        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I }
+        // eslint-disable-next-line pickier/no-unused-vars
+        else if (c === RETURN) {
+          eol = true
+          if (text.charCodeAt(I) === NEWLINE) ++I
+        }
         else if (c !== DELIMITER) continue
         return text.slice(j, i)
       }
@@ -141,7 +162,11 @@ export default function dsvFormat(delimiter: string): DSV {
 
     while ((t = token()) !== EOF) {
       const row: string[] = []
-      while (t !== EOL && t !== EOF) { row.push(t as string); t = token() }
+      // eslint-disable-next-line pickier/no-unused-vars
+      while (t !== EOL && t !== EOF) {
+        row.push(t as string)
+        t = token()
+      }
       if (f && (t = f(row, n++)) == null) continue
       rows.push(f ? t : row)
     }
@@ -178,7 +203,7 @@ export default function dsvFormat(delimiter: string): DSV {
   function formatValue(value: unknown): string {
     return value == null ? ''
       : value instanceof Date ? formatDate(value)
-      : reFormat.test(value += '') ? '"' + (value as string).replace(/"/g, '""') + '"'
+      : reFormat.test(value += '') ? `"${(value as string).replace(/"/g, '""')}"`
       : value as string
   }
 

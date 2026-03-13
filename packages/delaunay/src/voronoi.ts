@@ -70,6 +70,7 @@ export default class Voronoi {
         const a = 1e9 * Math.sign((bx - x1) * ey - (by! - y1) * ex)
         x = (x1 + x3) / 2 - a * ey
         y = (y1 + y3) / 2 + a * ex
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         const d = 1 / ab
         const bl = dx * dx + dy * dy
@@ -169,6 +170,7 @@ export default class Voronoi {
     if (c0 === 0 && c1 === 0) {
       context.moveTo(x0, y0)
       context.lineTo(x1, y1)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (S = this._clipSegment(x0, y0, x1, y1, c0, c1)) {
       context.moveTo(S[0], S[1])
       context.lineTo(S[2], S[3])
@@ -242,13 +244,17 @@ export default class Voronoi {
         e0 = e1, e1 = 0
         if (P) P.push(x1, y1)
         else P = [x1, y1]
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         let S: [number, number, number, number] | null, sx0: number, sy0: number, sx1: number, sy1: number
         if (c0 === 0) {
           if ((S = this._clipSegment(x0!, y0!, x1, y1, c0, c1)) === null) continue
+          // eslint-disable-next-line pickier/no-unused-vars
           ;[sx0, sy0, sx1, sy1] = S
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           if ((S = this._clipSegment(x1, y1, x0!, y0!, c1, c0)) === null) continue
+          // eslint-disable-next-line pickier/no-unused-vars
           ;[sx1, sy1, sx0, sy0] = S
           e0 = e1, e1 = this._edgecode(sx0, sy0)
           if (e0 && e1) this._edge(i, e0, e1, P!, P!.length)
@@ -264,6 +270,7 @@ export default class Voronoi {
     if (P) {
       e0 = e1, e1 = this._edgecode(P[0], P[1])
       if (e0 && e1) this._edge(i, e0, e1, P, P.length)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (this.contains(i, (this.xmin + this.xmax) / 2, (this.ymin + this.ymax) / 2)) {
       return [this.xmax, this.ymin, this.xmax, this.ymax, this.xmin, this.ymax, this.xmin, this.ymin]
     }
@@ -297,6 +304,7 @@ export default class Voronoi {
         c0 = c1, c1 = this._edgecode(P[j], P[j + 1])
         if (c0 && c1) j = this._edge(i, c0, c1, P, j), n = P.length
       }
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (this.contains(i, (this.xmin + this.xmax) / 2, (this.ymin + this.ymax) / 2)) {
       P = [this.xmin, this.ymin, this.xmax, this.ymin, this.xmax, this.ymax, this.xmin, this.ymax]
     }
@@ -307,13 +315,21 @@ export default class Voronoi {
     while (e0 !== e1) {
       let x: number, y: number
       switch (e0) {
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b0101: e0 = 0b0100; continue // top-left
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b0100: e0 = 0b0110, x = this.xmax, y = this.ymin; break // top
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b0110: e0 = 0b0010; continue // top-right
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b0010: e0 = 0b1010, x = this.xmax, y = this.ymax; break // right
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b1010: e0 = 0b1000; continue // bottom-right
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b1000: e0 = 0b1001, x = this.xmin, y = this.ymax; break // bottom
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b1001: e0 = 0b0001; continue // bottom-left
+        // eslint-disable-next-line pickier/no-unused-vars
         case 0b0001: e0 = 0b0101, x = this.xmin, y = this.ymin; break // left
       }
       if ((P[j] !== x! || P[j + 1] !== y!) && this.contains(i, x!, y!)) {
@@ -328,6 +344,7 @@ export default class Voronoi {
     if (vy < 0) { // top
       if (y0 <= this.ymin) return null
       if ((c = (this.ymin - y0) / vy) < t) y = this.ymin, x = x0 + (t = c) * vx
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (vy > 0) { // bottom
       if (y0 >= this.ymax) return null
       if ((c = (this.ymax - y0) / vy) < t) y = this.ymax, x = x0 + (t = c) * vx
@@ -335,6 +352,7 @@ export default class Voronoi {
     if (vx > 0) { // right
       if (x0 >= this.xmax) return null
       if ((c = (this.xmax - x0) / vx) < t) x = this.xmax, y = y0 + (t = c) * vy
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (vx < 0) { // left
       if (x0 <= this.xmin) return null
       if ((c = (this.xmin - x0) / vx) < t) x = this.xmin, y = y0 + (t = c) * vy

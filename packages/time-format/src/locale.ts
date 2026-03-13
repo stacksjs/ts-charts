@@ -4,6 +4,7 @@ import {
   timeMonday,
   timeThursday,
   timeYear,
+  // eslint-disable-next-line pickier/no-unused-vars
   utcDay,
   utcSunday,
   utcMonday,
@@ -49,7 +50,9 @@ interface DateFields {
   s?: number
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 type FormatFn = ((d: Date, p: string) => string | number) | ((d: Date) => string | number) | null
+// eslint-disable-next-line pickier/no-unused-vars
 type ParseFn = (d: DateFields, string: string, i: number) => number
 type FormatMap = Record<string, FormatFn>
 type ParseMap = Record<string, ParseFn>
@@ -270,6 +273,7 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
           d.y = week.getUTCFullYear()
           d.m = week.getUTCMonth()
           d.d = week.getUTCDate() + (d.w! + 6) % 7
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           week = localDate(newDate(d.y, 0, 1))
           day = week.getDay()
@@ -279,6 +283,7 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
           d.m = week.getMonth()
           d.d = week.getDate() + (d.w! + 6) % 7
         }
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if ('W' in d || 'U' in d) {
         if (!('w' in d)) d.w = 'u' in d ? d.u! % 7 : 'W' in d ? 1 : 0
         day = 'Z' in d ? utcDate(newDate(d.y, 0, 1)).getUTCDay() : localDate(newDate(d.y, 0, 1)).getDay()
@@ -313,6 +318,7 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
         c = specifier.charAt(i++)
         parse = parses[(c as string) in pads ? specifier.charAt(i++) : (c as string)]
         if (!parse || ((j = parse(d, string, j)) < 0)) return -1
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if (c != string.charCodeAt(j++)) {
         return -1
       }
@@ -426,6 +432,7 @@ export default function formatLocale(locale: TimeLocaleDefinition): TimeLocaleOb
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 const pads: Record<string, string> = { '-': '', '_': ' ', '0': '0' }
 const numberRe = /^\s*\d+/ // note: ignores next directive
 const percentRe = /^%/
@@ -443,6 +450,7 @@ function requote(s: string): string {
 }
 
 function formatRe(names: readonly string[]): RegExp {
+  // eslint-disable-next-line pickier/no-unused-vars
   return new RegExp('^(?:' + names.map(requote).join('|') + ')', 'i')
 }
 

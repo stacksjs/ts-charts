@@ -24,6 +24,7 @@ function cubehelix(hueFn: (a: number, b: number) => (t: number) => number): Cube
         s.s = sat(t)
         s.l = l(Math.pow(t, y))
         s.opacity = opacity(t)
+        // eslint-disable-next-line pickier/no-unused-vars
         return s + ''
       }
     }

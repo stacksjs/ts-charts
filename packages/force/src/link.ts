@@ -15,6 +15,7 @@ function index(d: ForceLink): string | number {
 
 function find(nodeById: Map<string | number, ForceNode>, nodeId: string | number): ForceNode {
   const node = nodeById.get(nodeId)
+  // eslint-disable-next-line pickier/no-unused-vars
   if (!node) throw new Error('node not found: ' + nodeId)
   return node
 }

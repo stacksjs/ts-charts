@@ -8,6 +8,7 @@ function easeVarying(id: number, value: Function): () => void {
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; each: Function }, value: Function): unknown {
   if (typeof value !== 'function') throw new Error()
   return this.each(easeVarying(this._id, value))

@@ -30,6 +30,7 @@ export interface GeoRawProjection {
 /**
  * A clip/transform stream factory: takes a sink stream and returns a new stream that wraps it.
  */
+// eslint-disable-next-line pickier/no-unused-vars
 export type GeoStreamFactory = (stream: GeoStream) => GeoStream
 
 /**

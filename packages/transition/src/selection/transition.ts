@@ -26,6 +26,7 @@ function inherit(node: Element, id: number): TransitionTiming {
   return timing
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function selectionTransition(this: { _groups: Array<Array<Element | null>>; _parents: Array<Element | null> }, name?: string | Transition): Transition {
   let id: number
   let timing: TransitionTiming | undefined
@@ -38,6 +39,7 @@ export default function selectionTransition(this: { _groups: Array<Array<Element
   else {
     id = newId()
     timing = { ...defaultTiming, time: now() }
+    // eslint-disable-next-line pickier/no-unused-vars
     transitionName = name == null ? null : name + ''
   }
 

@@ -20,6 +20,7 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
         || comparePoint(from, to!) < 0 !== direction > 0) {
       do stream.point(a === 0 || a === 3 ? x0 : x1, a > 1 ? y1 : y0)
       while ((a = (a + direction + 4) % 4) !== a1)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       stream.point(to![0], to![1])
     }
@@ -134,6 +135,7 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
           activeStream.lineStart()
           activeStream.point(x, y)
         }
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         if (v && v_) activeStream.point(x, y)
         else {
@@ -147,6 +149,7 @@ export default function clipRectangle(x0: number, y0: number, x1: number, y1: nu
             activeStream.point(b[0], b[1])
             if (!v) activeStream.lineEnd()
             clean = false
+          // eslint-disable-next-line pickier/no-unused-vars
           } else if (v) {
             activeStream.lineStart()
             activeStream.point(x, y)

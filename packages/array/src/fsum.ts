@@ -5,6 +5,7 @@ export class Adder {
 
   constructor() {
     this._partials = new Float64Array(32)
+    // eslint-disable-next-line pickier/no-unused-vars
     this._n = 0
   }
 
@@ -53,6 +54,7 @@ export function fsum(values: Iterable<any>, valueof?: (value: any, index: number
         adder.add(value)
       }
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     let index = -1
     for (let value of values) {

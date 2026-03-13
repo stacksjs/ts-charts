@@ -1,6 +1,7 @@
 import { set } from './schedule.ts'
 import type { Dispatch } from '@ts-charts/dispatch'
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; size: () => number; each: Function }): Promise<void> {
   let on0: Dispatch, on1: Dispatch & { _: Record<string, Array<{ value: Function }>> }
   const that = this

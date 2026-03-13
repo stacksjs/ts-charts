@@ -373,6 +373,7 @@ function hsla(h: number, s: number, l: number, a: number): Hsl {
 
 export function color(format: string): Color | null {
   let m: RegExpExecArray | null
+  // eslint-disable-next-line pickier/no-unused-vars
   format = (format + '').trim().toLowerCase()
 
   if ((m = reHex.exec(format))) {
@@ -427,6 +428,7 @@ export function hslConvert(o: Color | string): Hsl {
     else h = (r - g) / s + 4
     s /= l < 0.5 ? max + min : 2 - max - min
     h *= 60
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     s = l > 0 && l < 1 ? 0 : h
   }

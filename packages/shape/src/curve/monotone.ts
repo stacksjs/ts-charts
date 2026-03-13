@@ -63,7 +63,9 @@ MonotoneX.prototype = {
   },
   lineEnd(): void {
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._context.lineTo(this._x1, this._y1); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 3: pointM(this, this._t0, slope2(this, this._t0)); break
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath()
@@ -75,9 +77,13 @@ MonotoneX.prototype = {
     x = +x, y = +y
     if (x === this._x1 && y === this._y1) return // Ignore coincident points.
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 1: this._point = 2; break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._point = 3; pointM(this, slope2(this, t1 = slope3(this, x, y)), t1); break
+      // eslint-disable-next-line pickier/no-unused-vars
       default: pointM(this, this._t0, t1 = slope3(this, x, y)); break
     }
 
@@ -91,7 +97,9 @@ function MonotoneY(this: any, context: CurveContext): void {
   this._context = new (ReflectContext as any)(context)
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(MonotoneY as any).prototype = Object.create(MonotoneX.prototype)
+// eslint-disable-next-line pickier/no-unused-vars
 ;(MonotoneY as any).prototype.point = function (x: number, y: number): void {
   MonotoneX.prototype.point.call(this, y, x)
 }

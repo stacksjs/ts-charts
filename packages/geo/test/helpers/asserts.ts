@@ -1,9 +1,11 @@
 import { expect } from 'bun:test'
 
 export function assertPathEqual(actual: string, expected: string): void {
+  // eslint-disable-next-line pickier/no-unused-vars
   expect(normalizePath(actual + '')).toBe(normalizePath(expected + ''))
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 const reNumber = /[-+]?(?:\d+\.\d+|\d+\.|\.\d+|\d+)(?:[eE][-]?\d+)?/g
 
 function normalizePath(path: string): string {
@@ -26,6 +28,7 @@ function inDelta(actual: any, expected: any, delta: number): boolean {
 }
 
 function inDeltaArray(actual: any[], expected: any[], delta: number): boolean {
+  // eslint-disable-next-line pickier/no-unused-vars
   let n = expected.length, i = -1
   if (actual.length !== n) return false
   while (++i < n) if (!inDelta(actual[i], expected[i], delta)) return false

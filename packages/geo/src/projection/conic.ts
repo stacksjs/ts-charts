@@ -5,6 +5,7 @@ import type { GeoRawProjection, GeoConicProjection } from '../types.ts'
 export function conicProjection(projectAt: (y0: number, y1: number) => GeoRawProjection): GeoConicProjection {
   let phi0 = 0,
       phi1 = pi / 3
+  // eslint-disable-next-line pickier/no-unused-vars
   const m = projectionMutator(projectAt as (...args: unknown[]) => GeoRawProjection),
       p = m(phi0, phi1) as unknown as GeoConicProjection
 

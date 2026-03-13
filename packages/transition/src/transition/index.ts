@@ -46,15 +46,18 @@ export class Transition {
   selectAll(select: string | Function): Transition { return (transition_selectAll as Function).call(this, select) }
   selectChild(match: string | Function): Transition { return (Selection.prototype.selectChild as Function).call(this, match) }
   selectChildren(match: string | Function): Transition { return (Selection.prototype.selectChildren as Function).call(this, match) }
+  // eslint-disable-next-line pickier/no-unused-vars
   filter(match: string | Function): Transition { return transition_filter.call(this, match as string | ((this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => boolean)) }
   merge(other: Transition): Transition { return transition_merge.call(this, other) }
   selection(): Selection { return transition_selection.call(this) }
   transition(): Transition { return transition_transition.call(this) }
+  // eslint-disable-next-line pickier/no-unused-vars
   call(callback: Function, ...args: unknown[]): this { (Selection.prototype.call as Function).apply(this, [callback, ...args]); return this }
   nodes(): Element[] { return (Selection.prototype.nodes as Function).call(this) }
   node(): Element | null { return (Selection.prototype.node as Function).call(this) }
   size(): number { return (Selection.prototype.size as Function).call(this) }
   empty(): boolean { return (Selection.prototype.empty as Function).call(this) }
+  // eslint-disable-next-line pickier/no-unused-vars
   each(callback: Function): this { (Selection.prototype.each as Function).call(this, callback); return this }
   on(name: string): Function | undefined
   on(name: string, listener: Function | null): Transition

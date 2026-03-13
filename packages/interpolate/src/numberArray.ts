@@ -3,6 +3,7 @@ export default function interpolateNumberArray(a: ArrayLike<number> | undefined,
   const n = a ? Math.min(b.length, a.length) : 0
   // Preserve typed array type (Float64Array, Float32Array, etc.) — use slice for regular arrays
   const c: ArrayLike<number> & Record<number, number> = ArrayBuffer.isView(b)
+    // eslint-disable-next-line pickier/no-unused-vars
     ? new ((b as object).constructor as new (source: ArrayLike<number>) => ArrayLike<number> & Record<number, number>)(b)
     : Array.prototype.slice.call(b) as number[]
   let i: number

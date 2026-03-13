@@ -4,6 +4,7 @@ import type { DecomposeResult } from './decompose.ts'
 
 function interpolateTransform(
   parse: (value: string) => DecomposeResult,
+  // eslint-disable-next-line pickier/no-unused-vars
   pxComma: string,
   pxParen: string,
   degParen: string,
@@ -17,16 +18,21 @@ function interpolateTransform(
     if (xa !== xb || ya !== yb) {
       const i = s.push('translate(', null, pxComma, null, pxParen)
       q.push({ i: i - 4, x: number(xa, xb) }, { i: i - 2, x: number(ya, yb) })
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (xb || yb) {
+      // eslint-disable-next-line pickier/no-unused-vars
       s.push('translate(' + xb + pxComma + yb + pxParen)
     }
   }
 
   function rotate(a: number, b: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
     if (a !== b) {
+      // eslint-disable-next-line pickier/no-unused-vars
       if (a - b > 180) b += 360; else if (b - a > 180) a += 360 // shortest path
       q.push({ i: s.push(pop(s) + 'rotate(', null, degParen) - 2, x: number(a, b) })
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (b) {
+      // eslint-disable-next-line pickier/no-unused-vars
       s.push(pop(s) + 'rotate(' + b + degParen)
     }
   }
@@ -34,7 +40,9 @@ function interpolateTransform(
   function skewX(a: number, b: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
     if (a !== b) {
       q.push({ i: s.push(pop(s) + 'skewX(', null, degParen) - 2, x: number(a, b) })
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (b) {
+      // eslint-disable-next-line pickier/no-unused-vars
       s.push(pop(s) + 'skewX(' + b + degParen)
     }
   }
@@ -43,7 +51,9 @@ function interpolateTransform(
     if (xa !== xb || ya !== yb) {
       const i = s.push(pop(s) + 'scale(', null, ',', null, ')')
       q.push({ i: i - 4, x: number(xa, xb) }, { i: i - 2, x: number(ya, yb) })
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (xb !== 1 || yb !== 1) {
+      // eslint-disable-next-line pickier/no-unused-vars
       s.push(pop(s) + 'scale(' + xb + ',' + yb + ')')
     }
   }

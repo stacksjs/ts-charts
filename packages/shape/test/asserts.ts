@@ -10,6 +10,7 @@ function normalizePath(path: string): string {
 }
 
 export function assertPathEqual(actual: any, expected: string): void {
+  // eslint-disable-next-line pickier/no-unused-vars
   expect(normalizePath(actual + '')).toBe(normalizePath(expected))
 }
 

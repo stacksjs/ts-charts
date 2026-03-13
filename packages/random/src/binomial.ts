@@ -28,7 +28,9 @@ function sourceRandomBinomial(source: RandomSource): RandomBinomial {
           acc += i
           nn -= i
           pp = (pp - y) / (1 - y)
-        } else {
+        // eslint-disable-next-line pickier/no-unused-vars
+        }
+        else {
           nn = i - 1
           pp /= y
         }

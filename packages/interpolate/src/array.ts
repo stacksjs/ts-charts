@@ -3,6 +3,7 @@ import numberArray, { isNumberArray } from './numberArray.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accepts arrays, typed arrays, array-like objects, and undefined
 export default function interpolateArray(a: any, b: any): (t: number) => unknown[] {
+  // eslint-disable-next-line pickier/no-unused-vars
   return (isNumberArray(b) ? numberArray : genericArray)(a, b) as (t: number) => unknown[]
 }
 

@@ -4,6 +4,7 @@ import { set } from './schedule.ts'
 import { tweenValue } from './tween.ts'
 import interpolate from './interpolate.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolateFn = (a: string | number, b: string | number) => (t: number) => string | number
 
 function styleNull(name: string, interpolateFn: InterpolateFn): () => ((t: number) => string | number) | null {
@@ -27,6 +28,7 @@ function styleRemove(name: string): () => void {
 
 function styleConstant(name: string, interpolateFn: InterpolateFn, value1: string | number): () => ((t: number) => string | number) | null {
   let string00: string
+  // eslint-disable-next-line pickier/no-unused-vars
   const string1 = value1 + ''
   let interpolate0: (t: number) => string | number
   return function (this: Element): ((t: number) => string | number) | null {
@@ -44,6 +46,7 @@ function styleFunction(name: string, interpolateFn: InterpolateFn, value: (node:
   return function (this: HTMLElement): ((t: number) => string | number) | null | void {
     const string0 = style(this, name)
     let value1 = value(this)
+    // eslint-disable-next-line pickier/no-unused-vars
     let string1 = value1 + ''
     if (value1 == null) string1 = value1 = (this.style.removeProperty(name), style(this, name))
     return string0 === string1 ? null
@@ -53,8 +56,11 @@ function styleFunction(name: string, interpolateFn: InterpolateFn, value: (node:
 }
 
 function styleMaybeRemove(id: number, name: string): () => void {
+  // eslint-disable-next-line pickier/no-unused-vars
   let on0: unknown, on1: { on: Function; copy: () => { on: Function } }, listener0: (() => void) | undefined
+  // eslint-disable-next-line pickier/no-unused-vars
   const key = 'style.' + name
+  // eslint-disable-next-line pickier/no-unused-vars
   const event = 'end.' + key
   let remove: () => void
   return function (this: Element): void {
@@ -62,21 +68,26 @@ function styleMaybeRemove(id: number, name: string): () => void {
     const on = schedule.on
     const listener = schedule.value![key] == null ? remove || (remove = styleRemove(name)) : undefined
 
+    // eslint-disable-next-line pickier/no-unused-vars
     if (on !== on0 || listener0 !== listener) (on1 = (on0 = on as unknown as { copy: () => { on: Function } }).copy() as { on: Function; copy: () => { on: Function } }).on(event, listener0 = listener)
 
     schedule.on = on1 as unknown as typeof schedule.on
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; styleTween: Function; on: Function; each: Function }, name: string, value?: unknown, priority?: string): unknown {
   const i = (name += '') === 'transform' ? interpolateTransform as unknown as InterpolateFn : interpolate as InterpolateFn
   return value == null ? this
       .styleTween(name, styleNull(name, i))
+      // eslint-disable-next-line pickier/no-unused-vars
       .on('end.style.' + name, styleRemove(name))
     : typeof value === 'function' ? this
+      // eslint-disable-next-line pickier/no-unused-vars
       .styleTween(name, styleFunction(name, i, tweenValue(this, 'style.' + name, value as Function) as (node: Element) => string | number | null))
       .each(styleMaybeRemove(this._id, name))
     : this
       .styleTween(name, styleConstant(name, i, value as string | number), priority)
+      // eslint-disable-next-line pickier/no-unused-vars
       .on('end.style.' + name, null)
 }

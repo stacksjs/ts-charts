@@ -15,9 +15,11 @@ export default function interrupt(node: Element, name?: string | null): void {
 
   if (!schedules) return
 
+  // eslint-disable-next-line pickier/no-unused-vars
   const n = name == null ? null : name + ''
 
   for (i in schedules) {
+    // eslint-disable-next-line pickier/no-unused-vars
     if ((schedule = schedules[i]).name !== n) { empty = false; continue }
     active = schedule.state > STARTING && schedule.state < ENDING
     schedule.state = ENDED

@@ -1,4 +1,5 @@
 export default function clipLine(a: number[], b: number[], x0: number, y0: number, x1: number, y1: number): boolean | undefined {
+  // eslint-disable-next-line pickier/no-unused-vars
   let ax = a[0],
       ay = a[1],
       bx = b[0],
@@ -15,6 +16,7 @@ export default function clipLine(a: number[], b: number[], x0: number, y0: numbe
   if (dx < 0) {
     if (r < t0) return
     if (r < t1) t1 = r
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (dx > 0) {
     if (r > t1) return
     if (r > t0) t0 = r
@@ -26,6 +28,7 @@ export default function clipLine(a: number[], b: number[], x0: number, y0: numbe
   if (dx < 0) {
     if (r > t1) return
     if (r > t0) t0 = r
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (dx > 0) {
     if (r < t0) return
     if (r < t1) t1 = r
@@ -37,6 +40,7 @@ export default function clipLine(a: number[], b: number[], x0: number, y0: numbe
   if (dy < 0) {
     if (r < t0) return
     if (r < t1) t1 = r
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (dy > 0) {
     if (r > t1) return
     if (r > t0) t0 = r
@@ -48,6 +52,7 @@ export default function clipLine(a: number[], b: number[], x0: number, y0: numbe
   if (dy < 0) {
     if (r > t1) return
     if (r > t0) t0 = r
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (dy > 0) {
     if (r < t0) return
     if (r < t1) t1 = r

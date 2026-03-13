@@ -42,16 +42,22 @@ function defaultArrowheadRadius(): number {
 export interface RibbonGenerator {
   (...args: any[]): string | null
   radius(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   radius(radius: number | ((...args: any[]) => number)): RibbonGenerator
   sourceRadius(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   sourceRadius(radius: number | ((...args: any[]) => number)): RibbonGenerator
   targetRadius(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   targetRadius(radius: number | ((...args: any[]) => number)): RibbonGenerator
   startAngle(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   startAngle(angle: number | ((...args: any[]) => number)): RibbonGenerator
   endAngle(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   endAngle(angle: number | ((...args: any[]) => number)): RibbonGenerator
   padAngle(): (...args: any[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   padAngle(angle: number | ((...args: any[]) => number)): RibbonGenerator
   source(): (...args: any[]) => any
   source(source: (...args: any[]) => any): RibbonGenerator
@@ -61,6 +67,7 @@ export interface RibbonGenerator {
   context(context: any): RibbonGenerator
   headRadius?: {
     (): (...args: any[]) => number
+    // eslint-disable-next-line pickier/no-unused-vars
     (radius: number | ((...args: any[]) => number)): RibbonGenerator
   }
 }
@@ -118,35 +125,43 @@ function ribbon(headRadius?: ((...args: any[]) => number) | null): RibbonGenerat
     context.quadraticCurveTo(0, 0, sr * cos(sa0), sr * sin(sa0))
     context.closePath()
 
-    if (buffer) return context = null, buffer + '' || null
+    // eslint-disable-next-line pickier/no-unused-vars
+    if (buffer) return context = null, `${buffer}` || null
     return null
   }
 
   if (headRadius) (ribbon as any).headRadius = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (headRadius = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : headRadius
   }
 
   ribbon.radius = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (sourceRadius = targetRadius = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : sourceRadius
   }
 
   ribbon.sourceRadius = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (sourceRadius = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : sourceRadius
   }
 
   ribbon.targetRadius = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (targetRadius = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : targetRadius
   }
 
   ribbon.startAngle = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (startAngle = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : startAngle
   }
 
   ribbon.endAngle = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (endAngle = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : endAngle
   }
 
   ribbon.padAngle = function (_?: number | ((...args: any[]) => number)): any {
+    // eslint-disable-next-line pickier/no-unused-vars
     return _ !== undefined ? (padAngle = typeof _ === 'function' ? _ as (...args: any[]) => number : constant(+_), ribbon) : padAngle
   }
 

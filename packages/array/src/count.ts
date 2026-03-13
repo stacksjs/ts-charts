@@ -6,6 +6,7 @@ export default function count(values: Iterable<any>, valueof?: (value: any, inde
         ++count
       }
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     let index = -1
     for (let value of values) {

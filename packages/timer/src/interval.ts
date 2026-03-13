@@ -5,9 +5,11 @@ export default function interval(callback: (elapsed: number) => void, delay?: nu
   let total = delay == null ? 0 : +delay
   if (delay == null) {
     t.restart(callback, delay, time)
+    // eslint-disable-next-line pickier/no-unused-vars
     return t
   }
   const originalRestart = t.restart.bind(t)
+  // eslint-disable-next-line pickier/no-unused-vars
   ;(t as Timer & { _restart: typeof t.restart })._restart = originalRestart
   t.restart = function (cb: (elapsed: number) => void, d?: number | null, tm?: number | null): void {
     const resolvedDelay = d == null ? 0 : +d

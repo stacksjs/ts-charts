@@ -35,6 +35,7 @@ export default function Contours(): any {
   let dx = 1
   let dy = 1
   let threshold: ((values: ArrayLike<number>) => number | number[]) = thresholdSturges as (values: ArrayLike<number>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   let smooth: ((ring: number[][], values: ArrayLike<number>, value: number) => void) = smoothLinear
 
   function contours(values: ArrayLike<number>): any[] {
@@ -46,6 +47,7 @@ export default function Contours(): any {
       tz = ticks(...nice(e[0] as number, e[1] as number, tz), tz)
       while (tz[tz.length - 1] >= (e[1] as number)) tz.pop()
       while (tz[1] < (e[0] as number)) tz.shift()
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       tz = tz.slice().sort(ascending)
     }
@@ -54,6 +56,7 @@ export default function Contours(): any {
   }
 
   // Accumulate, smooth contour rings, assign holes to exterior rings.
+  // eslint-disable-next-line pickier/no-unused-vars
   function contour(values: ArrayLike<number>, value: number): { type: string; value: number; coordinates: number[][][][] } {
     const v = value == null ? NaN : +value
     if (isNaN(v)) throw new Error(`invalid value: ${value}`)
@@ -142,14 +145,17 @@ export default function Contours(): any {
           if (f === g) {
             f.ring.push(end)
             callback(f.ring)
+          // eslint-disable-next-line pickier/no-unused-vars
           } else {
             fragmentByStart[f.start] = fragmentByEnd[g.end] = { start: f.start, end: g.end, ring: f.ring.concat(g.ring) }
           }
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           delete fragmentByEnd[f.end]
           f.ring.push(end)
           fragmentByEnd[f.end = endIndex] = f
         }
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if (f = fragmentByStart[endIndex]) {
         if (g = fragmentByEnd[startIndex]) {
           delete fragmentByStart[f.start]
@@ -157,14 +163,17 @@ export default function Contours(): any {
           if (f === g) {
             f.ring.push(end)
             callback(f.ring)
+          // eslint-disable-next-line pickier/no-unused-vars
           } else {
             fragmentByStart[g.start] = fragmentByEnd[f.end] = { start: g.start, end: f.end, ring: g.ring.concat(f.ring) }
           }
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           delete fragmentByStart[f.start]
           f.ring.unshift(start)
           fragmentByStart[f.start = startIndex] = f
         }
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         fragmentByStart[startIndex] = fragmentByEnd[endIndex] = { start: startIndex, end: endIndex, ring: [start, end] }
       }

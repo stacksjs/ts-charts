@@ -13,7 +13,9 @@ function sourceRandomInt(source: RandomSource): RandomInt {
     if (max === undefined) {
       hi = Math.floor(min)
       lo = 0
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       lo = Math.floor(min)
       hi = Math.floor(max) - lo
     }

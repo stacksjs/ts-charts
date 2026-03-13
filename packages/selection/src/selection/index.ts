@@ -28,7 +28,9 @@ interface OnEntry {
   options: AddEventListenerOptions | boolean | undefined
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 type ValueFn<T> = (this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => T
+// eslint-disable-next-line pickier/no-unused-vars
 type EventParamsFn = (this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => CustomEventInit
 
 // ── attr helpers ──
@@ -47,13 +49,15 @@ function attrRemoveNS(fullname: NamespaceLocal): (this: Element) => void {
 
 function attrConstant(name: string, value: string | number | boolean): (this: Element) => void {
   return function (this: Element): void {
-    this.setAttribute(name, value + '')
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.setAttribute(name, `${value}`)
   }
 }
 
 function attrConstantNS(fullname: NamespaceLocal, value: string | number | boolean): (this: Element) => void {
   return function (this: Element): void {
-    this.setAttributeNS(fullname.space, fullname.local, value + '')
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.setAttributeNS(fullname.space, fullname.local, `${value}`)
   }
 }
 
@@ -204,14 +208,16 @@ function textRemove(this: Element): void {
 
 function textConstant(value: string): (this: Element) => void {
   return function (this: Element): void {
-    this.textContent = '' + value
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.textContent = `${value}`
   }
 }
 
 function textFunction(value: ValueFn<string | null>): (this: Element) => void {
   return function (this: Element): void {
     const v = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
-    this.textContent = v == null ? '' : '' + v
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.textContent = v == null ? '' : `${v}`
   }
 }
 
@@ -275,6 +281,7 @@ function contextListener(listener: Function, node?: D3Node): (this: D3Node, even
 }
 
 function parseTypenames(typenames: string): Array<{ type: string, name: string }> {
+  // eslint-disable-next-line pickier/no-unused-vars
   return typenames.trim().split(/^|\s+/).map(function (t) {
     let name = ''
     const i = t.indexOf('.')
@@ -292,7 +299,9 @@ function onRemove(typename: { type: string, name: string }): (this: D3Node) => v
       o = on[j]
       if ((!typename.type || o.type === typename.type) && o.name === typename.name) {
         this.removeEventListener(o.type, o.listener, o.options)
-      } else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else {
         on[++i] = o
       }
     }
@@ -329,14 +338,20 @@ function dispatchEvent(node: Element, type: string, params: CustomEventInit | un
   let event: Event
   if (win && typeof win.CustomEvent === 'function') {
     event = new win.CustomEvent(type, params)
-  } else if (typeof CustomEvent === 'function') {
+  // eslint-disable-next-line pickier/no-unused-vars
+  }
+  else if (typeof CustomEvent === 'function') {
     event = new CustomEvent(type, params)
-  } else {
+  // eslint-disable-next-line pickier/no-unused-vars
+  }
+  else {
     const fallbackEvent = (win || window).document.createEvent('Event') as Event & { detail?: unknown }
     if (params) {
       fallbackEvent.initEvent(type, params.bubbles ?? false, params.cancelable ?? false)
       fallbackEvent.detail = params.detail
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       fallbackEvent.initEvent(type, false, false)
     }
     event = fallbackEvent
@@ -369,7 +384,9 @@ function bindIndex(parent: D3Node, group: D3Group, enter: Array<EnterNode | Elem
     if (node = group[i]) {
       (node as D3Node).__data__ = data[i]
       update[i] = node
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       enter[i] = new EnterNode(parent, data[i])
     }
   }
@@ -395,7 +412,9 @@ function bindKey(parent: D3Node, group: D3Group, enter: Array<EnterNode | Elemen
       keyValues[i] = keyValue = key.call(node, (node as unknown as D3Node).__data__, i, group as ArrayLike<Element | null>) + ''
       if (nodeByKeyValue.has(keyValue)) {
         exit[i] = node
-      } else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else {
         nodeByKeyValue.set(keyValue, node)
       }
     }
@@ -405,9 +424,13 @@ function bindKey(parent: D3Node, group: D3Group, enter: Array<EnterNode | Elemen
     keyValue = key.call(parent, data[i], i, data as unknown as ArrayLike<Element | null>) + ''
     if (node = nodeByKeyValue.get(keyValue)) {
       update[i] = node
-      ;(node as unknown as D3Node).__data__ = data[i]
+      // eslint-disable-next-line pickier/no-unused-vars
+      const nodeD3 = node as unknown as D3Node
+      nodeD3.__data__ = data[i]
       nodeByKeyValue.delete(keyValue)
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       enter[i] = new EnterNode(parent, data[i])
     }
   }
@@ -500,6 +523,7 @@ export class Selection {
     return this._parents
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   select(selectFn: string | ((this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => Element | null | undefined)): Selection {
     if (typeof selectFn !== 'function') selectFn = selectorFn(selectFn)
 
@@ -525,6 +549,7 @@ export class Selection {
     return new Selection(subgroups, this._parents)
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   selectAll(selectFn?: string | ((this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => ArrayLike<Element>) | null): Selection {
     if (typeof selectFn === 'function') selectFn = arrayAll(selectFn)
     else selectFn = selectorAllFn(selectFn)
@@ -549,16 +574,19 @@ export class Selection {
     return new Selection(subgroups, parents)
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   selectChild(match?: string | ((node: Element) => boolean)): Selection {
     return this.select(match == null ? childFirst
       : childFind(typeof match === 'function' ? match : childMatcher(match)))
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   selectChildren(match?: string | ((node: Element) => boolean)): Selection {
     return this.selectAll(match == null ? childrenAll
       : childrenFilter(typeof match === 'function' ? match : childMatcher(match)))
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   filter(match: string | ((this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => boolean)): Selection {
     if (typeof match !== 'function') match = matcherFn(match)
 
@@ -582,7 +610,9 @@ export class Selection {
   }
 
   data(): unknown[]
+  // eslint-disable-next-line pickier/no-unused-vars
   data(value: Iterable<unknown> | ((this: Element, d: unknown, i: number, parents: ArrayLike<Element | null>) => Iterable<unknown>), key?: ValueFn<string>): Selection
+  // eslint-disable-next-line pickier/no-unused-vars
   data(value?: Iterable<unknown> | ((this: Element, d: unknown, i: number, parents: ArrayLike<Element | null>) => Iterable<unknown>), key?: ValueFn<string>): unknown[] | Selection {
     if (value === undefined) return Array.from(this, datum)
 
@@ -608,7 +638,9 @@ export class Selection {
 
       if (key) {
         bindKey(parent, group, enterGroup, updateGroup, exitGroup, Array.from(data), key)
-      } else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else {
         bindIndex(parent, group, enterGroup, updateGroup, exitGroup, Array.from(data))
       }
 
@@ -643,8 +675,11 @@ export class Selection {
     if (typeof onenter === 'function') {
       enterSel = onenter(enterSel)
       if (enterSel) enterSel = enterSel.selection ? enterSel.selection() : enterSel
-    } else {
-      enterSel = enterSel.append(onenter + '')
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      enterSel = enterSel.append(`${onenter}`)
     }
 
     if (onupdate != null) {
@@ -803,6 +838,7 @@ export class Selection {
     return this.each(((value == null
       ? (typeof fullname === 'object' ? attrRemoveNS : attrRemove) : (typeof value === 'function'
         ? (typeof fullname === 'object' ? attrFunctionNS : attrFunction)
+        // eslint-disable-next-line pickier/no-unused-vars
         : (typeof fullname === 'object' ? attrConstantNS : attrConstant))) as Function)(fullname, value) as (this: Element) => void)
   }
 
@@ -813,6 +849,7 @@ export class Selection {
       return this.each((value == null
         ? styleRemove : typeof value === 'function'
           ? styleFunction
+          // eslint-disable-next-line pickier/no-unused-vars
           : styleConstant)(name, value as string & ValueFn<string | null>, priority == null ? '' : priority) as (this: Element) => void)
     }
     return styleValue(this.node() as Element, name)
@@ -833,7 +870,8 @@ export class Selection {
   classed(name: string): boolean
   classed(name: string, value: boolean | ValueFn<boolean>): Selection
   classed(name: string, value?: boolean | ValueFn<boolean>): boolean | Selection {
-    const names = classArray(name + '')
+    // eslint-disable-next-line pickier/no-unused-vars
+    const names = classArray(`${name}`)
 
     if (arguments.length < 2) {
       const list = classList(this.node() as Element)
@@ -846,6 +884,7 @@ export class Selection {
     return this.each((typeof value === 'function'
       ? classedFunction : value
         ? classedTrue
+        // eslint-disable-next-line pickier/no-unused-vars
         : classedFalse)(names, value as boolean & ValueFn<boolean>) as (this: Element) => void)
   }
 
@@ -856,6 +895,7 @@ export class Selection {
       return this.each((value == null
         ? textRemove : (typeof value === 'function'
           ? textFunction
+          // eslint-disable-next-line pickier/no-unused-vars
           : textConstant)(value as string & ValueFn<string | null>)) as (this: Element) => void)
     }
     return (this.node() as Element).textContent
@@ -868,6 +908,7 @@ export class Selection {
       return this.each((value == null
         ? htmlRemove : (typeof value === 'function'
           ? htmlFunction
+          // eslint-disable-next-line pickier/no-unused-vars
           : htmlConstant)(value as string & ValueFn<string | null>)) as (this: Element) => void)
     }
     return (this.node() as Element).innerHTML
@@ -881,6 +922,7 @@ export class Selection {
     return this.each(lowerNode)
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   append(name: string | ((this: Element, d: unknown, i: number, group: ArrayLike<Element | null>) => Element)): Selection {
     const create: Function = typeof name === 'function' ? name : creatorFn(name)
     return this.select(function (this: Element): Element {
@@ -916,7 +958,8 @@ export class Selection {
   on(typename: string): Function | undefined
   on(typename: string, value: Function | null, options?: AddEventListenerOptions | boolean): Selection
   on(typename: string, value?: Function | null, options?: AddEventListenerOptions | boolean): Function | undefined | Selection {
-    const typenames = parseTypenames(typename + '')
+    // eslint-disable-next-line pickier/no-unused-vars
+    const typenames = parseTypenames(`${typename}`)
     const n = typenames.length
 
     if (arguments.length < 2) {
@@ -934,6 +977,7 @@ export class Selection {
     }
 
     const onFn = value ? onAdd : onRemove
+    // eslint-disable-next-line pickier/no-unused-vars
     for (let i = 0; i < n; ++i) this.each(onFn(typenames[i], value!, options) as unknown as (this: Element) => void)
     return this
   }
@@ -941,6 +985,7 @@ export class Selection {
   dispatch(type: string, params?: CustomEventInit | EventParamsFn): Selection {
     return this.each((typeof params === 'function'
       ? dispatchFunction
+      // eslint-disable-next-line pickier/no-unused-vars
       : dispatchConstant)(type, params as CustomEventInit & EventParamsFn) as (this: Element) => void)
   }
 

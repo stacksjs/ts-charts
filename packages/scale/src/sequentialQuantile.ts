@@ -2,6 +2,7 @@ import { ascending, bisect, quantile } from '@ts-charts/array'
 import { identity } from './continuous.ts'
 import { initInterpolator } from './init.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolatorFn = (t: number) => number
 
 export interface SequentialQuantileScale {
@@ -37,6 +38,7 @@ export default function sequentialQuantile(): SequentialQuantileScale {
   }
 
   scale.range = function (): number[] {
+    // eslint-disable-next-line pickier/no-unused-vars
     return domain.map((d: number, i: number): number => interpolator(i / (domain.length - 1)))
   }
 

@@ -24,12 +24,14 @@ Step.prototype = {
   point(x: number, y: number): void {
     x = +x, y = +y
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
       case 1: {
         this._point = 2
         if (this._t <= 0) {
           this._context.lineTo(this._x, y)
           this._context.lineTo(x, y)
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           const x1 = this._x * (1 - this._t) + x * this._t
           this._context.lineTo(x1, this._y)
@@ -41,6 +43,7 @@ Step.prototype = {
         if (this._t <= 0) {
           this._context.lineTo(this._x, y)
           this._context.lineTo(x, y)
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           const x1 = this._x * (1 - this._t) + x * this._t
           this._context.lineTo(x1, this._y)

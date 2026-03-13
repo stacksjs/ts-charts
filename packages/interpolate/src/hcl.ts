@@ -16,10 +16,12 @@ function hcl(hueFn: (a: number, b: number) => (t: number) => number): (start: Co
       s.c = c(t)
       s.l = l(t)
       s.opacity = opacity(t)
+      // eslint-disable-next-line pickier/no-unused-vars
       return s + ''
     }
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default hcl(hue) as (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string
 export const hclLong: (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string = hcl(color)

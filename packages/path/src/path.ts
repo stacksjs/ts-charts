@@ -3,8 +3,10 @@ const tau: number = 2 * pi
 const epsilon: number = 1e-6
 const tauEpsilon: number = tau - epsilon
 
+// eslint-disable-next-line pickier/no-unused-vars
 type AppendFunction = (strings: TemplateStringsArray, ...values: number[]) => void
 
+// eslint-disable-next-line pickier/no-unused-vars
 function append(this: Path, strings: TemplateStringsArray, ...values: number[]): void {
   this._ += strings[0]
   for (let i = 1, n = strings.length; i < n; ++i) {
@@ -94,6 +96,7 @@ export class Path {
 
     // Otherwise, draw an arc!
     else {
+      // eslint-disable-next-line pickier/no-unused-vars
       let x20 = x2 - x0,
           y20 = y2 - y0,
           l21_2 = x21 * x21 + y21 * y21,
@@ -119,6 +122,7 @@ export class Path {
     // Is the radius negative? Error.
     if (r < 0) throw new Error(`negative radius: ${r}`)
 
+    // eslint-disable-next-line pickier/no-unused-vars
     let dx = r * Math.cos(a0),
         dy = r * Math.sin(a0),
         x0 = x + dx,

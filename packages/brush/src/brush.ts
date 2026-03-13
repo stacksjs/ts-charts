@@ -5,6 +5,7 @@ import { pointer, select } from '@ts-charts/selection'
 import { interrupt } from '@ts-charts/transition'
 import constant from './constant.ts'
 import BrushEvent from './event.ts'
+// eslint-disable-next-line pickier/no-unused-vars
 import noevent, { nopropagation } from './noevent.ts'
 
 const MODE_DRAG = { name: 'drag' }
@@ -206,7 +207,8 @@ function brush(dim: BrushDim): any {
     handle.exit().remove()
 
     handle.enter().append('rect')
-      .attr('class', (d: DimType) => 'handle handle--' + d.type)
+      // eslint-disable-next-line pickier/no-unused-vars
+      .attr('class', (d: DimType) => `handle handle--${d.type}`)
       .attr('cursor', (d: DimType) => cursors[d.type])
 
     group
@@ -243,7 +245,9 @@ function brush(dim: BrushDim): any {
 
           return selection0 !== null && selection1 !== null ? tween : tween(1)
         })
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       group
         .each(function (this: any) {
           const that = this
@@ -308,12 +312,20 @@ function brush(dim: BrushDim): any {
 
   Emitter.prototype = {
     beforestart(this: any): any {
-      if (++this.active === 1) this.state.emitter = this, this.starting = true
+      if (++this.active === 1) {
+        this.state.emitter = this
+        this.starting = true
+      }
       return this
     },
     start(this: any, event: any, mode?: any): any {
-      if (this.starting) this.starting = false, this.emit('start', event, mode)
-      else this.emit('brush', event)
+      if (this.starting) {
+        this.starting = false
+        this.emit('start', event, mode)
+      }
+      else {
+        this.emit('brush', event)
+      }
       return this
     },
     brush(this: any, event: any, mode?: any): any {
@@ -321,7 +333,10 @@ function brush(dim: BrushDim): any {
       return this
     },
     end(this: any, event: any, mode?: any): any {
-      if (--this.active === 0) delete this.state.emitter, this.emit('end', event, mode)
+      if (--this.active === 0) {
+        delete this.state.emitter
+        this.emit('end', event, mode)
+      }
       return this
     },
     emit(this: any, type: string, event: any, mode?: any): void {
@@ -389,7 +404,9 @@ function brush(dim: BrushDim): any {
         s0 = dim === X ? S : max(pts[0][1], pts[1][1]),
       ]]
       if (points.length > 1) move(event)
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       w0 = selection[0][0]
       n0 = selection[0][1]
       e0 = selection[1][0]
@@ -411,7 +428,9 @@ function brush(dim: BrushDim): any {
     if (event.touches) {
       emit.moved = moved
       emit.ended = ended
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       view = select(event.view)
         .on('mousemove.brush', moved, true)
         .on('mouseup.brush', ended, true)
@@ -438,14 +457,18 @@ function brush(dim: BrushDim): any {
           lockX = true
       }
       for (const point of points)
-        if (point.cur) point[0] = point.cur[0], point[1] = point.cur[1]
+        if (point.cur) {
+          point[0] = point.cur[0]
+          point[1] = point.cur[1]
+        }
       moving = true
       noevent(event)
       move(event)
     }
 
     function move(event: any): void {
-      const point = points[0], point0 = point.point0
+      const point = points[0]
+      const point0 = point.point0
       let t: any
 
       dx = point[0] - point0[0]
@@ -462,7 +485,9 @@ function brush(dim: BrushDim): any {
           if (points[1]) {
             if (signX) w1 = max(W, min(E, points[0][0])), e1 = max(W, min(E, points[1][0])), signX = 1
             if (signY) n1 = max(N, min(S, points[0][1])), s1 = max(N, min(S, points[1][1])), signY = 1
-          } else {
+          // eslint-disable-next-line pickier/no-unused-vars
+          }
+          else {
             if (signX < 0) dx = max(W - w0, min(E - w0, dx)), w1 = w0 + dx, e1 = e0
             else if (signX > 0) dx = max(W - e0, min(E - e0, dx)), w1 = w0, e1 = e0 + dx
             if (signY < 0) dy = max(N - n0, min(S - n0, dy)), n1 = n0 + dy, s1 = s0
@@ -479,15 +504,23 @@ function brush(dim: BrushDim): any {
 
       if (e1 < w1) {
         signX *= -1
-        t = w0, w0 = e0, e0 = t
-        t = w1, w1 = e1, e1 = t
+        t = w0
+        w0 = e0
+        e0 = t
+        t = w1
+        w1 = e1
+        e1 = t
         if (type in flipX) overlay.attr('cursor', cursors[type = flipX[type]])
       }
 
       if (s1 < n1) {
         signY *= -1
-        t = n0, n0 = s0, s0 = t
-        t = n1, n1 = s1, s1 = t
+        t = n0
+        n0 = s0
+        s0 = t
+        t = n1
+        n1 = s1
+        s1 = t
         if (type in flipY) overlay.attr('cursor', cursors[type = flipY[type]])
       }
 
@@ -511,14 +544,19 @@ function brush(dim: BrushDim): any {
         if (event.touches.length) return
         if (touchending) clearTimeout(touchending)
         touchending = setTimeout(() => { touchending = null }, 500) // Ghost clicks are delayed!
-      } else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else {
         dragEnable(event.view, moving)
         view.on('keydown.brush keyup.brush mousemove.brush mouseup.brush', null)
       }
       group.attr('pointer-events', 'all')
       overlay.attr('cursor', cursors.overlay)
       if (state.selection) selection = state.selection // May be set by brush.move (on start)!
-      if (empty(selection)) state.selection = null, redraw.call(that)
+      if (empty(selection)) {
+        state.selection = null
+        redraw.call(that)
+      }
       emit.end(event, mode.name)
     }
 
@@ -539,7 +577,9 @@ function brush(dim: BrushDim): any {
         }
         case 32: { // SPACE; takes priority over ALT
           if (mode === MODE_HANDLE || mode === MODE_CENTER) {
+            // eslint-disable-next-line pickier/no-unused-vars
             if (signX < 0) e0 = e1 - dx; else if (signX > 0) w0 = w1 - dx
+            // eslint-disable-next-line pickier/no-unused-vars
             if (signY < 0) s0 = s1 - dy; else if (signY > 0) n0 = n1 - dy
             mode = MODE_SPACE
             overlay.attr('cursor', cursors.selection)
@@ -563,7 +603,9 @@ function brush(dim: BrushDim): any {
         }
         case 18: { // ALT
           if (mode === MODE_CENTER) {
+            // eslint-disable-next-line pickier/no-unused-vars
             if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1
+            // eslint-disable-next-line pickier/no-unused-vars
             if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1
             mode = MODE_HANDLE
             move(event)
@@ -576,8 +618,12 @@ function brush(dim: BrushDim): any {
               if (signX) e0 = e1 - dx * signX, w0 = w1 + dx * signX
               if (signY) s0 = s1 - dy * signY, n0 = n1 + dy * signY
               mode = MODE_CENTER
-            } else {
+            // eslint-disable-next-line pickier/no-unused-vars
+            }
+            else {
+              // eslint-disable-next-line pickier/no-unused-vars
               if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1
+              // eslint-disable-next-line pickier/no-unused-vars
               if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1
               mode = MODE_HANDLE
             }

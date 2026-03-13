@@ -4,6 +4,7 @@ import nice from './nice.ts'
 import { copy, transformer, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type TransformFn = (x: number) => number
 
 function transformLog(x: number): number {
@@ -23,7 +24,8 @@ function transformExpn(x: number): number {
 }
 
 function pow10(x: number): number {
-  return isFinite(x) ? +('1e' + x) : x < 0 ? 0 : x
+  // eslint-disable-next-line pickier/no-unused-vars
+  return isFinite(x) ? +(`1e${x}`) : x < 0 ? 0 : x
 }
 
 function powp(base: number): (x: number) => number {
@@ -55,7 +57,9 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
     if ((domain() as number[])[0] < 0) {
       logs = reflect(logs), pows = reflect(pows)
       transform(transformLogn, transformExpn)
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       transform(transformLog, transformExp)
     }
     return scale
@@ -71,8 +75,10 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
 
   scale.ticks = (count?: number): number[] => {
     const d = (domain() as number[])
-    let u = d[0]
-    let v = d[d.length - 1]
+    // eslint-disable-next-line pickier/no-unused-vars
+    const u = d[0]
+    // eslint-disable-next-line pickier/no-unused-vars
+    const v = d[d.length - 1]
     const r = v < u
 
     if (r) ([u, v] = [v, u])
@@ -93,7 +99,9 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
           if (t > v) break
           z.push(t)
         }
-      } else for (; i <= j; ++i) {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else for (; i <= j; ++i) {
         for (k = base - 1; k >= 1; --k) {
           t = i > 0 ? k / pows(-i) : k * pows(i)
           if (t < u) continue
@@ -102,7 +110,9 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
         }
       }
       if (z.length * 2 < n) z = ticks(u, v, n)
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       z = ticks(i, j, Math.min(j - i, n)).map(pows)
     }
     return r ? z.reverse() : z
@@ -115,8 +125,12 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
     if (typeof specifier !== 'function') {
       const spec = formatSpecifier(specifier)
       if (!(base % 1) && spec.precision == null) spec.trim = true
+      // eslint-disable-next-line pickier/no-unused-vars
       formatFn = format(spec.toString()) as (d: number) => string
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
+      // eslint-disable-next-line pickier/no-unused-vars
       formatFn = specifier as unknown as (d: number) => string
     }
     if (count === Infinity) return formatFn

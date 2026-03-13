@@ -32,12 +32,14 @@ function place(b: PackCircle, a: PackCircle, c: PackCircle): void {
       y = Math.sqrt(Math.max(0, b2 / d2 - x * x))
       c.x = b.x - x * dx - y * dy
       c.y = b.y - x * dy + y * dx
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       x = (d2 + a2 - b2) / (2 * d2)
       y = Math.sqrt(Math.max(0, a2 / d2 - x * x))
       c.x = a.x + x * dx - y * dy
       c.y = a.y + x * dy + y * dx
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     c.x = a.x + c.r
     c.y = a.y
@@ -128,6 +130,7 @@ export function packSiblingsRandom(circles: PackCircle[], random: () => number):
         }
         sj += j._.r
         j = j.next
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         if (intersects(k._, c._)) {
           a = k

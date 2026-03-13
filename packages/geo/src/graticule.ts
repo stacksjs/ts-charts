@@ -69,7 +69,9 @@ export default function geoGraticule(): GeoGraticule {
     if (!arguments.length) return [[X0, Y0], [X1, Y1]]
     X0 = +_![0][0], X1 = +_![1][0]
     Y0 = +_![0][1], Y1 = +_![1][1]
+    // eslint-disable-next-line pickier/no-unused-vars
     if (X0 > X1) { const t = X0; X0 = X1; X1 = t }
+    // eslint-disable-next-line pickier/no-unused-vars
     if (Y0 > Y1) { const t = Y0; Y0 = Y1; Y1 = t }
     return graticule.precision(precision)
   }
@@ -78,7 +80,9 @@ export default function geoGraticule(): GeoGraticule {
     if (!arguments.length) return [[x0, y0], [x1, y1]]
     x0 = +_![0][0], x1 = +_![1][0]
     y0 = +_![0][1], y1 = +_![1][1]
+    // eslint-disable-next-line pickier/no-unused-vars
     if (x0 > x1) { const t = x0; x0 = x1; x1 = t }
+    // eslint-disable-next-line pickier/no-unused-vars
     if (y0 > y1) { const t = y0; y0 = y1; y1 = t }
     return graticule.precision(precision)
   }

@@ -40,8 +40,11 @@ Linear.prototype = {
   point(x: number, y: number): void {
     x = +x, y = +y
     switch (this._point) {
+      // eslint-disable-next-line pickier/no-unused-vars
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       case 1: this._point = 2; this._context.lineTo(x, y); break
+      // eslint-disable-next-line pickier/no-unused-vars
       default: this._context.lineTo(x, y); break
     }
   },

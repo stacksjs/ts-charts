@@ -3,8 +3,11 @@ import { interpolate as interpolateValue, interpolateNumber, interpolateRound } 
 import constant from './constant.ts'
 import number from './number.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolateFn = (a: number, b: number) => (t: number) => number
+// eslint-disable-next-line pickier/no-unused-vars
 type TransformFn = (x: number) => number
+// eslint-disable-next-line pickier/no-unused-vars
 type PiecewiseFn = (domain: number[], range: number[], interpolate: InterpolateFn) => (x: number) => number
 
 /**
@@ -113,7 +116,9 @@ export function transformer(): (t: TransformFn, u: TransformFn) => ContinuousSca
   // When set to a non-identity value, rescale() replaces it with clamper().
   let clamp: TransformFn | true = identity
   let piecewise: PiecewiseFn
+  // eslint-disable-next-line pickier/no-unused-vars
   let output: ((x: number) => number) | null
+  // eslint-disable-next-line pickier/no-unused-vars
   let input: ((x: number) => number) | null
 
   function rescale(): ContinuousScale {

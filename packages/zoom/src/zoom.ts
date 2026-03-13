@@ -88,6 +88,7 @@ export default function zoomBehavior(): any {
     selection.property('__zoom', defaultTransform)
     if (collection !== selection) {
       schedule(collection, transform, point, event)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       selection.interrupt().each(function (this: any) {
         gesture(this, arguments)
@@ -170,6 +171,7 @@ export default function zoomBehavior(): any {
         const i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k))
         return function (t: number): void {
           if (t === 1) t = b // Avoid rounding error on end.
+          // eslint-disable-next-line pickier/no-unused-vars
           else { const l = i(t), k = w / l[2]; t = new (Transform as any)(k, p[0] - l[0] * k, p[1] - l[1] * k) }
           g.zoom(null, t)
         }
@@ -233,6 +235,7 @@ export default function zoomBehavior(): any {
     },
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function wheeled(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: WheelEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
     let g = gesture(this, _args).event(event)
@@ -269,6 +272,7 @@ export default function zoomBehavior(): any {
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function mousedowned(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: MouseEvent, ..._args: unknown[]): void {
     if (touchending || !filter.apply(this, arguments)) return
     const currentTarget = event.currentTarget as Element
@@ -316,6 +320,7 @@ export default function zoomBehavior(): any {
     else select(this).call(zoom.transform, t1, p0, event)
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function touchstarted(this: Element & { __zoom: TransformInstance; __zooming?: any }, event: TouchEvent, ..._args: unknown[]): void {
     if (!filter.apply(this, arguments)) return
     const touches = event.touches
@@ -340,6 +345,7 @@ export default function zoomBehavior(): any {
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function touchmoved(this: Element & { __zooming?: any; __zoom: TransformInstance }, event: TouchEvent, ..._args: unknown[]): void {
     if (!this.__zooming) return
     const g = gesture(this, _args).event(event)
@@ -357,7 +363,9 @@ export default function zoomBehavior(): any {
     if (g.touch1) {
       const p0 = g.touch0[0], l0 = g.touch0[1]
       const p1 = g.touch1[0], l1 = g.touch1[1]
+      // eslint-disable-next-line pickier/no-unused-vars
       var dp: any = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp
+      // eslint-disable-next-line pickier/no-unused-vars
       var dl: any = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl
       t = scale(t, Math.sqrt(dp / dl))
       p = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
@@ -369,6 +377,7 @@ export default function zoomBehavior(): any {
     g.zoom('touch', constrain(translate(t, p, l), g.extent, translateExtent))
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   function touchended(this: Element & { __zooming?: any; __zoom: TransformInstance }, event: TouchEvent, ..._args: unknown[]): void {
     if (!this.__zooming) return
     const g = gesture(this, _args).event(event)

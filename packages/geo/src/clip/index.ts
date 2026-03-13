@@ -40,6 +40,7 @@ export default function clip(
         if (mergedSegments.length) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
           clipRejoin(mergedSegments, compareIntersection, startInside, interpolate, sink)
+        // eslint-disable-next-line pickier/no-unused-vars
         } else if (startInside) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
           sink.lineStart()
@@ -135,5 +136,6 @@ function validSegment(segment: number[][]): boolean {
 function compareIntersection(a: { x: number[] }, b: { x: number[] }): number {
   const ax = a.x, bx = b.x
   return (ax[0] < 0 ? ax[1] - halfPi - epsilon : halfPi - ax[1])
+       // eslint-disable-next-line pickier/no-unused-vars
        - (bx[0] < 0 ? bx[1] - halfPi - epsilon : halfPi - bx[1])
 }

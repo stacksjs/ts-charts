@@ -5,6 +5,7 @@ import formatRounded from './formatRounded.ts'
 const formatTypes: Record<string, (x: number, p?: number) => string> = {
   '%': (x: number, p?: number): string => (x * 100).toFixed(p),
   'b': (x: number): string => Math.round(x).toString(2),
+  // eslint-disable-next-line pickier/no-unused-vars
   'c': (x: number): string => x + '',
   'd': formatDecimal,
   'e': (x: number, p?: number): string => x.toExponential(p),

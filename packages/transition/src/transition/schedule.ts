@@ -153,8 +153,10 @@ function create(node: TransitionNode, id: number, self: TransitionSchedule): voi
     tween = new Array(n)
     j = -1
     for (let idx = 0; idx < n; ++idx) {
+      // eslint-disable-next-line pickier/no-unused-vars
       let tweenResult: ((t: number) => void) | null | undefined
       try {
+        // eslint-disable-next-line pickier/no-unused-vars
         tweenResult = self.tween[idx].value.call(node, node.__data__, self.index, self.group) as ((t: number) => void) | null | undefined
       }
       catch {

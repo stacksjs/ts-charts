@@ -11,6 +11,7 @@ export function testContext(): {
     moveTo(x: number, y: number): void { buffer.push({ type: 'moveTo', x: Math.round(x), y: Math.round(y) }) },
     lineTo(x: number, y: number): void { buffer.push({ type: 'lineTo', x: Math.round(x), y: Math.round(y) }) },
     closePath(): void { buffer.push({ type: 'closePath' }) },
+    // eslint-disable-next-line pickier/no-unused-vars
     result(): any[] { const result = buffer; buffer = []; return result }
   }
 }

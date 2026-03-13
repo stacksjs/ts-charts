@@ -4,6 +4,7 @@ export interface ChordGroup {
   index: number
   startAngle: number
   endAngle: number
+  // eslint-disable-next-line pickier/no-unused-vars
   value: number
 }
 
@@ -19,6 +20,7 @@ export interface Chord {
   target: ChordSubgroup | null
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export type Comparator = (a: number, b: number) => number
 
 export interface ChordLayout {
@@ -47,6 +49,7 @@ function compareValue(compare: Comparator): ((a: Chord, b: Chord) => number) & {
       (a.source?.value ?? 0) + (a.target?.value ?? 0),
       (b.source?.value ?? 0) + (b.target?.value ?? 0),
     )
+  // eslint-disable-next-line pickier/no-unused-vars
   } as ((a: Chord, b: Chord) => number) & { _: Comparator }
   fn._ = compare
   return fn
@@ -68,6 +71,7 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
   let padAngle = 0
   let sortGroups: Comparator | null = null
   let sortSubgroups: Comparator | null = null
+  // eslint-disable-next-line pickier/no-unused-vars
   let sortChords: (((a: Chord, b: Chord) => number) & { _: Comparator }) | null = null
 
   function chord(matrix: number[][]): Chords {
@@ -141,6 +145,7 @@ function chord(directed: boolean, transpose: boolean): ChordLayout {
 
     // Remove empty chords.
     chords = Object.values(chords) as Chord[]
+    // eslint-disable-next-line pickier/no-unused-vars
     ;(chords as Chords).groups = groups
     return sortChords ? chords.sort(sortChords) : chords
   }

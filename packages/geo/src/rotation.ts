@@ -7,6 +7,7 @@ function rotationIdentity(lambda: number, phi: number): number[] {
   return [lambda, phi]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(rotationIdentity as GeoRawProjection).invert = rotationIdentity
 
 export function rotateRadians(deltaLambda: number, deltaPhi: number, deltaGamma: number): GeoRawProjection {

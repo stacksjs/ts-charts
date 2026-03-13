@@ -10,15 +10,18 @@ function defaultRadius<T>(d: HierarchyNode<T>): number {
 
 export interface PackLayout<T> {
   (root: HierarchyNode<T>): HierarchyNode<T>
+  // eslint-disable-next-line pickier/no-unused-vars
   radius(): ((node: HierarchyNode<T>) => number) | null
   radius(radius: (node: HierarchyNode<T>) => number): PackLayout<T>
   size(): [number, number]
   size(size: [number, number]): PackLayout<T>
   padding(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   padding(padding: number | ((node: HierarchyNode<T>) => number)): PackLayout<T>
 }
 
 export default function pack<T>(): PackLayout<T> {
+  // eslint-disable-next-line pickier/no-unused-vars
   let radius: ((node: HierarchyNode<T>) => number) | null = null
   let dx = 1
   let dy = 1
@@ -32,8 +35,10 @@ export default function pack<T>(): PackLayout<T> {
       root.eachBefore(radiusLeaf(radius))
           .eachAfter(packChildrenRandom(padding, 0.5, random))
           .eachBefore(translateChild(1))
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       root.eachBefore(radiusLeaf(defaultRadius))
+          // eslint-disable-next-line pickier/no-unused-vars
           .eachAfter(packChildrenRandom(constantZero as unknown as (node: HierarchyNode<T>) => number, 1, random))
           .eachAfter(packChildrenRandom(padding, root.r! / Math.min(dx, dy), random))
           .eachBefore(translateChild(Math.min(dx, dy) / (2 * root.r!)))
@@ -50,6 +55,7 @@ export default function pack<T>(): PackLayout<T> {
   }
 
   pack.padding = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof padding | PackLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (padding = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, pack as PackLayout<T>) : padding
   }
 

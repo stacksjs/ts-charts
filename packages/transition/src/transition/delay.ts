@@ -12,6 +12,7 @@ function delayConstant(id: number, value: number): () => void {
   })
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; node: () => Element; each: Function }, value?: number | Function): unknown {
   const id = this._id
 

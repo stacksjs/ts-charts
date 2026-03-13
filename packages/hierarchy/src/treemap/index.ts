@@ -14,18 +14,25 @@ export interface TreemapLayout<T> {
   size(): [number, number]
   size(size: [number, number]): TreemapLayout<T>
   padding(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   padding(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingInner(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingInner(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingOuter(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingOuter(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingTop(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingTop(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingRight(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingRight(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingBottom(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingBottom(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
   paddingLeft(): (node: HierarchyNode<T>) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   paddingLeft(padding: number | ((node: HierarchyNode<T>) => number)): TreemapLayout<T>
 }
 
@@ -48,6 +55,7 @@ export default function treemap<T>(): TreemapLayout<T> {
     root.y1 = dy
     root.eachBefore(positionNode)
     paddingStack = [0]
+    // eslint-disable-next-line pickier/no-unused-vars
     if (round) root.eachBefore(roundNode as (node: HierarchyNode<T>) => void)
     return root
   }
@@ -93,6 +101,7 @@ export default function treemap<T>(): TreemapLayout<T> {
   }
 
   treemap.paddingInner = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingInner | TreemapLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (paddingInner = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingInner
   }
 
@@ -101,18 +110,22 @@ export default function treemap<T>(): TreemapLayout<T> {
   }
 
   treemap.paddingTop = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingTop | TreemapLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (paddingTop = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingTop
   }
 
   treemap.paddingRight = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingRight | TreemapLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (paddingRight = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingRight
   }
 
   treemap.paddingBottom = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingBottom | TreemapLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (paddingBottom = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingBottom
   }
 
   treemap.paddingLeft = function (x?: number | ((node: HierarchyNode<T>) => number)): typeof paddingLeft | TreemapLayout<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (paddingLeft = typeof x === 'function' ? x : constant(+x!) as unknown as (node: HierarchyNode<T>) => number, treemap as TreemapLayout<T>) : paddingLeft
   }
 

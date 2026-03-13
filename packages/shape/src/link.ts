@@ -31,6 +31,7 @@ export function link(curve?: any): any {
     argv[0] = s, output.point(+x.apply(this, argv), +y.apply(this, argv))
     argv[0] = t, output.point(+x.apply(this, argv), +y.apply(this, argv))
     output.lineEnd()
+    // eslint-disable-next-line pickier/no-unused-vars
     if (buffer) return output = null, buffer + '' || null
   }
 

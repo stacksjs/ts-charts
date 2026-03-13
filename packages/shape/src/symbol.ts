@@ -48,6 +48,7 @@ export default function Symbol(type?: any, size?: any): any {
     let buffer: any
     if (!context) context = buffer = path()
     type.apply(this, arguments).draw(context, +size.apply(this, arguments))
+    // eslint-disable-next-line pickier/no-unused-vars
     if (buffer) return context = null, buffer + '' || null
   }
 

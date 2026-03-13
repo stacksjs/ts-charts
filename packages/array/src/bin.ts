@@ -15,10 +15,13 @@ export interface Bin<T> extends Array<T> {
 export interface BinGenerator<T> {
   (data: Iterable<T>): Bin<T>[]
   value(): (d: T, i: number, data: T[]) => number
+  // eslint-disable-next-line pickier/no-unused-vars
   value(value: number | ((d: T, i: number, data: T[]) => number)): BinGenerator<T>
   domain(): (values: number[]) => [number, number]
+  // eslint-disable-next-line pickier/no-unused-vars
   domain(domain: [number, number] | ((values: number[]) => [number, number])): BinGenerator<T>
   thresholds(): (values: number[], x0: number, x1: number) => number[] | number
+  // eslint-disable-next-line pickier/no-unused-vars
   thresholds(thresholds: number | number[] | ((values: number[], x0: number, x1: number) => number[] | number)): BinGenerator<T>
 }
 
@@ -70,10 +73,12 @@ export default function bin(): BinGenerator<any> {
           if (isFinite(step)) {
             if (step > 0) {
               x1 = (Math.floor(x1 / step) + 1) * step
+            // eslint-disable-next-line pickier/no-unused-vars
             } else if (step < 0) {
               x1 = (Math.ceil(x1 * -step) + 1) / -step
             }
           }
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           tz.pop()
         }
@@ -105,6 +110,7 @@ export default function bin(): BinGenerator<any> {
             bins[Math.min(m, Math.floor((x - x0) / step!))].push(data[i])
           }
         }
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if (step! < 0) {
         for (i = 0; i < n; ++i) {
           if ((x = values[i]) != null && x0 <= x && x <= x1) {
@@ -113,6 +119,7 @@ export default function bin(): BinGenerator<any> {
           }
         }
       }
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       for (i = 0; i < n; ++i) {
         if ((x = values[i]) != null && x0 <= x && x <= x1) {

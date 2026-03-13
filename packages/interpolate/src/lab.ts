@@ -15,6 +15,7 @@ export default function lab(start: ColorSpecifier, end: ColorSpecifier): (t: num
     s.a = a(t)
     s.b = b(t)
     s.opacity = opacity(t)
+    // eslint-disable-next-line pickier/no-unused-vars
     return s + ''
   }
 }

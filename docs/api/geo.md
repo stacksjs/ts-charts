@@ -11,15 +11,19 @@ bun add @ts-charts/geo
 ## Exports
 
 ### Projections
+
 `geoAlbers`, `geoAlbersUsa`, `geoAzimuthalEqualArea`, `geoAzimuthalEquidistant`, `geoConicConformal`, `geoConicEqualArea`, `geoConicEquidistant`, `geoEqualEarth`, `geoEquirectangular`, `geoGnomonic`, `geoIdentity`, `geoMercator`, `geoNaturalEarth1`, `geoOrthographic`, `geoStereographic`, `geoTransverseMercator`, `geoProjection`, `geoProjectionMutator`
 
 ### Raw Projections
+
 `geoAzimuthalEqualAreaRaw`, `geoAzimuthalEquidistantRaw`, `geoConicConformalRaw`, `geoConicEqualAreaRaw`, `geoConicEquidistantRaw`, `geoEqualEarthRaw`, `geoEquirectangularRaw`, `geoGnomonicRaw`, `geoMercatorRaw`, `geoNaturalEarth1Raw`, `geoOrthographicRaw`, `geoStereographicRaw`, `geoTransverseMercatorRaw`
 
 ### Geometry
+
 `geoArea`, `geoBounds`, `geoCentroid`, `geoCircle`, `geoContains`, `geoDistance`, `geoGraticule`, `geoGraticule10`, `geoInterpolate`, `geoLength`, `geoPath`, `geoRotation`, `geoStream`, `geoTransform`
 
 ### Clipping
+
 `geoClipAntimeridian`, `geoClipCircle`, `geoClipExtent`, `geoClipRectangle`
 
 ## Usage

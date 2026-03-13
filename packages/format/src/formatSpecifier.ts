@@ -4,6 +4,7 @@ const re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%]
 export interface FormatSpecifierObject {
   fill: string
   align: string
+  // eslint-disable-next-line pickier/no-unused-vars
   sign: string
   symbol: string
   zero: boolean
@@ -27,16 +28,21 @@ export class FormatSpecifier {
   type: string
 
   constructor(specifier: Record<string, any>) {
-    this.fill = specifier.fill === undefined ? ' ' : specifier.fill + ''
-    this.align = specifier.align === undefined ? '>' : specifier.align + ''
-    this.sign = specifier.sign === undefined ? '-' : specifier.sign + ''
-    this.symbol = specifier.symbol === undefined ? '' : specifier.symbol + ''
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.fill = specifier.fill === undefined ? ' ' : `${specifier.fill}`
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.align = specifier.align === undefined ? '>' : `${specifier.align}`
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.sign = specifier.sign === undefined ? '-' : `${specifier.sign}`
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.symbol = specifier.symbol === undefined ? '' : `${specifier.symbol}`
     this.zero = !!specifier.zero
     this.width = specifier.width === undefined ? undefined : +specifier.width
     this.comma = !!specifier.comma
     this.precision = specifier.precision === undefined ? undefined : +specifier.precision
     this.trim = !!specifier.trim
-    this.type = specifier.type === undefined ? '' : specifier.type + ''
+    // eslint-disable-next-line pickier/no-unused-vars
+    this.type = specifier.type === undefined ? '' : `${specifier.type}`
   }
 
   toString(): string {
@@ -47,7 +53,8 @@ export class FormatSpecifier {
       + (this.zero ? '0' : '')
       + (this.width === undefined ? '' : Math.max(1, this.width | 0))
       + (this.comma ? ',' : '')
-      + (this.precision === undefined ? '' : '.' + Math.max(0, this.precision | 0))
+      // eslint-disable-next-line pickier/no-unused-vars
+      + (this.precision === undefined ? '' : `.${Math.max(0, this.precision | 0)}`)
       + (this.trim ? '~' : '')
       + this.type
   }
@@ -55,7 +62,8 @@ export class FormatSpecifier {
 
 function _formatSpecifier(specifier: string): FormatSpecifier {
   const match = re.exec(specifier)
-  if (!match) throw new Error('invalid format: ' + specifier)
+  // eslint-disable-next-line pickier/no-unused-vars
+  if (!match) throw new Error(`invalid format: ${specifier}`)
   return new FormatSpecifier({
     fill: match[1],
     align: match[2],

@@ -36,6 +36,7 @@ export default function(x0?: any, y0?: any, y1?: any): any {
           j = i
           output.areaStart()
           output.lineStart()
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           output.lineEnd()
           output.lineStart()
@@ -52,6 +53,7 @@ export default function(x0?: any, y0?: any, y1?: any): any {
       }
     }
 
+    // eslint-disable-next-line pickier/no-unused-vars
     if (buffer) return output = null, buffer + '' || null
   }
 

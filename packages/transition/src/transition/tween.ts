@@ -46,6 +46,7 @@ function tweenFunction(id: number, name: string, value: Function): () => void {
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; node: () => Element; each: Function }, name: string, value?: Function | null): unknown {
   const id = this._id
 
@@ -64,6 +65,7 @@ export default function (this: { _id: number; node: () => Element; each: Functio
   return this.each((value == null ? tweenRemove : tweenFunction)(id, name, value as Function))
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export function tweenValue(transition: { _id: number; each: Function }, name: string, value: Function): (node: Element) => unknown {
   const id = transition._id
 

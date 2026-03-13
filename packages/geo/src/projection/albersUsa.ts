@@ -9,11 +9,17 @@ import type { GeoStream, GeoObject, GeoProjection } from '../types.ts'
 function multiplex(streams: GeoStream[]): GeoStream {
   const n = streams.length
   return {
+    // eslint-disable-next-line pickier/no-unused-vars
     point: function (x: number, y: number): void { let i = -1; while (++i < n) streams[i].point(x, y) },
+    // eslint-disable-next-line pickier/no-unused-vars
     sphere: function (): void { let i = -1; while (++i < n) streams[i].sphere!() },
+    // eslint-disable-next-line pickier/no-unused-vars
     lineStart: function (): void { let i = -1; while (++i < n) streams[i].lineStart() },
+    // eslint-disable-next-line pickier/no-unused-vars
     lineEnd: function (): void { let i = -1; while (++i < n) streams[i].lineEnd() },
+    // eslint-disable-next-line pickier/no-unused-vars
     polygonStart: function (): void { let i = -1; while (++i < n) streams[i].polygonStart() },
+    // eslint-disable-next-line pickier/no-unused-vars
     polygonEnd: function (): void { let i = -1; while (++i < n) streams[i].polygonEnd() }
   }
 }
@@ -27,6 +33,7 @@ export default function geoAlbersUsa(): GeoProjection {
       lower48 = geoAlbers(), lower48Point: GeoStream,
       alaska = geoConicEqualArea().rotate([154, 0]).center([-2, 58.5]).parallels([55, 65]) as GeoProjection, alaskaPoint: GeoStream,
       hawaii = geoConicEqualArea().rotate([157, 0]).center([-3, 19.9]).parallels([8, 18]) as GeoProjection, hawaiiPoint: GeoStream,
+      // eslint-disable-next-line pickier/no-unused-vars
       point: number[] | null, pointStream: GeoStream = { point: function (x: number, y: number): void { point = [x, y] }, lineStart(): void {}, lineEnd(): void {}, polygonStart(): void {}, polygonEnd(): void {} }
 
   function albersUsa(coordinates: number[]): number[] | null {

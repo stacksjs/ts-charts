@@ -27,7 +27,9 @@ function transformRotate(rotate: GeoRawProjection): GeoStreamFactory {
 
 function scaleTranslate(k: number, dx: number, dy: number, sx: number, sy: number): GeoRawProjection {
   function transform(x: number, y: number): number[] {
-    x *= sx; y *= sy
+    // eslint-disable-next-line pickier/no-unused-vars
+    x *= sx
+    y *= sy
     return [dx + k * x, dy - k * y]
   }
   transform.invert = function (x: number, y: number): number[] {
@@ -47,7 +49,9 @@ function scaleTranslateRotate(k: number, dx: number, dy: number, sx: number, sy:
       ci = (sinAlpha * dy - cosAlpha * dx) / k,
       fi = (sinAlpha * dx + cosAlpha * dy) / k
   function transform(x: number, y: number): number[] {
-    x *= sx; y *= sy
+    // eslint-disable-next-line pickier/no-unused-vars
+    x *= sx
+    y *= sy
     return [a * x - b * y + dx, dy - b * x - a * y]
   }
   transform.invert = function (x: number, y: number): number[] {
@@ -172,7 +176,9 @@ export function projectionMutator(projectAt: (...args: unknown[]) => GeoRawProje
 
   return function (this: unknown, ...args: unknown[]): GeoProjection {
     project = projectAt.apply(this, args)
-    ;(p as unknown as { invert?: (point: number[]) => number[] | null }).invert = project.invert && invert
+    // eslint-disable-next-line pickier/no-unused-vars
+    const pAny = p as unknown as { invert?: (point: number[]) => number[] | null }
+    pAny.invert = project.invert && invert
     return recenter()
   }
 }

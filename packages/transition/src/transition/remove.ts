@@ -11,6 +11,7 @@ function removeFunction(id: number): () => void {
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; on: Function }): unknown {
   return this.on('end.remove', removeFunction(this._id))
 }

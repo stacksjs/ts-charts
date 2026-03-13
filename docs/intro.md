@@ -1,4 +1,4 @@
-# What is ts-charts?
+# What is ts-charts
 
 ts-charts is a complete TypeScript rewrite of all 30 D3.js packages. It provides the same powerful data visualization primitives you know from D3, but built from the ground up in TypeScript with modern tooling.
 

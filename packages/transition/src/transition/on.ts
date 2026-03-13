@@ -2,6 +2,7 @@ import { get, set, init, type TransitionSchedule } from './schedule.ts'
 import type { Dispatch } from '@ts-charts/dispatch'
 
 function start(name: string): boolean {
+  // eslint-disable-next-line pickier/no-unused-vars
   return (name + '').trim().split(/^|\s+/).every(function (t) {
     const i = t.indexOf('.')
     if (i >= 0) t = t.slice(0, i)
@@ -22,6 +23,7 @@ function onFunction(id: number, name: string, listener: ((...args: unknown[]) =>
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default function (this: { _id: number; node: () => Element; each: Function }, name: string, listener?: ((...args: unknown[]) => void) | null): unknown {
   const id = this._id
 

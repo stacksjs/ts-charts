@@ -11,4 +11,5 @@ export const scheme: readonly (readonly string[])[] = new Array(3).concat(
   'ffffccffeda0fed976feb24cfd8d3cfc4e2ae31a1cbd0026800026',
 ).map(colors)
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default ramp(scheme) as (t: number) => string

@@ -15,7 +15,9 @@ function sourceRandomUniform(source: RandomSource): RandomUniform {
         hi = lo
         lo = 0
       }
-    } else {
+    // eslint-disable-next-line pickier/no-unused-vars
+    }
+    else {
       hi -= lo
     }
     return function (): number {

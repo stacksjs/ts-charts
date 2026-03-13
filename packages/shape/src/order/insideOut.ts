@@ -18,6 +18,7 @@ export default function orderInsideOut(series: StackSeries[]): number[] {
     if (top < bottom) {
       top += sums[j]
       tops.push(j)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       bottom += sums[j]
       bottoms.push(j)

@@ -61,9 +61,11 @@ function linePoint(lambda: number, phi: number): void {
     if ((antimeridian as unknown as number) ^ (sign * lambda2 < lambdai && lambdai < sign * lambda ? 1 : 0)) {
       phii = inflectionSpherical[1] * degrees
       if (phii > phi1) phi1 = phii
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (lambdai = (lambdai + 360) % 360 - 180, (antimeridian as unknown as number) ^ (sign * lambda2 < lambdai && lambdai < sign * lambda ? 1 : 0)) {
       phii = -inflectionSpherical[1] * degrees
       if (phii < phi0) phi0 = phii
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       if (phi < phi0) phi0 = phi
       if (phi > phi1) phi1 = phi
@@ -71,21 +73,26 @@ function linePoint(lambda: number, phi: number): void {
     if (antimeridian) {
       if (lambda < lambda2) {
         if (angle(lambda0, lambda) > angle(lambda0, lambda1)) lambda1 = lambda
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         if (angle(lambda, lambda1) > angle(lambda0, lambda1)) lambda0 = lambda
       }
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       if (lambda1 >= lambda0) {
         if (lambda < lambda0) lambda0 = lambda
         if (lambda > lambda1) lambda1 = lambda
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         if (lambda > lambda2) {
           if (angle(lambda0, lambda) > angle(lambda0, lambda1)) lambda1 = lambda
+        // eslint-disable-next-line pickier/no-unused-vars
         } else {
           if (angle(lambda, lambda1) > angle(lambda0, lambda1)) lambda0 = lambda
         }
       }
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     ranges.push(range = [lambda0 = lambda, lambda1 = lambda])
   }
@@ -108,6 +115,7 @@ function boundsRingPoint(lambda: number, phi: number): void {
   if (p0) {
     const delta = lambda - lambda2
     deltaSum.add(abs(delta) > 180 ? delta + (delta > 0 ? 360 : -360) : delta)
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     lambda00 = lambda, phi00 = phi
   }
@@ -154,6 +162,7 @@ export default function geoBounds(feature: GeoObject): number[][] {
       if (rangeContains(a, b[0]) || rangeContains(a, b[1])) {
         if (angle(a[0], b[1]) > angle(a[0], a[1])) a[1] = b[1]
         if (angle(b[0], a[1]) > angle(a[0], a[1])) a[0] = b[0]
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         merged.push(a = b)
       }

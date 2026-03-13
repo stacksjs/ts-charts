@@ -11,12 +11,15 @@ bun add @ts-charts/time
 ## Exports
 
 ### Factory
+
 `timeInterval`
 
 ### Local Time
+
 `timeMillisecond`, `timeMilliseconds`, `timeSecond`, `timeSeconds`, `timeMinute`, `timeMinutes`, `timeHour`, `timeHours`, `timeDay`, `timeDays`, `timeWeek`, `timeWeeks`, `timeSunday`, `timeSundays`, `timeMonday`, `timeMondays`, `timeTuesday`, `timeTuesdays`, `timeWednesday`, `timeWednesdays`, `timeThursday`, `timeThursdays`, `timeFriday`, `timeFridays`, `timeSaturday`, `timeSaturdays`, `timeMonth`, `timeMonths`, `timeYear`, `timeYears`, `timeTicks`, `timeTickInterval`
 
 ### UTC Time
+
 `utcMillisecond`, `utcMilliseconds`, `utcSecond`, `utcSeconds`, `utcMinute`, `utcMinutes`, `utcHour`, `utcHours`, `utcDay`, `utcDays`, `unixDay`, `unixDays`, `utcWeek`, `utcWeeks`, `utcSunday`, `utcSundays`, `utcMonday`, `utcMondays`, `utcTuesday`, `utcTuesdays`, `utcWednesday`, `utcWednesdays`, `utcThursday`, `utcThursdays`, `utcFriday`, `utcFridays`, `utcSaturday`, `utcSaturdays`, `utcMonth`, `utcMonths`, `utcYear`, `utcYears`, `utcTicks`, `utcTickInterval`
 
 **Types:** `TimeInterval`

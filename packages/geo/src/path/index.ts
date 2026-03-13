@@ -16,12 +16,14 @@ interface GeoPathGenerator {
   centroid(object: GeoObject): number[]
   projection(_?: GeoProjection | null): any
   context(_?: GeoPathContext | null): any
+  // eslint-disable-next-line pickier/no-unused-vars
   pointRadius(_?: number | ((this: unknown, ...args: unknown[]) => number)): any
   digits(_?: number | null): any
 }
 
 export default function geoPath(projection?: GeoProjection | null, context?: GeoPathContext | null): GeoPathGenerator {
   let digits: number | null = 3,
+      // eslint-disable-next-line pickier/no-unused-vars
       pointRadius: number | ((this: unknown, ...args: unknown[]) => number) = 4.5,
       projectionStream: GeoStreamFactory,
       contextStream: PathString | PathContext

@@ -8,6 +8,7 @@ export function stereographicRaw(x: number, y: number): number[] {
   return [cy * sin(x) / k, sin(y) / k]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(stereographicRaw as GeoRawProjection).invert = azimuthalInvert(function (z: number): number {
   return 2 * atan(z)
 })

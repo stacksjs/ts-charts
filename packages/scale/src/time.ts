@@ -4,9 +4,13 @@ import continuous, { copy, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
 import nice from './nice.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type TimeInterval = (date: Date) => Date
+// eslint-disable-next-line pickier/no-unused-vars
 type TicksFn = (start: number, stop: number, count: number) => Date[]
+// eslint-disable-next-line pickier/no-unused-vars
 type TickIntervalFn = (start: number, stop: number, count: number) => { range: (start: Date, stop: Date) => Date[], floor: (x: number) => number, ceil: (x: number) => number }
+// eslint-disable-next-line pickier/no-unused-vars
 type FormatFn = (specifier: string) => (date: Date) => string
 
 function date(t: number): Date {

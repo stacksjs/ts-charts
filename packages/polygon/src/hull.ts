@@ -22,12 +22,14 @@ function computeUpperHullIndexes(points: [number, number][]): number[] {
 
 export default function polygonHull(points: [number, number][]): [number, number][] | null {
   const n = points.length
+  // eslint-disable-next-line pickier/no-unused-vars
   if (n < 3) return null
 
   const sortedPoints: [number, number, number][] = new Array(n)
   const flippedPoints: [number, number][] = new Array(n)
 
   for (let i = 0; i < n; ++i) sortedPoints[i] = [+points[i][0], +points[i][1], i]
+  // eslint-disable-next-line pickier/no-unused-vars
   sortedPoints.sort(lexicographicOrder as unknown as (a: [number, number, number], b: [number, number, number]) => number)
   for (let i = 0; i < n; ++i) flippedPoints[i] = [sortedPoints[i][0], -sortedPoints[i][1]]
 

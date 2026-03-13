@@ -9,6 +9,7 @@ export default function tickFormat(start: number, stop: number, count: number, s
     case 's': {
       const value = Math.max(Math.abs(start), Math.abs(stop))
       if (spec.precision == null && !isNaN(precision = precisionPrefix(step, value))) spec.precision = precision
+      // eslint-disable-next-line pickier/no-unused-vars
       return formatPrefix(spec.toString(), value) as (n: number) => string
     }
     case '':
@@ -25,5 +26,6 @@ export default function tickFormat(start: number, stop: number, count: number, s
       break
     }
   }
+  // eslint-disable-next-line pickier/no-unused-vars
   return format(spec.toString()) as (n: number) => string
 }

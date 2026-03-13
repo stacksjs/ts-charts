@@ -15,6 +15,7 @@ export default function greatest(values: Iterable<any>, compare: any = ascending
         defined = true
       }
     }
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     for (const value of values) {
       if (defined

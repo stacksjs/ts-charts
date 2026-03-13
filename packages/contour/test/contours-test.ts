@@ -5,6 +5,7 @@ describe('contours', () => {
   it('contours(values) returns the expected result for an empty polygon', () => {
     const c = contours().size([10, 10]).thresholds([0.5])
     expect(c([
+      // eslint-disable-next-line pickier/no-unused-vars
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -44,7 +45,9 @@ describe('contours', () => {
         coordinates: [
           [
             [[6, 7.5], [6, 6.5], [6, 5.5], [6, 4.5], [6, 3.5], [5.5, 3], [4.5, 3],
+             // eslint-disable-next-line pickier/no-unused-vars
              [3.5, 3], [3, 3.5], [3, 4.5], [3, 5.5], [3, 6.5], [3, 7.5], [3.5, 8],
+             // eslint-disable-next-line pickier/no-unused-vars
              [4.5, 8], [5.5, 8], [6, 7.5]]
           ]
         ]

@@ -4,6 +4,7 @@ const EPSILON: number = 2 ** -52
 const EDGE_STACK: Uint32Array = new Uint32Array(512)
 
 export default class Delaunator {
+  // eslint-disable-next-line pickier/no-unused-vars
   coords: Float64Array
   triangles!: Uint32Array
   halfedges!: Int32Array
@@ -417,7 +418,9 @@ function quicksort(ids: Uint32Array, dists: Float64Array, left: number, right: n
     const temp = ids[i]
     const tempDist = dists[temp]
     while (true) {
+      // eslint-disable-next-line pickier/no-unused-vars
       do i++; while (dists[ids[i]] < tempDist)
+      // eslint-disable-next-line pickier/no-unused-vars
       do j--; while (dists[ids[j]] > tempDist)
       if (j < i) break
       swap(ids, i, j)

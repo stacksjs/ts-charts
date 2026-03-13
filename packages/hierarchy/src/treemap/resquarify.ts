@@ -28,6 +28,7 @@ const treemapResquarify: SquarifyTile = (function custom(ratio: number): Squarif
         else treemapSlice(row as any, x0, y0, value ? x0 += (x1 - x0) * row.value / value : x1, y1)
         value -= row.value
       }
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       const newRows = squarifyRatio(ratio, parent, x0, y0, x1, y1) as SquarifyRow[] & { ratio: number }
       newRows.ratio = ratio

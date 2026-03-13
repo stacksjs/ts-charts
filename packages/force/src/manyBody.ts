@@ -126,6 +126,7 @@ export default function forceManyBody(): any {
   }
 
   force.strength = function (_?: number | ((node: ForceNode, i: number, nodes: ForceNode[]) => number)): typeof strength | typeof force {
+    // eslint-disable-next-line pickier/no-unused-vars
     return arguments.length ? (strength = typeof _ === 'function' ? _ : constant(+_!) as unknown as (node: ForceNode, i: number, nodes: ForceNode[]) => number, initialize(), force) : strength
   }
 

@@ -16,6 +16,7 @@ export default function sort(values: Iterable<any>, ...F: any[]): any[] {
         }
         return 0
       })
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       f = (values as any).map(f)
       index.sort((i: number, j: number) => ascendingDefined(f[i], f[j]))

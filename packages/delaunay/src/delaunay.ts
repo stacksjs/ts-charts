@@ -4,6 +4,7 @@ import Polygon from './polygon.ts'
 import Voronoi from './voronoi.ts'
 import type { VoronoiContext } from './voronoi.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 const tau: number = 2 * Math.PI
 const pow: (x: number, y: number) => number = Math.pow
 
@@ -75,6 +76,7 @@ export default class Delaunay {
       const r = 1e-9 * Math.hypot(points[f] - points[e], points[f + 1] - points[e + 1])
       for (let i = 0; i < points.length; ++i) points[i] += r * Math.sin(i + 0.5)
       this._delaunator = new Delaunator(points)
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       delete this.collinear
     }
@@ -197,7 +199,9 @@ export default class Delaunay {
     const { points } = this
     for (let i = 0, n = points.length & ~1; i < n; i += 2) {
       const x = points[i], y = points[i + 1]
+      // eslint-disable-next-line pickier/no-unused-vars
       ;(context as VoronoiContext).moveTo(x + r, y)
+      // eslint-disable-next-line pickier/no-unused-vars
       ;(context as VoronoiContext & { arc(x: number, y: number, r: number, s: number, e: number): void }).arc(x, y, r, 0, tau)
     }
     return buffer ? (buffer as unknown as Path).value() : null

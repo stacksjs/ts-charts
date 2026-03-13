@@ -11,18 +11,23 @@ bun add @ts-charts/interpolate
 ## Exports
 
 ### Core
+
 `interpolate`, `interpolateNumber`, `interpolateRound`, `interpolateString`, `interpolateDate`, `interpolateArray`, `interpolateNumberArray`, `interpolateObject`, `interpolateDiscrete`, `interpolateHue`
 
 ### Splines
+
 `interpolateBasis`, `interpolateBasisClosed`
 
 ### Colors
+
 `interpolateRgb`, `interpolateRgbBasis`, `interpolateRgbBasisClosed`, `interpolateHsl`, `interpolateHslLong`, `interpolateLab`, `interpolateHcl`, `interpolateHclLong`, `interpolateCubehelix`, `interpolateCubehelixLong`
 
 ### Transforms
+
 `interpolateTransformCss`, `interpolateTransformSvg`, `interpolateZoom`
 
 ### Utilities
+
 `piecewise`, `quantize`
 
 ## Usage

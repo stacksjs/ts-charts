@@ -10,6 +10,7 @@ export function naturalEarth1Raw(lambda: number, phi: number): number[] {
   ]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(naturalEarth1Raw as GeoRawProjection).invert = function (x: number, y: number): number[] {
   let phi = y, i = 25, delta: number
   do {

@@ -17,16 +17,19 @@ function exponential(a: number, b: number, y: number): (t: number) => number {
 
 export function hue(a: number, b: number): (t: number) => number {
   const d = b - a
+  // eslint-disable-next-line pickier/no-unused-vars
   return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant(isNaN(a) ? b : a) as (t: number) => number
 }
 
 export function gamma(y: number): (a: number, b: number) => (t: number) => number {
   return (y = +y) === 1 ? nogamma : function (a: number, b: number): (t: number) => number {
+    // eslint-disable-next-line pickier/no-unused-vars
     return b - a ? exponential(a, b, y) : constant(isNaN(a) ? b : a) as (t: number) => number
   }
 }
 
 export default function nogamma(a: number, b: number): (t: number) => number {
   const d = b - a
+  // eslint-disable-next-line pickier/no-unused-vars
   return d ? linear(a, d) : constant(isNaN(a) ? b : a) as (t: number) => number
 }

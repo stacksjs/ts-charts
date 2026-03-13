@@ -7,6 +7,7 @@ export function mercatorRaw(lambda: number, phi: number): number[] {
   return [lambda, log(tan((halfPi + phi) / 2))]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(mercatorRaw as GeoRawProjection).invert = function (x: number, y: number): number[] {
   return [x, 2 * atan(exp(y)) - halfPi]
 }

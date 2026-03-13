@@ -126,6 +126,7 @@ function treeRoot(root: HierarchyNode<any>): TreeNode {
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   ;(tree.parent = new TreeNode(null as any, 0)).children = [tree]
   return tree
 }
@@ -192,9 +193,11 @@ export default function tree<T>(): TreeLayout<T> {
       if (w) {
         v.z = w.z + separation(v._ as HierarchyNode<T>, w._ as HierarchyNode<T>)
         v.m = v.z - midpoint
+      // eslint-disable-next-line pickier/no-unused-vars
       } else {
         v.z = midpoint
       }
+    // eslint-disable-next-line pickier/no-unused-vars
     } else if (w) {
       v.z = w.z + separation(v._ as HierarchyNode<T>, w._ as HierarchyNode<T>)
     }
@@ -221,6 +224,7 @@ export default function tree<T>(): TreeLayout<T> {
       while (vim = nextRight(vim!), vip = nextLeft(vip!), vim && vip) {
         vom = nextLeft(vom!)
         vop = nextRight(vop!)
+        // eslint-disable-next-line pickier/no-unused-vars
         ;(vop as TreeNode).a = v
         shift = (vim as TreeNode).z + sim - (vip as TreeNode).z - sip + separation((vim as TreeNode)._ as HierarchyNode<T>, (vip as TreeNode)._ as HierarchyNode<T>)
         if (shift > 0) {

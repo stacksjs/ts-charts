@@ -24,6 +24,7 @@ export default function contourDensity(): any {
   let dy = 500
   let r = 20 // blur radius
   let k = 2 // log2(grid cell size)
+  // eslint-disable-next-line pickier/no-unused-vars
   let o = r * 3 // grid offset, to pad for blur
   let n = (dx + o * 2) >> k // grid width
   let m = (dy + o * 2) >> k // grid height

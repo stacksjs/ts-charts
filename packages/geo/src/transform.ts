@@ -15,6 +15,7 @@ export function transformer(methods: GeoTransformMethods): GeoStreamFactory {
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 function TransformStream(this: GeoTransformInstance): void {}
 
 TransformStream.prototype = {

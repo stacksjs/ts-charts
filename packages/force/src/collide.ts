@@ -80,6 +80,7 @@ export default function forceCollide(radius?: number | ((node: ForceNode, i: num
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- quadtree node with dynamically added 'r' property
   function prepare(quad: any): void {
+    // eslint-disable-next-line pickier/no-unused-vars
     if (quad.data) { quad.r = radii[quad.data.index]; return }
     for (let i = quad.r = 0; i < 4; ++i) {
       if (quad[i] && quad[i].r > quad.r) {

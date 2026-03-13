@@ -61,10 +61,12 @@ Transform.prototype = {
     return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y))
   },
   toString(this: TransformInstance): string {
+    // eslint-disable-next-line pickier/no-unused-vars
     return 'translate(' + this.x + ',' + this.y + ') scale(' + this.k + ')'
   },
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export const identity: TransformInstance = new (Transform as unknown as new (k: number, x: number, y: number) => TransformInstance)(1, 0, 0)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accepts DOM nodes with optional __zoom property

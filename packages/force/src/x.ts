@@ -2,6 +2,7 @@ import constant from './constant.ts'
 import type { ForceNode } from './center.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessor can be function or constant
+// eslint-disable-next-line pickier/no-unused-vars
 type NodeAccessor = (...args: any[]) => number
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- D3 getter/setter pattern

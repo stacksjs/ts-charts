@@ -5,6 +5,7 @@ interface DragDispatch {
 export default class DragEvent {
   readonly type!: string
   declare readonly sourceEvent: Event
+  // eslint-disable-next-line pickier/no-unused-vars
   declare readonly subject: { x: number; y: number } | undefined
   declare readonly target: unknown
   declare readonly identifier: string | number
@@ -25,6 +26,7 @@ export default class DragEvent {
     dispatch
   }: {
     sourceEvent: Event
+    // eslint-disable-next-line pickier/no-unused-vars
     subject?: { x: number; y: number }
     target: unknown
     identifier: string | number

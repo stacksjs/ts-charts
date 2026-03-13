@@ -8,6 +8,7 @@ function formatIsoNative(date: Date): string {
 
 const formatIso: (date: Date) => string = typeof Date.prototype.toISOString === 'function'
     ? formatIsoNative
+    // eslint-disable-next-line pickier/no-unused-vars
     : utcFormat(isoSpecifier) as unknown as (date: Date) => string
 
 export default formatIso

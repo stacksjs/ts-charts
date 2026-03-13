@@ -4,6 +4,7 @@ export interface HierarchyLink<T> {
 }
 
 export class HierarchyNode<T> {
+  // eslint-disable-next-line pickier/no-unused-vars
   data: T
   depth: number
   height: number
@@ -161,6 +162,7 @@ export class HierarchyNode<T> {
   }
 
   copy(): HierarchyNode<T> {
+    // eslint-disable-next-line pickier/no-unused-vars
     return hierarchy(this as unknown as T).eachBefore(copyData as (node: HierarchyNode<T>) => void)
   }
 
@@ -224,8 +226,10 @@ function mapChildren<T>(d: T): Iterable<T> | null {
   return Array.isArray(d) ? d[1] as Iterable<T> : null
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 function copyData(node: HierarchyNode<{ value?: number; data: unknown }>): void {
   if (node.data.value !== undefined) node.value = node.data.value
+  // eslint-disable-next-line pickier/no-unused-vars
   node.data = node.data.data as { value?: number; data: unknown }
 }
 
@@ -239,8 +243,11 @@ export function computeHeight<T>(node: HierarchyNode<T>): void {
 export default function hierarchy<T>(data: T, children?: (d: T) => Iterable<T> | null | undefined): HierarchyNode<T> {
   if (data instanceof Map) {
     data = [undefined, data] as unknown as T
+    // eslint-disable-next-line pickier/no-unused-vars
     if (children === undefined) children = mapChildren as unknown as (d: T) => Iterable<T> | null | undefined
+  // eslint-disable-next-line pickier/no-unused-vars
   } else if (children === undefined) {
+    // eslint-disable-next-line pickier/no-unused-vars
     children = objectChildren as unknown as (d: T) => Iterable<T> | null | undefined
   }
 
@@ -264,5 +271,6 @@ export default function hierarchy<T>(data: T, children?: (d: T) => Iterable<T> |
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   return root.eachBefore(computeHeight as (node: HierarchyNode<T>) => void)
 }

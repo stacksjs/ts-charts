@@ -18,6 +18,7 @@ const streamObjectType: Record<string, (object: GeoObject, stream: GeoStream) =>
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 const streamGeometryType: Record<string, (object: GeoObject, stream: GeoStream) => void> = {
   Sphere: function (_object: GeoObject, stream: GeoStream): void {
     stream.sphere!()
@@ -79,6 +80,7 @@ function streamPolygon(coordinates: number[][][], stream: GeoStream): void {
 export default function geoStream(object: GeoObject, stream: GeoStream): void {
   if (object && streamObjectType.hasOwnProperty(object.type)) {
     streamObjectType[object.type](object, stream)
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     streamGeometry(object, stream)
   }

@@ -13,6 +13,7 @@ export function circleStream(stream: GeoStream, radius: number, delta: number, d
   if (t0 == null) {
     start = radius + direction * tau
     end = radius - step / 2
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     start = circleRadius(cosRadius, t0)
     end = circleRadius(cosRadius, t1!)
@@ -33,8 +34,11 @@ function circleRadius(cosRadius: number, point: number[]): number {
 
 interface GeoCircleGenerator {
   (this: unknown): GeoObject
+  // eslint-disable-next-line pickier/no-unused-vars
   center(_: number[] | ((...args: unknown[]) => number[])): GeoCircleGenerator
+  // eslint-disable-next-line pickier/no-unused-vars
   radius(_: number | ((...args: unknown[]) => number)): GeoCircleGenerator
+  // eslint-disable-next-line pickier/no-unused-vars
   precision(_: number | ((...args: unknown[]) => number)): GeoCircleGenerator
 }
 
@@ -65,14 +69,17 @@ export default function geoCircle(): GeoCircleGenerator {
   }
 
   circle.center = function (_: number[] | ((...args: unknown[]) => number[])): GeoCircleGenerator {
+    // eslint-disable-next-line pickier/no-unused-vars
     return center = typeof _ === 'function' ? _ as (...args: unknown[]) => number[] : constant([+(_  as number[])[0], +(_ as number[])[1]]), circle
   }
 
   circle.radius = function (_: number | ((...args: unknown[]) => number)): GeoCircleGenerator {
+    // eslint-disable-next-line pickier/no-unused-vars
     return radius = typeof _ === 'function' ? _ as (...args: unknown[]) => number : constant(+_), circle
   }
 
   circle.precision = function (_: number | ((...args: unknown[]) => number)): GeoCircleGenerator {
+    // eslint-disable-next-line pickier/no-unused-vars
     return precision = typeof _ === 'function' ? _ as (...args: unknown[]) => number : constant(+_), circle
   }
 

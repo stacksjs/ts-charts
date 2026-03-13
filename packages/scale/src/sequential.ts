@@ -6,7 +6,9 @@ import { loggish } from './log.ts'
 import { symlogish } from './symlog.ts'
 import { powish } from './pow.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type TransformFn = (x: number) => number
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolatorFn = (t: number) => number
 
 function transformer(): (t: TransformFn) => ContinuousScale {
@@ -43,6 +45,7 @@ function transformer(): (t: TransformFn) => ContinuousScale {
     }
   }
 
+  // eslint-disable-next-line pickier/no-unused-vars
   scale.range = range(interpolate as unknown as (a: number, b: number) => (t: number) => number)
 
   scale.rangeRound = range(interpolateRound)

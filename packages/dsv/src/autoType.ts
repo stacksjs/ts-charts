@@ -5,17 +5,26 @@ export default function autoType<T extends Record<string, string>>(object: T): T
   for (const key in object) {
     let value: string | number | boolean | Date | null = (object[key] as string).trim()
     let number: number
+    // eslint-disable-next-line pickier/no-unused-vars
     let m: RegExpMatchArray | null
-    if (!value) value = null
-    else if (value === 'true') value = true
-    else if (value === 'false') value = false
-    else if (value === 'NaN') value = NaN
-    else if (!isNaN(number = +value)) value = number
+    if (!value)
+      value = null
+    else if (value === 'true')
+      value = true
+    else if (value === 'false')
+      value = false
+    else if (value === 'NaN')
+      value = NaN
+    else if (!isNaN(number = +value))
+      value = number
     else if (m = value.match(/^([-+]\d{2})?\d{4}(-\d{2}(-\d{2})?)?(T\d{2}:\d{2}(:\d{2}(\.\d{3})?)?(Z|[-+]\d{2}:\d{2})?)?$/)) {
-      if (fixtz && !!m[4] && !m[7]) value = value.replace(/-/g, '/').replace(/T/, ' ')
+      if (fixtz && !!m[4] && !m[7])
+        value = value.replace(/-/g, '/').replace(/T/, ' ')
       value = new Date(value)
     }
-    else continue
+    else
+      continue
+    // eslint-disable-next-line pickier/no-unused-vars
     ;(object as any)[key] = value
   }
   return object

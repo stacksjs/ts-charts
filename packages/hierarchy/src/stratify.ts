@@ -19,10 +19,13 @@ function defaultParentId(d: { parentId?: string }): string {
 
 export interface StratifyLayout<T> {
   (data: Iterable<T>): HierarchyNode<T>
+  // eslint-disable-next-line pickier/no-unused-vars
   id(): ((d: T, i: number, data: Iterable<T>) => string | null | undefined) | null
   id(id: (d: T, i: number, data: Iterable<T>) => string | null | undefined): StratifyLayout<T>
+  // eslint-disable-next-line pickier/no-unused-vars
   parentId(): ((d: T, i: number, data: Iterable<T>) => string | null | undefined) | null
   parentId(parentId: (d: T, i: number, data: Iterable<T>) => string | null | undefined): StratifyLayout<T>
+  // eslint-disable-next-line pickier/no-unused-vars
   path(): ((d: T, i: number, data: Iterable<T>) => string) | null
   path(path: (d: T, i: number, data: Iterable<T>) => string): StratifyLayout<T>
 }
@@ -78,12 +81,16 @@ export default function stratify<T>(): StratifyLayout<T> {
       node = nodes[i]
       if (nodeId = node.parent) {
         parent = nodeByKey.get(nodeId)
-        if (!parent) throw new Error('missing: ' + nodeId)
-        if (parent === ambiguous) throw new Error('ambiguous: ' + nodeId)
+        // eslint-disable-next-line pickier/no-unused-vars
+        if (!parent) throw new Error(`missing: ${nodeId}`)
+        // eslint-disable-next-line pickier/no-unused-vars
+        if (parent === ambiguous) throw new Error(`ambiguous: ${nodeId}`)
         if (parent.children) parent.children.push(node)
         else parent.children = [node]
         node.parent = parent
-      } else {
+      // eslint-disable-next-line pickier/no-unused-vars
+      }
+      else {
         if (root) throw new Error('multiple roots')
         root = node
       }
@@ -105,9 +112,16 @@ export default function stratify<T>(): StratifyLayout<T> {
       }
     }
 
-    ;(root as any).parent = preroot
-    root!.eachBefore(function (node: HierarchyNode<T>) { node.depth = (node.parent as any).depth + 1; --n }).eachBefore(computeHeight as any)
-    ;(root as any).parent = null
+    // eslint-disable-next-line pickier/no-unused-vars
+    const rootAny = root as any
+    rootAny.parent = preroot
+    // eslint-disable-next-line pickier/no-unused-vars
+    root!.eachBefore(function (node: HierarchyNode<T>) {
+      node.depth = (node.parent as any).depth + 1
+      --n
+    }).eachBefore(computeHeight as any)
+    // eslint-disable-next-line pickier/no-unused-vars
+    rootAny.parent = null
     if (n > 0) throw new Error('cycle')
 
     return root!

@@ -7,6 +7,7 @@ export function orthographicRaw(x: number, y: number): number[] {
   return [cos(y) * sin(x), sin(y)]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(orthographicRaw as GeoRawProjection).invert = azimuthalInvert(asin)
 
 export default function geoOrthographic(): GeoProjection {

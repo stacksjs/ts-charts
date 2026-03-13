@@ -8,6 +8,7 @@ const noop: CallbackEntry = { name: '', value: () => {} }
 type TypeMap = Record<string, CallbackEntry[]>
 
 interface ParsedTypename {
+  // eslint-disable-next-line pickier/no-unused-vars
   type: string
   name: string
 }
@@ -20,6 +21,7 @@ function parseTypenames(typenames: string, types: TypeMap): ParsedTypename[] {
       name = t.slice(i + 1)
       t = t.slice(0, i)
     }
+    // eslint-disable-next-line pickier/no-unused-vars
     if (t && !types.hasOwnProperty(t)) throw new Error('unknown type: ' + t)
     return { type: t, name }
   })
@@ -54,6 +56,7 @@ export class Dispatch {
   }
 
   on(typename: string, callback?: ((...args: unknown[]) => void) | null): this | ((...args: unknown[]) => void) | undefined {
+    // eslint-disable-next-line pickier/no-unused-vars
     const T = parseTypenames(typename + '', this._)
     let t: string | undefined
     let i = -1
@@ -73,11 +76,13 @@ export class Dispatch {
 
     // If a type was specified, set the callback for the given type and name.
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
+    // eslint-disable-next-line pickier/no-unused-vars
     if (callback != null && typeof callback !== 'function') throw new Error('invalid callback: ' + callback)
     while (++i < n) {
       const parsed = T[i]
       if ((t = parsed.type)) {
         this._[t] = set(this._[t], parsed.name, callback ?? null)
+      // eslint-disable-next-line pickier/no-unused-vars
       } else if (callback == null) {
         for (t in this._) {
           this._[t] = set(this._[t], parsed.name, null)
@@ -95,6 +100,7 @@ export class Dispatch {
   }
 
   call(type: string, that?: unknown, ...args: unknown[]): void {
+    // eslint-disable-next-line pickier/no-unused-vars
     if (!this._.hasOwnProperty(type)) throw new Error('unknown type: ' + type)
     const t = this._[type]
     for (let i = 0, n = t.length; i < n; ++i) {
@@ -103,6 +109,7 @@ export class Dispatch {
   }
 
   apply(type: string, that?: unknown, args?: unknown[]): void {
+    // eslint-disable-next-line pickier/no-unused-vars
     if (!this._.hasOwnProperty(type)) throw new Error('unknown type: ' + type)
     const t = this._[type]
     for (let i = 0, n = t.length; i < n; ++i) {
@@ -121,6 +128,7 @@ export function dispatch(...types: string[]): Dispatch {
   const _ : TypeMap = {}
   for (let i = 0, n = types.length; i < n; ++i) {
     const t = types[i] + ''
+    // eslint-disable-next-line pickier/no-unused-vars
     if (!t || (t in _) || /[\s.]/.test(t)) throw new Error('illegal type: ' + t)
     _[t] = []
   }

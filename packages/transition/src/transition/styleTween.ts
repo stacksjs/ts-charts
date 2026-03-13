@@ -1,6 +1,8 @@
+// eslint-disable-next-line pickier/no-unused-vars
 type InterpolatorFactory = (this: Element, ...args: unknown[]) => (t: number) => string
 
 interface TweenFn {
+  // eslint-disable-next-line pickier/no-unused-vars
   (this: Element): ((t: number) => void) | undefined
   _value: InterpolatorFactory
 }
@@ -12,7 +14,9 @@ function styleInterpolate(name: string, i: (t: number) => string, priority: stri
 }
 
 function styleTween(name: string, value: InterpolatorFactory, priority: string): TweenFn {
+  // eslint-disable-next-line pickier/no-unused-vars
   let t: ((t: number) => void) | undefined
+  // eslint-disable-next-line pickier/no-unused-vars
   let i0: ((t: number) => string) | undefined
   function tween(this: Element): ((t: number) => void) | undefined {
     const i = value.apply(this, arguments as unknown as [unknown, number, ArrayLike<Element | null>])
@@ -25,6 +29,7 @@ function styleTween(name: string, value: InterpolatorFactory, priority: string):
 
 export default function (this: { tween: Function }, name: string, value?: InterpolatorFactory | null, priority?: string): unknown {
   const key = 'style.' + (name += '')
+  // eslint-disable-next-line pickier/no-unused-vars
   if (arguments.length < 2) { const t = this.tween(key) as TweenFn | null; return t && t._value }
   if (value == null) return this.tween(key, null)
   if (typeof value !== 'function') throw new Error()

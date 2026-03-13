@@ -5,6 +5,7 @@ export default function range(start: number, stop?: number, step?: number): numb
     stop = start
     start = 0
     step = 1
+  // eslint-disable-next-line pickier/no-unused-vars
   } else {
     stop = +stop!
     step = argc < 3 ? 1 : +step!

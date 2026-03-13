@@ -2,6 +2,7 @@ import { linearish } from './linear.ts'
 import { copy, identity, transformer, type ContinuousScale } from './continuous.ts'
 import { initRange } from './init.ts'
 
+// eslint-disable-next-line pickier/no-unused-vars
 type TransformFn = (x: number) => number
 
 function transformPow(exponent: number): TransformFn {

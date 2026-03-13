@@ -16,10 +16,12 @@ function hsl(hueFn: (a: number, b: number) => (t: number) => number): (start: Co
       s.s = sat(t)
       s.l = l(t)
       s.opacity = opacity(t)
+      // eslint-disable-next-line pickier/no-unused-vars
       return s + ''
     }
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export default hsl(hue) as (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string
 export const hslLong: (start: ColorSpecifier, end: ColorSpecifier) => (t: number) => string = hsl(color)

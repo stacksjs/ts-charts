@@ -30,6 +30,7 @@ export default function polygonContains(polygon: number[][][], point: number[]):
         cosPhi0 = cos(phi0)
 
     for (let j = 0; j < m; ++j, lambda0 = lambda1, sinPhi0 = sinPhi1, cosPhi0 = cosPhi1, point0 = point1) {
+      // eslint-disable-next-line pickier/no-unused-vars
       var point1 = ring[j],
           lambda1 = longitude(point1),
           phi1 = point1[1] / 2 + quarterPi,

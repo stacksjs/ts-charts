@@ -4,6 +4,7 @@ import { roundEpsilon } from './roundEpsilon.ts'
 
 it('scaleLinear() has the expected defaults', () => {
   const s = scaleLinear()
+  // eslint-disable-next-line pickier/no-unused-vars
   expect(s.domain()).toEqual([0, 1])
   expect(s.range()).toEqual([0, 1])
   expect(s.clamp()).toBe(false)
@@ -380,6 +381,7 @@ it('linear.tickFormat(count, specifier) sets the appropriate prefix precision if
 
 it('linear.tickFormat() uses the default precision when the domain is invalid', () => {
   const f = scaleLinear().domain([0, NaN]).tickFormat()
+  // eslint-disable-next-line pickier/no-unused-vars
   expect(f + '').toBe(' >-,f')
   expect(f(0.12)).toBe('0.120000')
 })
@@ -418,6 +420,7 @@ it('linear.copy() returns a copy with changes to the interpolator are isolated',
   const x = scaleLinear().range(['red', 'blue'])
   const y = x.copy()
   const i0 = x.interpolate()
+  // eslint-disable-next-line pickier/no-unused-vars
   const i1 = function(a: any, b: any) { return function() { return b } }
   x.interpolate(i1)
   expect(y.interpolate()).toBe(i0)

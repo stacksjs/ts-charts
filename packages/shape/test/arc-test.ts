@@ -3,7 +3,9 @@ import { arc } from '../src/index.ts'
 import { assertPathEqual } from './asserts.ts'
 
 describe('arc', () => {
+  // eslint-disable-next-line pickier/no-unused-vars
   it("arc().innerRadius(f)(…) propagates the context and arguments to the specified function f", () => {
+    // eslint-disable-next-line pickier/no-unused-vars
     const expected = {that: {}, args: [42]}
     let actual: any
     arc().innerRadius(function(this: any) { actual = {that: this, args: [].slice.call(arguments)} }).apply(expected.that, expected.args as any)

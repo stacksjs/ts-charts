@@ -7,6 +7,7 @@ export function withPath(shape: any): () => Path {
     if (!arguments.length) return digits
     if (_ == null) {
       digits = null
+    // eslint-disable-next-line pickier/no-unused-vars
     } else {
       const d = Math.floor(_)
       if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`)

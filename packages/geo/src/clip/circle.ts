@@ -31,6 +31,7 @@ export default function clipCircle(radius: number): GeoStreamFactory {
         clean = 1
       },
       point: function (lambda: number, phi: number): void {
+        // eslint-disable-next-line pickier/no-unused-vars
         let point1: number[] = [lambda, phi],
             point2: number[] | null | undefined,
             v = visible(lambda, phi),
@@ -49,12 +50,14 @@ export default function clipCircle(radius: number): GeoStreamFactory {
             stream.lineStart()
             point2 = intersect(point1, point0!) as number[] | undefined
             stream.point(point2![0], point2![1])
+          // eslint-disable-next-line pickier/no-unused-vars
           } else {
             point2 = intersect(point0!, point1) as number[] | undefined
             stream.point(point2![0], point2![1], 2)
             stream.lineEnd()
           }
           point0 = point2!
+        // eslint-disable-next-line pickier/no-unused-vars
         } else if (notHemisphere && point0 && smallRadius !== v) {
           let t: number[][] | undefined
           if (!(c & c0) && (t = intersect(point1, point0!, true) as number[][] | undefined)) {
@@ -64,6 +67,7 @@ export default function clipCircle(radius: number): GeoStreamFactory {
               stream.point(t[0][0], t[0][1])
               stream.point(t[1][0], t[1][1])
               stream.lineEnd()
+            // eslint-disable-next-line pickier/no-unused-vars
             } else {
               stream.point(t[1][0], t[1][1])
               stream.lineEnd()

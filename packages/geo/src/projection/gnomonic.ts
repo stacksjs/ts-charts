@@ -8,6 +8,7 @@ export function gnomonicRaw(x: number, y: number): number[] {
   return [cy * sin(x) / k, sin(y) / k]
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 ;(gnomonicRaw as GeoRawProjection).invert = azimuthalInvert(atan)
 
 export default function geoGnomonic(): GeoProjection {

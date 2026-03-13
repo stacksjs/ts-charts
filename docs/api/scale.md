@@ -11,21 +11,27 @@ bun add @ts-charts/scale
 ## Exports
 
 ### Continuous
+
 `scaleLinear`, `scaleLog`, `scalePow`, `scaleSqrt`, `scaleSymlog`, `scaleRadial`, `scaleIdentity`, `scaleTime`, `scaleUtc`
 
 ### Sequential
+
 `scaleSequential`, `scaleSequentialLog`, `scaleSequentialPow`, `scaleSequentialSqrt`, `scaleSequentialSymlog`, `scaleSequentialQuantile`
 
 ### Diverging
+
 `scaleDiverging`, `scaleDivergingLog`, `scaleDivergingPow`, `scaleDivergingSqrt`, `scaleDivergingSymlog`
 
 ### Ordinal
+
 `scaleOrdinal`, `scaleImplicit`, `scaleBand`, `scalePoint`
 
 ### Discretizing
+
 `scaleQuantize`, `scaleQuantile`, `scaleThreshold`
 
 ### Utilities
+
 `tickFormat`
 
 ## Usage
