@@ -7,9 +7,11 @@ export function initRange(this: InitableScale, domain?: unknown, range?: unknown
   switch (arguments.length) {
     case 0: break
     // eslint-disable-next-line pickier/no-unused-vars
-    case 1: this.range(domain); break
+    case 1: this.range(domain)
+      break
     // eslint-disable-next-line pickier/no-unused-vars
-    default: this.range(range).domain(domain); break
+    default: this.range(range).domain(domain)
+      break
   }
   return this
 }

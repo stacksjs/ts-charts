@@ -29,14 +29,16 @@ export default function polygonContains(polygon: number[][][], point: number[]):
         sinPhi0 = sin(phi0),
         cosPhi0 = cos(phi0)
 
+    // eslint-disable-next-line pickier/no-unused-vars
+    let point1: number[], lambda1: number, sinPhi1: number, cosPhi1: number
+
     for (let j = 0; j < m; ++j, lambda0 = lambda1, sinPhi0 = sinPhi1, cosPhi0 = cosPhi1, point0 = point1) {
-      // eslint-disable-next-line pickier/no-unused-vars
-      var point1 = ring[j],
-          lambda1 = longitude(point1),
-          phi1 = point1[1] / 2 + quarterPi,
-          sinPhi1 = sin(phi1),
-          cosPhi1 = cos(phi1),
-          delta = lambda1 - lambda0,
+      point1 = ring[j]
+      lambda1 = longitude(point1)
+      const phi1 = point1[1] / 2 + quarterPi
+      sinPhi1 = sin(phi1)
+      cosPhi1 = cos(phi1)
+      const delta = lambda1 - lambda0,
           signDelta = delta >= 0 ? 1 : -1,
           absDelta = signDelta * delta,
           antimeridian = absDelta > pi,

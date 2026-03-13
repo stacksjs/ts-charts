@@ -59,7 +59,8 @@ export default function cluster<T>(): ClusterLayout<T> {
         node.x = meanX(children)
         node.y = maxY(children)
       // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         node.x = previousNode ? x += separation(node, previousNode) : 0
         node.y = 0
         previousNode = node

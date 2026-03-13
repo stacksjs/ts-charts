@@ -29,7 +29,8 @@ const treemapResquarify: SquarifyTile = (function custom(ratio: number): Squarif
         value -= row.value
       }
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       const newRows = squarifyRatio(ratio, parent, x0, y0, x1, y1) as SquarifyRow[] & { ratio: number }
       newRows.ratio = ratio
       parent._squarify = newRows

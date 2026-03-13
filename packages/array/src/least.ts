@@ -15,8 +15,8 @@ export default function least(values: Iterable<any>, compare: any = ascending): 
         defined = true
       }
     }
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     for (const value of values) {
       if (defined
           ? compare(value, min) < 0

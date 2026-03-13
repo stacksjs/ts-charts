@@ -28,7 +28,7 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
   // eslint-disable-next-line pickier/no-unused-vars
   const sa = `${a}`
   // eslint-disable-next-line pickier/no-unused-vars
-  const sb = `${b}`
+  let sb = `${b}`
 
   // Interpolate pairs of numbers in a & b.
   while ((am = reA.exec(sa))
@@ -62,6 +62,7 @@ export default function interpolateString(a: unknown, b: unknown): (t: number) =
   return s.length < 2 ? (q[0]
       ? one(q[0].x)
       : zero(sb))
+      // eslint-disable-next-line pickier/no-unused-vars
       : (sb = q.length as unknown as string, function (t: number): string {
           for (let i = 0, o: { i: number, x: (t: number) => number }; i < (sb as unknown as number); ++i) s[(o = q[i]).i] = o.x(t) as unknown as string
           return s.join('')

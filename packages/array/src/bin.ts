@@ -73,13 +73,13 @@ export default function bin(): BinGenerator<any> {
           if (isFinite(step)) {
             if (step > 0) {
               x1 = (Math.floor(x1 / step) + 1) * step
-            // eslint-disable-next-line pickier/no-unused-vars
-            } else if (step < 0) {
+            }
+            else if (step < 0) {
               x1 = (Math.ceil(x1 * -step) + 1) / -step
             }
           }
-        // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           tz.pop()
         }
       }
@@ -110,8 +110,8 @@ export default function bin(): BinGenerator<any> {
             bins[Math.min(m, Math.floor((x - x0) / step!))].push(data[i])
           }
         }
-      // eslint-disable-next-line pickier/no-unused-vars
-      } else if (step! < 0) {
+      }
+      else if (step! < 0) {
         for (i = 0; i < n; ++i) {
           if ((x = values[i]) != null && x0 <= x && x <= x1) {
             const j = Math.floor((x0 - x) * step!)
@@ -119,8 +119,8 @@ export default function bin(): BinGenerator<any> {
           }
         }
       }
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       for (i = 0; i < n; ++i) {
         if ((x = values[i]) != null && x0 <= x && x <= x1) {
           bins[bisect(tz, x, 0, m)].push(data[i])

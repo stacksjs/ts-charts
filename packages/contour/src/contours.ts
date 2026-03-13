@@ -48,7 +48,8 @@ export default function Contours(): any {
       while (tz[tz.length - 1] >= (e[1] as number)) tz.pop()
       while (tz[1] < (e[0] as number)) tz.shift()
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       tz = tz.slice().sort(ascending)
     }
 
@@ -146,17 +147,20 @@ export default function Contours(): any {
             f.ring.push(end)
             callback(f.ring)
           // eslint-disable-next-line pickier/no-unused-vars
-          } else {
+          }
+          else {
             fragmentByStart[f.start] = fragmentByEnd[g.end] = { start: f.start, end: g.end, ring: f.ring.concat(g.ring) }
           }
         // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           delete fragmentByEnd[f.end]
           f.ring.push(end)
           fragmentByEnd[f.end = endIndex] = f
         }
       // eslint-disable-next-line pickier/no-unused-vars
-      } else if (f = fragmentByStart[endIndex]) {
+      }
+      else if (f = fragmentByStart[endIndex]) {
         if (g = fragmentByEnd[startIndex]) {
           delete fragmentByStart[f.start]
           delete fragmentByEnd[g.end]
@@ -164,17 +168,20 @@ export default function Contours(): any {
             f.ring.push(end)
             callback(f.ring)
           // eslint-disable-next-line pickier/no-unused-vars
-          } else {
+          }
+          else {
             fragmentByStart[g.start] = fragmentByEnd[f.end] = { start: g.start, end: f.end, ring: g.ring.concat(f.ring) }
           }
         // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           delete fragmentByStart[f.start]
           f.ring.unshift(start)
           fragmentByStart[f.start = startIndex] = f
         }
       // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         fragmentByStart[startIndex] = fragmentByEnd[endIndex] = { start: startIndex, end: endIndex, ring: [start, end] }
       }
     }
@@ -204,7 +211,8 @@ export default function Contours(): any {
 
   contours.size = function (_?: [number, number]): [number, number] | typeof contours {
     if (!arguments.length) return [dx, dy]
-    const _0 = Math.floor(_![0]), _1 = Math.floor(_![1])
+    const _0 = Math.floor(_![0])
+    const _1 = Math.floor(_![1])
     if (!(_0 >= 0 && _1 >= 0)) throw new Error('invalid size')
     return dx = _0, dy = _1, contours
   }

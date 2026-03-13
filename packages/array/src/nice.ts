@@ -6,12 +6,12 @@ export default function nice(start: number, stop: number, count: number): [numbe
     const step = tickIncrement(start, stop, count)
     if (step === prestep || step === 0 || !isFinite(step)) {
       return [start, stop]
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else if (step > 0) {
+    }
+    else if (step > 0) {
       start = Math.floor(start / step) * step
       stop = Math.ceil(stop / step) * step
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else if (step < 0) {
+    }
+    else if (step < 0) {
       start = Math.ceil(start * step) / step
       stop = Math.floor(stop * step) / step
     }

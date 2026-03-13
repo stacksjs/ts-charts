@@ -10,8 +10,8 @@ export default function maxIndex(values: Iterable<any>, valueof?: (value: any, i
         max = value, maxIndex = index
       }
     }
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     for (let value of values) {
       if ((value = valueof(value, ++index, values)) != null
           && (max < value || (max === undefined && value >= value))) {

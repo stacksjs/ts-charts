@@ -9,7 +9,7 @@ export default function rank(values: Iterable<any>, valueof: any = ascending): F
   const compareIndex = (i: number, j: number): number => valueof(V[i], V[j])
   let k: number | undefined, r: number
   // eslint-disable-next-line pickier/no-unused-vars
-  let indices: any = Uint32Array.from(V as any, (_: any, i: number) => i)
+  const indices: any = Uint32Array.from(V as any, (_: any, i: number) => i)
   // Risky chaining due to Safari 14 https://github.com/d3/d3-array/issues/123
   indices.sort(valueof === ascending ? (i: number, j: number) => ascendingDefined(V[i], V[j]) : compareDefined(compareIndex))
   indices.forEach((j: number, i: number) => {
@@ -17,8 +17,8 @@ export default function rank(values: Iterable<any>, valueof: any = ascending): F
     if (c >= 0) {
       if (k === undefined || c > 0) k = j, r = i
       R[j] = r!
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       R[j] = NaN
     }
   })

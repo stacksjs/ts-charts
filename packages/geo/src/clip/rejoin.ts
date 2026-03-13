@@ -35,8 +35,8 @@ export default function clipRejoin(
 
   segments.forEach(function (segment: number[][]) {
     if ((n = segment.length - 1) <= 0) return
-    // eslint-disable-next-line pickier/no-unused-vars
-    let p0 = segment[0], p1 = segment[n], x: Intersection
+    let p0 = segment[0], x: Intersection
+    const p1 = segment[n]
 
     if (pointEqual(p0, p1)) {
       if (!p0[2] && !p1[2]) {
@@ -79,18 +79,18 @@ export default function clipRejoin(
       if (current!.e) {
         if (isSubject) {
           for (i = 0, n = points!.length; i < n; ++i) stream.point((point = points![i])[0], point[1])
-        // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           interpolate(current!.x, current!.n!.x, 1, stream)
         }
         current = current!.n
-      // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         if (isSubject) {
           points = current!.p!.z
           for (i = points!.length - 1; i >= 0; --i) stream.point((point = points![i])[0], point[1])
-        // eslint-disable-next-line pickier/no-unused-vars
-        } else {
+        }
+        else {
           interpolate(current!.x, current!.p!.x, -1, stream)
         }
         current = current!.p

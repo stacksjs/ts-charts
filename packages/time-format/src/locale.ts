@@ -451,7 +451,7 @@ function requote(s: string): string {
 
 function formatRe(names: readonly string[]): RegExp {
   // eslint-disable-next-line pickier/no-unused-vars
-  return new RegExp('^(?:' + names.map(requote).join('|') + ')', 'i')
+  return new RegExp(`^(?:${names.map(requote).join('|')})`, 'i')
 }
 
 function formatLookup(names: readonly string[]): Map<string, number> {
@@ -579,7 +579,7 @@ function formatMilliseconds(d: Date, p: string): string {
 }
 
 function formatMicroseconds(d: Date, p: string): string {
-  return formatMilliseconds(d, p) + '000'
+  return `${formatMilliseconds(d, p)}000`
 }
 
 function formatMonthNumber(d: Date, p: string): string {
@@ -668,7 +668,7 @@ function formatUTCMilliseconds(d: Date, p: string): string {
 }
 
 function formatUTCMicroseconds(d: Date, p: string): string {
-  return formatUTCMilliseconds(d, p) + '000'
+  return `${formatUTCMilliseconds(d, p)}000`
 }
 
 function formatUTCMonthNumber(d: Date, p: string): string {

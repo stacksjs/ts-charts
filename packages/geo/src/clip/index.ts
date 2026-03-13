@@ -40,8 +40,8 @@ export default function clip(
         if (mergedSegments.length) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
           clipRejoin(mergedSegments, compareIntersection, startInside, interpolate, sink)
-        // eslint-disable-next-line pickier/no-unused-vars
-        } else if (startInside) {
+        }
+        else if (startInside) {
           if (!polygonStarted) sink.polygonStart(), polygonStarted = true
           sink.lineStart()
           interpolate(null, null, 1, sink)

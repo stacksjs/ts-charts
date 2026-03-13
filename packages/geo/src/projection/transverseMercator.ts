@@ -6,8 +6,8 @@ export function transverseMercatorRaw(lambda: number, phi: number): number[] {
   return [log(tan((halfPi + phi) / 2)), -lambda]
 }
 
-// eslint-disable-next-line pickier/no-unused-vars
-;(transverseMercatorRaw as GeoRawProjection).invert = function (x: number, y: number): number[] {
+;
+(transverseMercatorRaw as GeoRawProjection).invert = function (x: number, y: number): number[] {
   return [-y, 2 * atan(exp(x)) - halfPi]
 }
 

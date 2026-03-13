@@ -382,7 +382,7 @@ it('linear.tickFormat(count, specifier) sets the appropriate prefix precision if
 it('linear.tickFormat() uses the default precision when the domain is invalid', () => {
   const f = scaleLinear().domain([0, NaN]).tickFormat()
   // eslint-disable-next-line pickier/no-unused-vars
-  expect(f + '').toBe(' >-,f')
+  expect(`${f}`).toBe(' >-,f')
   expect(f(0.12)).toBe('0.120000')
 })
 

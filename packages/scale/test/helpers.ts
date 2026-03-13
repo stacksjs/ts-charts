@@ -4,10 +4,12 @@ export function assertInDelta(actual: number, expected: number, delta = 1e-6): v
   if (Array.isArray(expected)) {
     assertInDeltaArray(actual as any, expected as any, delta)
   // eslint-disable-next-line pickier/no-unused-vars
-  } else if (typeof expected === 'object' && expected !== null) {
+  }
+  else if (typeof expected === 'object' && expected !== null) {
     assertInDeltaObject(actual as any, expected as any, delta)
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     expect(Math.abs((actual as number) - (expected as number))).toBeLessThan(delta)
   }
 }

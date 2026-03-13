@@ -54,8 +54,8 @@ export function fsum(values: Iterable<any>, valueof?: (value: any, index: number
         adder.add(value)
       }
     }
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     let index = -1
     for (let value of values) {
       if (value = +valueof(value, ++index, values)) {

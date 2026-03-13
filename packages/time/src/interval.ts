@@ -75,7 +75,8 @@ export function timeInterval(
       if (date >= date) {
         if (step < 0) while (++step <= 0) {
           while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
-        } else while (--step >= 0) {
+        }
+        else while (--step >= 0) {
           while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
         }
       }

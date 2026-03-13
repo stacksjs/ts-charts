@@ -81,7 +81,8 @@ export default function geoStream(object: GeoObject, stream: GeoStream): void {
   if (object && streamObjectType.hasOwnProperty(object.type)) {
     streamObjectType[object.type](object, stream)
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     streamGeometry(object, stream)
   }
 }

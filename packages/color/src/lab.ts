@@ -41,7 +41,8 @@ function labConvert(o: Color | string): Lab {
   if (r === g && g === b) {
     x = z = y
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     x = xyz2lab((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn)
     z = xyz2lab((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn)
   }

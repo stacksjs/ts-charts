@@ -40,15 +40,18 @@ export function linearish<T extends ContinuousScale>(scale: T): T {
         d[i1] = stop
         return (scale.domain as (d: number[]) => ContinuousScale)(d)
       // eslint-disable-next-line pickier/no-unused-vars
-      } else if (step > 0) {
+      }
+      else if (step > 0) {
         start = Math.floor(start / step) * step
         stop = Math.ceil(stop / step) * step
       // eslint-disable-next-line pickier/no-unused-vars
-      } else if (step < 0) {
+      }
+      else if (step < 0) {
         start = Math.ceil(start * step) / step
         stop = Math.floor(stop * step) / step
       // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         break
       }
       prestep = step

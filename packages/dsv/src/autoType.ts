@@ -24,7 +24,7 @@ export default function autoType<T extends Record<string, string>>(object: T): T
     }
     else
       continue
-    // eslint-disable-next-line pickier/no-unused-vars
+    // eslint-disable-next-line pickier/no-unused-vars, max-statements-per-line
     ;(object as any)[key] = value
   }
   return object

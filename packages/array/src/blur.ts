@@ -38,13 +38,13 @@ function Blur2(blurFactory: (radius: number) => BlurFn): (data: BlurData, rx: nu
       blurv(blury, values, temp, width, height)
       blurv(blury, temp, values, width, height)
       blurv(blury, values, temp, width, height)
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else if (blurx) {
+    }
+    else if (blurx) {
       blurh(blurx, values, temp, width, height)
       blurh(blurx, temp, values, width, height)
       blurh(blurx, values, temp, width, height)
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else if (blury) {
+    }
+    else if (blury) {
       blurv(blury, values, temp, width, height)
       blurv(blury, temp, values, width, height)
       blurv(blury, values, temp, width, height)

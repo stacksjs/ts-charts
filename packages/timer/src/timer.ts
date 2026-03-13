@@ -79,7 +79,8 @@ function wake(): void {
   try {
     timerFlush()
   // eslint-disable-next-line pickier/no-unused-vars
-  } finally {
+  }
+  finally {
     frame = 0
     nap()
     clockNow = 0
@@ -103,7 +104,8 @@ function nap(): void {
       t0 = t1
       t1 = t1._next
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       t2 = t1._next
       t1._next = null
       t1 = t0 ? t0._next = t2 : taskHead = t2
@@ -116,16 +118,26 @@ function nap(): void {
 function sleep(time?: number): void {
   if (frame) return // Soonest alarm already set, or will be.
   // eslint-disable-next-line pickier/no-unused-vars
-  if (timeoutId) { clearTimeout(timeoutId as ReturnType<typeof setTimeout>); timeoutId = 0 }
+  if (timeoutId) {
+    clearTimeout(timeoutId as ReturnType<typeof setTimeout>)
+    timeoutId = 0
+  }
   const delay = (time ?? 0) - clockNow // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
     if (time! < Infinity) timeoutId = setTimeout(wake, time! - clock.now() - clockSkew) as ReturnType<typeof setTimeout>
     // eslint-disable-next-line pickier/no-unused-vars
-    if (intervalId) { clearInterval(intervalId as ReturnType<typeof setInterval>); intervalId = 0 }
+    if (intervalId) {
+      clearInterval(intervalId as ReturnType<typeof setInterval>)
+      intervalId = 0
+    }
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     // eslint-disable-next-line pickier/no-unused-vars
-    if (!intervalId) { clockLast = clock.now(); intervalId = setInterval(poke, pokeDelay) as ReturnType<typeof setInterval> }
+    if (!intervalId) {
+      clockLast = clock.now()
+      intervalId = setInterval(poke, pokeDelay) as ReturnType<typeof setInterval>
+    }
     frame = 1
     setFrame(wake)
   }

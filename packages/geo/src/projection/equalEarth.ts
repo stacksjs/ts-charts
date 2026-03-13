@@ -17,8 +17,8 @@ export function equalEarthRaw(lambda: number, phi: number): number[] {
   ]
 }
 
-// eslint-disable-next-line pickier/no-unused-vars
-;(equalEarthRaw as GeoRawProjection).invert = function (x: number, y: number): number[] {
+;
+(equalEarthRaw as GeoRawProjection).invert = function (x: number, y: number): number[] {
   let l = y, l2 = l * l, l6 = l2 * l2 * l2
   for (let i = 0, delta: number, fy: number, fpy: number; i < iterations; ++i) {
     fy = l * (A1 + A2 * l2 + l6 * (A3 + A4 * l2)) - y

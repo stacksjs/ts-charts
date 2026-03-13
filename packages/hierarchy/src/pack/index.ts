@@ -36,7 +36,8 @@ export default function pack<T>(): PackLayout<T> {
           .eachAfter(packChildrenRandom(padding, 0.5, random))
           .eachBefore(translateChild(1))
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       root.eachBefore(radiusLeaf(defaultRadius))
           // eslint-disable-next-line pickier/no-unused-vars
           .eachAfter(packChildrenRandom(constantZero as unknown as (node: HierarchyNode<T>) => number, 1, random))

@@ -194,11 +194,13 @@ export default function tree<T>(): TreeLayout<T> {
         v.z = w.z + separation(v._ as HierarchyNode<T>, w._ as HierarchyNode<T>)
         v.m = v.z - midpoint
       // eslint-disable-next-line pickier/no-unused-vars
-      } else {
+      }
+      else {
         v.z = midpoint
       }
     // eslint-disable-next-line pickier/no-unused-vars
-    } else if (w) {
+    }
+    else if (w) {
       v.z = w.z + separation(v._ as HierarchyNode<T>, w._ as HierarchyNode<T>)
     }
     v.parent!.A = apportion(v, w, v.parent!.A || siblings[0])

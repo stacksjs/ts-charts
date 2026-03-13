@@ -418,10 +418,12 @@ function quicksort(ids: Uint32Array, dists: Float64Array, left: number, right: n
     const temp = ids[i]
     const tempDist = dists[temp]
     while (true) {
-      // eslint-disable-next-line pickier/no-unused-vars
-      do i++; while (dists[ids[i]] < tempDist)
-      // eslint-disable-next-line pickier/no-unused-vars
-      do j--; while (dists[ids[j]] > tempDist)
+      do
+        i++
+      while (dists[ids[i]] < tempDist)
+      do
+        j--
+      while (dists[ids[j]] > tempDist)
       if (j < i) break
       swap(ids, i, j)
     }

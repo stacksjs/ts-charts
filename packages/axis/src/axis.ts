@@ -7,14 +7,11 @@ const left = 4
 const epsilon = 1e-6
 
 function translateX(x: number): string {
-  // eslint-disable-next-line pickier/no-unused-vars
-  return 'translate(' + x + ',0)'
-// eslint-disable-next-line pickier/no-unused-vars
+  return `translate(${x},0)`
 }
 
 function translateY(y: number): string {
-  // eslint-disable-next-line pickier/no-unused-vars
-  return 'translate(0,' + y + ')'
+  return `translate(0,${y})`
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scale call signatures vary widely (number, string, Date, etc.)
@@ -95,8 +92,7 @@ function axis(orient: number, scale: AxisScale): Axis {
     let path = selection.selectAll('.domain').data([null])
     let tick = selection.selectAll('.tick').data(values, scale).order()
     let tickExit = tick.exit()
-    // eslint-disable-next-line pickier/no-unused-vars
-    let tickEnter = tick.enter().append('g').attr('class', 'tick')
+    const tickEnter = tick.enter().append('g').attr('class', 'tick')
     let line = tick.select('line')
     let text = tick.select('text')
 
@@ -108,8 +104,7 @@ function axis(orient: number, scale: AxisScale): Axis {
 
     line = line.merge(tickEnter.append('line')
       .attr('stroke', 'currentColor')
-      // eslint-disable-next-line pickier/no-unused-vars
-      .attr(x + '2', k * tickSizeInner))
+      .attr(`${x}2`, k * tickSizeInner))
 
     text = text.merge(tickEnter.append('text')
       .attr('fill', 'currentColor')
@@ -124,31 +119,32 @@ function axis(orient: number, scale: AxisScale): Axis {
 
       tickExit = tickExit.transition(context)
         .attr('opacity', epsilon)
-        // eslint-disable-next-line pickier/no-unused-vars
-        .attr('transform', function (this: Element, d: unknown) { let pos = +position(d); return isFinite(pos) ? transform(pos + offset) : (this as Element).getAttribute('transform') })
+        .attr('transform', function (this: Element, d: unknown) {
+          const pos = +position(d)
+          return isFinite(pos) ? transform(pos + offset) : (this as Element).getAttribute('transform')
+        })
 
       tickEnter
         .attr('opacity', epsilon)
-        // eslint-disable-next-line pickier/no-unused-vars
-        .attr('transform', function (this: Element & { parentNode: Element & { __axis?: (d: unknown) => number } }, d: unknown) { let p: number | undefined = (this.parentNode as Element & { __axis?: (d: unknown) => number }).__axis?.(d); return transform(((p !== undefined && isFinite(p)) ? p : position(d)) + offset) })
+        .attr('transform', function (this: Element & { parentNode: Element & { __axis?: (d: unknown) => number } }, d: unknown) {
+          const p: number | undefined = (this.parentNode as Element & { __axis?: (d: unknown) => number }).__axis?.(d)
+          return transform(((p !== undefined && isFinite(p)) ? p : position(d)) + offset)
+        })
     }
 
     tickExit.remove()
 
     path
       .attr('d', orient === left || orient === right
-        // eslint-disable-next-line pickier/no-unused-vars
-        ? (tickSizeOuter ? 'M' + k * tickSizeOuter + ',' + range0 + 'H' + offset + 'V' + range1 + 'H' + k * tickSizeOuter : 'M' + offset + ',' + range0 + 'V' + range1)
-        // eslint-disable-next-line pickier/no-unused-vars
-        : (tickSizeOuter ? 'M' + range0 + ',' + k * tickSizeOuter + 'V' + offset + 'H' + range1 + 'V' + k * tickSizeOuter : 'M' + range0 + ',' + offset + 'H' + range1))
+        ? (tickSizeOuter ? `M${k * tickSizeOuter},${range0}H${offset}V${range1}H${k * tickSizeOuter}` : `M${offset},${range0}V${range1}`)
+        : (tickSizeOuter ? `M${range0},${k * tickSizeOuter}V${offset}H${range1}V${k * tickSizeOuter}` : `M${range0},${offset}H${range1}`))
 
     tick
       .attr('opacity', 1)
       .attr('transform', (d: unknown) => transform(position(d) + offset))
 
     line
-      // eslint-disable-next-line pickier/no-unused-vars
-      .attr(x + '2', k * tickSizeInner)
+      .attr(`${x}2`, k * tickSizeInner)
 
     text
       .attr(x, k * spacing)

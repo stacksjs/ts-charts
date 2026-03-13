@@ -15,8 +15,8 @@ function tickSpec(start: number, stop: number, count: number): [number, number, 
     if (i1 / inc < start) ++i1
     if (i2 / inc > stop) --i2
     inc = -inc
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     inc = Math.pow(10, power) * factor
     i1 = Math.round(start / inc)
     i2 = Math.round(stop / inc)
@@ -39,8 +39,8 @@ export default function ticks(start: number, stop: number, count: number): numbe
   if (reverse) {
     if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) / -inc
     else for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) * inc
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) / -inc
     else for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) * inc
   }

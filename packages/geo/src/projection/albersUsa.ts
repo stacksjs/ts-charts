@@ -9,18 +9,30 @@ import type { GeoStream, GeoObject, GeoProjection } from '../types.ts'
 function multiplex(streams: GeoStream[]): GeoStream {
   const n = streams.length
   return {
-    // eslint-disable-next-line pickier/no-unused-vars
-    point: function (x: number, y: number): void { let i = -1; while (++i < n) streams[i].point(x, y) },
-    // eslint-disable-next-line pickier/no-unused-vars
-    sphere: function (): void { let i = -1; while (++i < n) streams[i].sphere!() },
-    // eslint-disable-next-line pickier/no-unused-vars
-    lineStart: function (): void { let i = -1; while (++i < n) streams[i].lineStart() },
-    // eslint-disable-next-line pickier/no-unused-vars
-    lineEnd: function (): void { let i = -1; while (++i < n) streams[i].lineEnd() },
-    // eslint-disable-next-line pickier/no-unused-vars
-    polygonStart: function (): void { let i = -1; while (++i < n) streams[i].polygonStart() },
-    // eslint-disable-next-line pickier/no-unused-vars
-    polygonEnd: function (): void { let i = -1; while (++i < n) streams[i].polygonEnd() }
+    point: function (x: number, y: number): void {
+      let i = -1
+      while (++i < n) streams[i].point(x, y)
+    },
+    sphere: function (): void {
+      let i = -1
+      while (++i < n) streams[i].sphere!()
+    },
+    lineStart: function (): void {
+      let i = -1
+      while (++i < n) streams[i].lineStart()
+    },
+    lineEnd: function (): void {
+      let i = -1
+      while (++i < n) streams[i].lineEnd()
+    },
+    polygonStart: function (): void {
+      let i = -1
+      while (++i < n) streams[i].polygonStart()
+    },
+    polygonEnd: function (): void {
+      let i = -1
+      while (++i < n) streams[i].polygonEnd()
+    }
   }
 }
 

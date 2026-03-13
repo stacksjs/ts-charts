@@ -97,7 +97,7 @@ export class Path {
     // Otherwise, draw an arc!
     else {
       // eslint-disable-next-line pickier/no-unused-vars
-      let x20 = x2 - x0,
+      const x20 = x2 - x0,
           y20 = y2 - y0,
           l21_2 = x21 * x21 + y21 * y21,
           l20_2 = x20 * x20 + y20 * y20,
@@ -123,12 +123,12 @@ export class Path {
     if (r < 0) throw new Error(`negative radius: ${r}`)
 
     // eslint-disable-next-line pickier/no-unused-vars
-    let dx = r * Math.cos(a0),
-        dy = r * Math.sin(a0),
-        x0 = x + dx,
-        y0 = y + dy,
-        cw = 1 ^ (ccw as unknown as number),
-        da = ccw ? a0 - a1 : a1 - a0
+    const dx = r * Math.cos(a0),
+          dy = r * Math.sin(a0),
+          x0 = x + dx,
+          y0 = y + dy,
+          cw = 1 ^ (ccw as unknown as number)
+    let da = ccw ? a0 - a1 : a1 - a0
 
     // Is this path empty? Move to (x0,y0).
     if (this._x1 === null) {

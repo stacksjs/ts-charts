@@ -10,9 +10,11 @@ export function naturalEarth1Raw(lambda: number, phi: number): number[] {
   ]
 }
 
-// eslint-disable-next-line pickier/no-unused-vars
+// eslint-disable-next-line pickier/no-unused-vars, max-statements-per-line
 ;(naturalEarth1Raw as GeoRawProjection).invert = function (x: number, y: number): number[] {
-  let phi = y, i = 25, delta: number
+  let phi = y
+  let i = 25
+  let delta: number
   do {
     const phi2 = phi * phi, phi4 = phi2 * phi2
     phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /

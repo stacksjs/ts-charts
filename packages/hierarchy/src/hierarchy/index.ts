@@ -199,7 +199,9 @@ function countNode<T>(node: HierarchyNode<T>): void {
   const children = node.children
   let i = children && children.length
   if (!i) sum = 1
-  else while (--i! >= 0) sum += children![i!].value!
+  else {
+    while (--i! >= 0) sum += children![i!].value!
+  }
   node.value = sum
 }
 
@@ -236,7 +238,8 @@ function copyData(node: HierarchyNode<{ value?: number; data: unknown }>): void 
 export function computeHeight<T>(node: HierarchyNode<T>): void {
   let height = 0
   let current: HierarchyNode<T> | null = node
-  do current.height = height
+  do
+    current.height = height
   while ((current = current.parent) && (current.height < ++height))
 }
 
@@ -246,7 +249,8 @@ export default function hierarchy<T>(data: T, children?: (d: T) => Iterable<T> |
     // eslint-disable-next-line pickier/no-unused-vars
     if (children === undefined) children = mapChildren as unknown as (d: T) => Iterable<T> | null | undefined
   // eslint-disable-next-line pickier/no-unused-vars
-  } else if (children === undefined) {
+  }
+  else if (children === undefined) {
     // eslint-disable-next-line pickier/no-unused-vars
     children = objectChildren as unknown as (d: T) => Iterable<T> | null | undefined
   }

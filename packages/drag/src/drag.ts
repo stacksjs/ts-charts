@@ -29,8 +29,7 @@ export default function drag(): any {
   let touchable: any = defaultTouchable
   // eslint-disable-next-line pickier/no-unused-vars
   const gestures: Record<string | number, (type: string, event: Event, touch?: Touch) => void> = {}
-  // eslint-disable-next-line pickier/no-unused-vars
-  let listeners = dispatch('start', 'drag', 'end')
+  const listeners = dispatch('start', 'drag', 'end')
   let active = 0
   let mousedownx: number
   let mousedowny: number
@@ -153,12 +152,16 @@ export default function drag(): any {
       const p0 = p
       let n: number
       switch (type) {
-        // eslint-disable-next-line pickier/no-unused-vars
-        case 'start': gestures[identifier] = gesture, n = active++; break
-        // eslint-disable-next-line pickier/no-unused-vars
-        case 'end': delete gestures[identifier], --active; p = pointer((touch || event) as Event, container as Element), n = active; break
-        // eslint-disable-next-line pickier/no-unused-vars
-        case 'drag': p = pointer((touch || event) as Event, container as Element), n = active; break
+        case 'start':
+          gestures[identifier] = gesture, n = active++
+          break
+        case 'end':
+          delete gestures[identifier], --active
+          p = pointer((touch || event) as Event, container as Element), n = active
+          break
+        case 'drag':
+          p = pointer((touch || event) as Event, container as Element), n = active
+          break
       }
       disp.call(
         type,

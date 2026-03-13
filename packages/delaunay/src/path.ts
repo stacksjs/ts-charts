@@ -34,8 +34,7 @@ export default class Path {
     const y0 = y
     if (r < 0) throw new Error('negative radius')
     if (this._x1 === null) this._ += `M${x0},${y0}`
-    // eslint-disable-next-line pickier/no-unused-vars
-    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1! - y0) > epsilon) this._ += 'L' + x0 + ',' + y0
+    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1! - y0) > epsilon) this._ += `L${x0},${y0}`
     if (!r) return
     this._ += `A${r},${r},0,1,1,${x - r},${y}A${r},${r},0,1,1,${this._x1 = x0},${this._y1 = y0}`
   }

@@ -14,7 +14,8 @@ export function circleStream(stream: GeoStream, radius: number, delta: number, d
     start = radius + direction * tau
     end = radius - step / 2
   // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     start = circleRadius(cosRadius, t0)
     end = circleRadius(cosRadius, t1!)
     if (direction > 0 ? start < end : start > end) start += direction * tau

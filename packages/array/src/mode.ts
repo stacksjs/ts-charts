@@ -8,8 +8,8 @@ export default function mode(values: Iterable<any>, valueof?: (value: any, index
         counts.set(value, ((counts.get(value) as number) || 0) + 1)
       }
     }
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     let index = -1
     for (let value of values) {
       if ((value = valueof(value, ++index, values)) != null && value >= value) {

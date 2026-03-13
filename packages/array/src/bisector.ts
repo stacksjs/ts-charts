@@ -16,8 +16,8 @@ export default function bisector<T, U>(f: ((a: T, b: U) => number) | ((d: T) => 
     compare1 = ascending
     compare2 = (d: any, x: any) => ascending((f as (d: T) => U)(d), x)
     delta = (d: any, x: any) => (f as any)(d) - x
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     // eslint-disable-next-line pickier/no-unused-vars
     compare1 = f === ascending || f === descending ? f as (a: any, b: any) => number : zero
     // eslint-disable-next-line pickier/no-unused-vars

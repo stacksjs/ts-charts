@@ -44,7 +44,8 @@ export default function treemapBinary(parent: TileParent & TileNode, x0: number,
       partition(i, k, valueLeft, x0, y0, xk, y1)
       partition(k, j, valueRight, xk, y0, x1, y1)
     // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       const yk = value ? (y0 * valueRight + y1 * valueLeft) / value : y1
       partition(i, k, valueLeft, x0, y0, x1, yk)
       partition(k, j, valueRight, x0, yk, x1, y1)

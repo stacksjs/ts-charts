@@ -76,8 +76,8 @@ export default class Delaunay {
       const r = 1e-9 * Math.hypot(points[f] - points[e], points[f + 1] - points[e + 1])
       for (let i = 0; i < points.length; ++i) points[i] += r * Math.sin(i + 0.5)
       this._delaunator = new Delaunator(points)
-    // eslint-disable-next-line pickier/no-unused-vars
-    } else {
+    }
+    else {
       delete this.collinear
     }
 
@@ -193,15 +193,17 @@ export default class Delaunay {
   }
 
   renderPoints(context?: VoronoiContext | number | string | null, r?: number | string | null): string | null {
-    if (r === undefined && (!context || typeof (context as VoronoiContext).moveTo !== 'function')) r = context as number, context = null
+    if (r === undefined && (!context || typeof (context as VoronoiContext).moveTo !== 'function')) {
+      r = context as number
+      context = null
+    }
     r = r == undefined ? 2 : +r
     const buffer = context == null ? context = new Path as unknown as VoronoiContext : undefined
     const { points } = this
     for (let i = 0, n = points.length & ~1; i < n; i += 2) {
-      const x = points[i], y = points[i + 1]
-      // eslint-disable-next-line pickier/no-unused-vars
+      const x = points[i]
+      const y = points[i + 1]
       ;(context as VoronoiContext).moveTo(x + r, y)
-      // eslint-disable-next-line pickier/no-unused-vars
       ;(context as VoronoiContext & { arc(x: number, y: number, r: number, s: number, e: number): void }).arc(x, y, r, 0, tau)
     }
     return buffer ? (buffer as unknown as Path).value() : null

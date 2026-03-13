@@ -29,7 +29,8 @@ function interpolateTransform(
   function rotate(a: number, b: number, s: (string | null)[], q: { i: number, x: (t: number) => number }[]): void {
     if (a !== b) {
       // eslint-disable-next-line pickier/no-unused-vars
-      if (a - b > 180) b += 360; else if (b - a > 180) a += 360 // shortest path
+      if (a - b > 180) b += 360
+      else if (b - a > 180) a += 360 // shortest path
       q.push({ i: s.push(`${pop(s)}rotate(`, null, degParen) - 2, x: number(a, b) })
     // eslint-disable-next-line pickier/no-unused-vars
     }

@@ -7,12 +7,16 @@ type RowConverter<T> = (rawRow: DSVRowString, index: number, columns: string[]) 
 
 // eslint-disable-next-line pickier/no-unused-vars
 // eslint-disable-next-line ts/no-explicit-any -- generic fetch wrappers pass through caller-determined row types
+// eslint-disable-next-line pickier/no-unused-vars
 type DsvFetchFn = (input: RequestInfo | URL, init?: RequestInit | RowConverter<unknown>, row?: RowConverter<unknown>) => Promise<DSVParsedArray<unknown>>
 
 function dsvParse(parse: (text: string, row?: RowConverter<unknown>) => DSVParsedArray<unknown>): DsvFetchFn {
   return function (input: RequestInfo | URL, init?: RequestInit | RowConverter<unknown>, row?: RowConverter<unknown>): Promise<DSVParsedArray<unknown>> {
     // eslint-disable-next-line pickier/no-unused-vars
-    if (arguments.length === 2 && typeof init === 'function') { row = init as RowConverter<unknown>; init = undefined }
+    if (arguments.length === 2 && typeof init === 'function') {
+      row = init as RowConverter<unknown>
+      init = undefined
+    }
     return text(input, init as RequestInit | undefined).then(function (response: string): DSVParsedArray<unknown> {
       return parse(response, row)
     })
@@ -21,7 +25,10 @@ function dsvParse(parse: (text: string, row?: RowConverter<unknown>) => DSVParse
 
 export default function dsv(delimiter: string, input: RequestInfo | URL, init?: RequestInit | RowConverter<unknown>, row?: RowConverter<unknown>): Promise<DSVParsedArray<unknown>> {
   // eslint-disable-next-line pickier/no-unused-vars
-  if (arguments.length === 3 && typeof init === 'function') { row = init as RowConverter<unknown>; init = undefined }
+  if (arguments.length === 3 && typeof init === 'function') {
+    row = init as RowConverter<unknown>
+    init = undefined
+  }
   const format = dsvFormat(delimiter)
   return text(input, init as RequestInit | undefined).then(function (response: string): DSVParsedArray<unknown> {
     return format.parse(response, row as RowConverter<unknown>) as DSVParsedArray<unknown>

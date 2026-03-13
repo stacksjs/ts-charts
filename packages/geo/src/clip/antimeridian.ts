@@ -34,8 +34,8 @@ function clipAntimeridianLine(stream: GeoStream): ClipLine {
         stream.point(sign1, phi0)
         stream.point(lambda1, phi0)
         clean = 0
-      // eslint-disable-next-line pickier/no-unused-vars
-      } else if (sign0 !== sign1 && delta >= pi) { // line crosses antimeridian
+      }
+      else if (sign0 !== sign1 && delta >= pi) { // line crosses antimeridian
         if (abs(lambda0 - sign0) < epsilon) lambda0 -= sign0 * epsilon
         if (abs(lambda1 - sign1) < epsilon) lambda1 -= sign1 * epsilon
         phi0 = clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1)
@@ -84,15 +84,15 @@ function clipAntimeridianInterpolate(from: number[] | null, to: number[] | null,
     stream.point(-pi, -phi)
     stream.point(-pi, 0)
     stream.point(-pi, phi)
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else if (abs(from[0] - to![0]) > epsilon) {
+  }
+  else if (abs(from[0] - to![0]) > epsilon) {
     const lambda = from[0] < to![0] ? pi : -pi
     phi = direction * lambda / 2
     stream.point(-lambda, phi)
     stream.point(0, phi)
     stream.point(lambda, phi)
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     stream.point(to![0], to![1])
   }
 }

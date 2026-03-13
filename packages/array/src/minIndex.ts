@@ -10,8 +10,8 @@ export default function minIndex(values: Iterable<any>, valueof?: (value: any, i
         min = value, minIndex = index
       }
     }
-  // eslint-disable-next-line pickier/no-unused-vars
-  } else {
+  }
+  else {
     for (let value of values) {
       if ((value = valueof(value, ++index, values)) != null
           && (min > value || (min === undefined && value >= value))) {
