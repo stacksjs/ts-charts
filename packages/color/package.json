@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/color",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Color spaces! RGB, HSL, Cubehelix, CIELAB, and more.",
   "exports": {
