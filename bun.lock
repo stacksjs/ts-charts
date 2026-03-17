@@ -12,14 +12,14 @@
     },
     "packages/array": {
       "name": "@ts-charts/array",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/internmap": "workspace:*",
       },
     },
     "packages/axis": {
       "name": "@ts-charts/axis",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "devDependencies": {
         "@ts-charts/scale": "workspace:*",
         "@ts-charts/selection": "workspace:*",
@@ -27,7 +27,7 @@
     },
     "packages/brush": {
       "name": "@ts-charts/brush",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/drag": "workspace:*",
@@ -38,40 +38,40 @@
     },
     "packages/chord": {
       "name": "@ts-charts/chord",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/path": "workspace:*",
       },
     },
     "packages/color": {
       "name": "@ts-charts/color",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/contour": {
       "name": "@ts-charts/contour",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/delaunator": {
       "name": "@ts-charts/delaunator",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/delaunay": {
       "name": "@ts-charts/delaunay",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/delaunator": "workspace:*",
       },
     },
     "packages/dispatch": {
       "name": "@ts-charts/dispatch",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/drag": {
       "name": "@ts-charts/drag",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/selection": "workspace:*",
@@ -79,22 +79,22 @@
     },
     "packages/dsv": {
       "name": "@ts-charts/dsv",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/ease": {
       "name": "@ts-charts/ease",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/fetch": {
       "name": "@ts-charts/fetch",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/dsv": "workspace:*",
       },
     },
     "packages/force": {
       "name": "@ts-charts/force",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/quadtree": "workspace:*",
@@ -103,49 +103,49 @@
     },
     "packages/format": {
       "name": "@ts-charts/format",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/geo": {
       "name": "@ts-charts/geo",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/hierarchy": {
       "name": "@ts-charts/hierarchy",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/internmap": {
       "name": "@ts-charts/internmap",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/interpolate": {
       "name": "@ts-charts/interpolate",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
       },
     },
     "packages/path": {
       "name": "@ts-charts/path",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/polygon": {
       "name": "@ts-charts/polygon",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/quadtree": {
       "name": "@ts-charts/quadtree",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/random": {
       "name": "@ts-charts/random",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/scale": {
       "name": "@ts-charts/scale",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
         "@ts-charts/format": "workspace:*",
@@ -156,7 +156,7 @@
     },
     "packages/scale-chromatic": {
       "name": "@ts-charts/scale-chromatic",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
         "@ts-charts/interpolate": "workspace:*",
@@ -164,36 +164,36 @@
     },
     "packages/selection": {
       "name": "@ts-charts/selection",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/shape": {
       "name": "@ts-charts/shape",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/path": "workspace:*",
       },
     },
     "packages/time": {
       "name": "@ts-charts/time",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/time-format": {
       "name": "@ts-charts/time-format",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/time": "workspace:*",
       },
     },
     "packages/timer": {
       "name": "@ts-charts/timer",
-      "version": "0.0.0",
+      "version": "0.2.0",
     },
     "packages/transition": {
       "name": "@ts-charts/transition",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
         "@ts-charts/dispatch": "workspace:*",
@@ -204,8 +204,8 @@
       },
     },
     "packages/ts-charts": {
-      "name": "ts-charts",
-      "version": "0.0.0",
+      "name": "@ts-charts/charts",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
         "@ts-charts/axis": "workspace:*",
@@ -241,7 +241,7 @@
     },
     "packages/zoom": {
       "name": "@ts-charts/zoom",
-      "version": "0.0.0",
+      "version": "0.2.0",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/drag": "workspace:*",
@@ -277,6 +277,8 @@
     "@ts-charts/axis": ["@ts-charts/axis@workspace:packages/axis"],
 
     "@ts-charts/brush": ["@ts-charts/brush@workspace:packages/brush"],
+
+    "@ts-charts/charts": ["@ts-charts/charts@workspace:packages/ts-charts"],
 
     "@ts-charts/chord": ["@ts-charts/chord@workspace:packages/chord"],
 
@@ -607,8 +609,6 @@
     "sumchecker": ["sumchecker@3.0.1", "", { "dependencies": { "debug": "^4.1.0" } }, "sha512-MvjXzkz/BOfyVDkG0oFOtBxHX2u3gKbMHIF/dXblZsgD3BWOFLmHovIpZY7BykJdAjcqRCBi1WYBNdEC9yI7vg=="],
 
     "tinyglobby": ["tinyglobby@0.2.15", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.3" } }, "sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ=="],
-
-    "ts-charts": ["ts-charts@workspace:packages/ts-charts"],
 
     "ts-error-handling": ["ts-error-handling@0.1.1", "", {}, "sha512-d4VqdX0bJ+jvOYNsY58isJgrEr806Q9cjef5+1UO/kIn1M/+YYSwpR6fqdRhn9XXVASJLSzNmcnBSdl0fRCjDg=="],
 
