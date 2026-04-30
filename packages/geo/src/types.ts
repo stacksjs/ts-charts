@@ -19,7 +19,7 @@ export interface GeoStreamResult<T> extends GeoStream {
 }
 
 /**
- * A raw projection function that maps (lambda, phi) to [x, y].
+ * A raw projection function that maps (_lambda, _phi) to [x, y].
  * May have an `.invert` method for the reverse mapping.
  */
 export interface GeoRawProjection {

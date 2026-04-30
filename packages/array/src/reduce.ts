@@ -2,7 +2,7 @@ export default function reduce(values: Iterable<any>, reducer: (accumulator: any
   if (typeof reducer !== 'function') throw new TypeError('reducer is not a function')
   const iterator = (values as any)[Symbol.iterator]()
   // eslint-disable-next-line pickier/no-unused-vars, prefer-const
-  let done: boolean | undefined, next: any, index = -1
+  const done: boolean | undefined, next: any, index = -1
   if (arguments.length < 3) {
     ({ done, value } = iterator.next())
     if (done) return
