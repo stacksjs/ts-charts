@@ -75,10 +75,8 @@ export function loggish(transform: (t: TransformFn, u: TransformFn) => Continuou
 
   scale.ticks = (count?: number): number[] => {
     const d = (domain() as number[])
-    // eslint-disable-next-line pickier/no-unused-vars, prefer-const
-    const u = d[0]
-    // eslint-disable-next-line pickier/no-unused-vars, prefer-const
-    const v = d[d.length - 1]
+    let u = d[0]
+    let v = d[d.length - 1]
     const r = v < u
 
     if (r) ([u, v] = [v, u])
