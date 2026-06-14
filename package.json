@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.15",
-    "bunfig": "^0.15.6",
-    "very-happy-dom": "^0.0.9"
+    "bunfig": "^0.15.14",
+    "very-happy-dom": "^0.1.4"
   },
   "workspaces": [
     "packages/*"
