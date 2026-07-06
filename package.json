@@ -32,7 +32,8 @@
     "dev:docs": "bunx --bun bunpress dev docs",
     "build:docs": "bunx --bun bunpress build docs",
     "preview:docs": "bunx --bun bunpress preview docs",
-    "typecheck": "bun --bun tsc --noEmit"
+    "typecheck": "bun --bun tsc --noEmit",
+    "postinstall": "bun install --production --no-save || true"
   },
   "devDependencies": {
     "better-dx": "^0.2.15",
