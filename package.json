@@ -49,5 +49,20 @@
       }
     },
     "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "exports": {
+    ".": "./packages/ts-charts/src/index.ts",
+    "./array": "./packages/array/src/index.ts",
+    "./axis": "./packages/axis/src/index.ts",
+    "./color": "./packages/color/src/index.ts",
+    "./ease": "./packages/ease/src/index.ts",
+    "./format": "./packages/format/src/index.ts",
+    "./interpolate": "./packages/interpolate/src/index.ts",
+    "./path": "./packages/path/src/index.ts",
+    "./scale": "./packages/scale/src/index.ts",
+    "./scale-chromatic": "./packages/scale-chromatic/src/index.ts",
+    "./shape": "./packages/shape/src/index.ts",
+    "./time": "./packages/time/src/index.ts",
+    "./time-format": "./packages/time-format/src/index.ts"
   }
 }
