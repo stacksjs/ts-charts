@@ -33,7 +33,7 @@
     "build:docs": "bunx --bun bunpress build docs",
     "preview:docs": "bunx --bun bunpress preview docs",
     "typecheck": "bun --bun tsc --noEmit",
-    "postinstall": "bun install --production --no-save || true"
+    "postinstall": "test -n \"$TS_CHARTS_SELF_LINK\" || TS_CHARTS_SELF_LINK=1 bun install --production --no-save || true"
   },
   "devDependencies": {
     "better-dx": "^0.2.15",
