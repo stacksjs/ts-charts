@@ -5,6 +5,7 @@
   "description": "Layout algorithms for visualizing hierarchical data.",
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
