@@ -5,8 +5,8 @@
   "description": "Register named callbacks and call them with arguments.",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },

@@ -5,8 +5,8 @@
   "description": "Map and Set with automatic key interning",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },

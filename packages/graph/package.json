@@ -1,0 +1,49 @@
+{
+  "name": "@ts-charts/graph",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "High-level network graph (node-link) visualization built on @ts-charts/force.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
+  "keywords": [
+    "d3",
+    "charts",
+    "network",
+    "graph",
+    "force-directed",
+    "visualization",
+    "typescript",
+    "bun"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "prepublishOnly": "bun --bun run build",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@ts-charts/drag": "workspace:*",
+    "@ts-charts/force": "workspace:*",
+    "@ts-charts/selection": "workspace:*",
+    "@ts-charts/zoom": "workspace:*"
+  }
+}

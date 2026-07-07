@@ -5,8 +5,8 @@
   "description": "Format numbers for human consumption.",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },
