@@ -15,7 +15,7 @@ function creatorInherit(name: string): (this: CreatorContext) => Element {
     const uri = this.namespaceURI
     return uri === xhtml && doc.documentElement.namespaceURI === xhtml
       ? doc.createElement(name)
-      : uri
+      : uri && typeof doc.createElementNS === 'function'
         ? doc.createElementNS(uri, name)
         : doc.createElement(name)
   }
@@ -23,7 +23,11 @@ function creatorInherit(name: string): (this: CreatorContext) => Element {
 
 function creatorFixed(fullname: NamespaceLocal): (this: CreatorContext) => Element {
   return function (this: CreatorContext): Element {
-    return (this.ownerDocument || this.document || document).createElementNS(fullname.space, fullname.local)
+    const doc = this.ownerDocument || this.document || document
+    // DOM-lite environments (SSR, some test DOMs) lack createElementNS.
+    return typeof doc.createElementNS === 'function'
+      ? doc.createElementNS(fullname.space, fullname.local)
+      : doc.createElement(fullname.local)
   }
 }
 
