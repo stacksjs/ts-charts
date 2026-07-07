@@ -53,6 +53,7 @@
     "@ts-charts/force": "workspace:*",
     "@ts-charts/format": "workspace:*",
     "@ts-charts/geo": "workspace:*",
+    "@ts-charts/graph": "workspace:*",
     "@ts-charts/hierarchy": "workspace:*",
     "@ts-charts/interpolate": "workspace:*",
     "@ts-charts/path": "workspace:*",

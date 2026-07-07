@@ -112,6 +112,16 @@
         "@ts-charts/array": "workspace:*",
       },
     },
+    "packages/graph": {
+      "name": "@ts-charts/graph",
+      "version": "0.2.0",
+      "dependencies": {
+        "@ts-charts/drag": "workspace:*",
+        "@ts-charts/force": "workspace:*",
+        "@ts-charts/selection": "workspace:*",
+        "@ts-charts/zoom": "workspace:*",
+      },
+    },
     "packages/hierarchy": {
       "name": "@ts-charts/hierarchy",
       "version": "0.2.0",
@@ -222,6 +232,7 @@
         "@ts-charts/force": "workspace:*",
         "@ts-charts/format": "workspace:*",
         "@ts-charts/geo": "workspace:*",
+        "@ts-charts/graph": "workspace:*",
         "@ts-charts/hierarchy": "workspace:*",
         "@ts-charts/interpolate": "workspace:*",
         "@ts-charts/path": "workspace:*",
@@ -333,6 +344,8 @@
     "@ts-charts/format": ["@ts-charts/format@workspace:packages/format"],
 
     "@ts-charts/geo": ["@ts-charts/geo@workspace:packages/geo"],
+
+    "@ts-charts/graph": ["@ts-charts/graph@workspace:packages/graph"],
 
     "@ts-charts/hierarchy": ["@ts-charts/hierarchy@workspace:packages/hierarchy"],
 

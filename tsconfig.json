@@ -37,6 +37,7 @@
       "@ts-charts/force": ["./packages/force/src/index.ts"],
       "@ts-charts/format": ["./packages/format/src/index.ts"],
       "@ts-charts/geo": ["./packages/geo/src/index.ts"],
+      "@ts-charts/graph": ["./packages/graph/src/index.ts"],
       "@ts-charts/hierarchy": ["./packages/hierarchy/src/index.ts"],
       "@ts-charts/internmap": ["./packages/internmap/src/index.ts"],
       "@ts-charts/interpolate": ["./packages/interpolate/src/index.ts"],
