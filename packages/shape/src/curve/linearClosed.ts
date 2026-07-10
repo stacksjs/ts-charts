@@ -5,21 +5,21 @@ function LinearClosed(this: any, context: CurveContext): void {
   this._context = context
 }
 
-LinearClosed.prototype = {
+Object.assign(LinearClosed.prototype, {
   areaStart: noop,
   areaEnd: noop,
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     if (this._point) this._context.closePath()
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     if (this._point) this._context.lineTo(x, y)
     else this._point = 1, this._context.moveTo(x, y)
   },
-}
+})
 
 export default function curveLinearClosed(context: CurveContext): CurveGenerator {
   return new (LinearClosed as any)(context)

@@ -8,17 +8,17 @@ function CatmullRomClosed(this: any, context: CurveContext, alpha: number): void
   this._alpha = alpha
 }
 
-CatmullRomClosed.prototype = {
+Object.assign(CatmullRomClosed.prototype, {
   areaStart: noop,
   areaEnd: noop,
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN
     this._l01_a = this._l12_a = this._l23_a =
     this._l01_2a = this._l12_2a = this._l23_2a =
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     switch (this._point) {
       case 1: {
         this._context.moveTo(this._x3, this._y3)
@@ -38,7 +38,7 @@ CatmullRomClosed.prototype = {
       }
     }
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
 
     if (this._point) {
@@ -63,7 +63,7 @@ CatmullRomClosed.prototype = {
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y
   },
-}
+})
 
 export interface CatmullRomClosedCurveFactory {
   (context: CurveContext): CurveGenerator

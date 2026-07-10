@@ -5,23 +5,23 @@ function Radial(this: any, curve: CurveGenerator): void {
   this._curve = curve
 }
 
-Radial.prototype = {
-  areaStart(): void {
+Object.assign(Radial.prototype, {
+  areaStart(this: any): void  {
     this._curve.areaStart()
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._curve.areaEnd()
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._curve.lineStart()
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     this._curve.lineEnd()
   },
-  point(a: number, r: number): void {
+  point(this: any, a: number, r: number): void  {
     this._curve.point(r * Math.sin(a), r * -Math.cos(a))
   },
-}
+})
 
 export default function curveRadial(curve: any): any {
   function radial(context: CurveContext): CurveGenerator {

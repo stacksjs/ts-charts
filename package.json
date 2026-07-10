@@ -67,5 +67,8 @@
     "./shape": "./packages/shape/src/index.ts",
     "./time": "./packages/time/src/index.ts",
     "./time-format": "./packages/time-format/src/index.ts"
+  },
+  "overrides": {
+    "typescript": "^7.0.2"
   }
 }

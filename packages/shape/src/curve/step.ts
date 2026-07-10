@@ -5,23 +5,23 @@ function Step(this: any, context: CurveContext, t: number): void {
   this._t = t
 }
 
-Step.prototype = {
-  areaStart(): void {
+Object.assign(Step.prototype, {
+  areaStart(this: any): void  {
     this._line = 0
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._line = NaN
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x = this._y = NaN
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     if (0 < this._t && this._t < 1 && this._point === 2) this._context.lineTo(this._x, this._y)
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath()
     if (this._line >= 0) this._t = 1 - this._t, this._line = 1 - this._line
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
@@ -54,7 +54,7 @@ Step.prototype = {
     }
     this._x = x, this._y = y
   },
-}
+})
 
 export default function curveStep(context: CurveContext): CurveGenerator {
   return new (Step as any)(context, 0.5)
