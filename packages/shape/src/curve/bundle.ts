@@ -6,13 +6,13 @@ function Bundle(this: any, context: CurveContext, beta: number): void {
   this._beta = beta
 }
 
-Bundle.prototype = {
-  lineStart(): void {
+Object.assign(Bundle.prototype, {
+  lineStart(this: any): void  {
     this._x = []
     this._y = []
     this._basis.lineStart()
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     const x: number[] = this._x
     const y: number[] = this._y
     const j: number = x.length - 1
@@ -37,11 +37,11 @@ Bundle.prototype = {
     this._x = this._y = null
     this._basis.lineEnd()
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     this._x.push(+x)
     this._y.push(+y)
   },
-}
+})
 
 export interface BundleCurveFactory {
   (context: CurveContext): CurveGenerator

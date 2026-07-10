@@ -6,23 +6,23 @@ export function CardinalOpen(this: any, context: CurveContext, tension: number):
   this._k = (1 - tension) / 6
 }
 
-CardinalOpen.prototype = {
-  areaStart(): void {
+Object.assign(CardinalOpen.prototype, {
+  areaStart(this: any): void  {
     this._line = 0
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._line = NaN
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x0 = this._x1 = this._x2 =
     this._y0 = this._y1 = this._y2 = NaN
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath()
     this._line = 1 - this._line
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
@@ -39,7 +39,7 @@ CardinalOpen.prototype = {
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y
   },
-}
+})
 
 export interface CardinalOpenCurveFactory {
   (context: CurveContext): CurveGenerator

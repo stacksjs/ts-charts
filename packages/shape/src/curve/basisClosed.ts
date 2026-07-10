@@ -6,15 +6,15 @@ function BasisClosed(this: any, context: CurveContext): void {
   this._context = context
 }
 
-BasisClosed.prototype = {
+Object.assign(BasisClosed.prototype, {
   areaStart: noop,
   areaEnd: noop,
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = NaN
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     switch (this._point) {
       case 1: {
         this._context.moveTo(this._x2, this._y2)
@@ -35,7 +35,7 @@ BasisClosed.prototype = {
       }
     }
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
@@ -50,7 +50,7 @@ BasisClosed.prototype = {
     this._x0 = this._x1, this._x1 = x
     this._y0 = this._y1, this._y1 = y
   },
-}
+})
 
 export default function curveBasisClosed(context: CurveContext): CurveGenerator {
   return new (BasisClosed as any)(context)

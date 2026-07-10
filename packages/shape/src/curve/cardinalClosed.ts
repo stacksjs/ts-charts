@@ -7,15 +7,15 @@ export function CardinalClosed(this: any, context: CurveContext, tension: number
   this._k = (1 - tension) / 6
 }
 
-CardinalClosed.prototype = {
+Object.assign(CardinalClosed.prototype, {
   areaStart: noop,
   areaEnd: noop,
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     switch (this._point) {
       case 1: {
         this._context.moveTo(this._x3, this._y3)
@@ -35,7 +35,7 @@ CardinalClosed.prototype = {
       }
     }
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
@@ -50,7 +50,7 @@ CardinalClosed.prototype = {
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y
   },
-}
+})
 
 export interface CardinalClosedCurveFactory {
   (context: CurveContext): CurveGenerator

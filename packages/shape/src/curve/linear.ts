@@ -23,21 +23,21 @@ function Linear(this: any, context: CurveContext): void {
   this._context = context
 }
 
-Linear.prototype = {
-  areaStart(): void {
+Object.assign(Linear.prototype, {
+  areaStart(this: any): void  {
     this._line = 0
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._line = NaN
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath()
     this._line = 1 - this._line
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     x = +x, y = +y
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
@@ -48,7 +48,7 @@ Linear.prototype = {
       default: this._context.lineTo(x, y); break
     }
   },
-}
+})
 
 export default function curveLinear(context: CurveContext): CurveGenerator {
   return new (Linear as any)(context)

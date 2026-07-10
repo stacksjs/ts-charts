@@ -4,18 +4,18 @@ function Natural(this: any, context: CurveContext): void {
   this._context = context
 }
 
-Natural.prototype = {
-  areaStart(): void {
+Object.assign(Natural.prototype, {
+  areaStart(this: any): void  {
     this._line = 0
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._line = NaN
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x = []
     this._y = []
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     const x: number[] = this._x
     const y: number[] = this._y
     const n: number = x.length
@@ -38,11 +38,11 @@ Natural.prototype = {
     this._line = 1 - this._line
     this._x = this._y = null
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     this._x.push(+x)
     this._y.push(+y)
   },
-}
+})
 
 // See https://www.particleincell.com/2012/bezier-splines/ for derivation.
 function controlPoints(x: number[]): [number[], number[]] {

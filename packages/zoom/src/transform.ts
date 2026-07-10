@@ -28,7 +28,7 @@ export function Transform(this: TransformInstance, k: number, x: number, y: numb
   this.y = y
 }
 
-Transform.prototype = {
+Object.assign(Transform.prototype, {
   constructor: Transform,
   scale(this: TransformInstance, k: number): TransformInstance {
     return k === 1 ? this : new (Transform as unknown as new (k: number, x: number, y: number) => TransformInstance)(this.k * k, this.x, this.y)
@@ -63,7 +63,7 @@ Transform.prototype = {
   toString(this: TransformInstance): string {
     return `translate(${this.x},${this.y}) scale(${this.k})`
   },
-}
+})
 
 // eslint-disable-next-line pickier/no-unused-vars
 export const identity: TransformInstance = new (Transform as unknown as new (k: number, x: number, y: number) => TransformInstance)(1, 0, 0)

@@ -48,20 +48,20 @@ function MonotoneX(this: any, context: CurveContext): void {
   this._context = context
 }
 
-MonotoneX.prototype = {
-  areaStart(): void {
+Object.assign(MonotoneX.prototype, {
+  areaStart(this: any): void  {
     this._line = 0
   },
-  areaEnd(): void {
+  areaEnd(this: any): void  {
     this._line = NaN
   },
-  lineStart(): void {
+  lineStart(this: any): void  {
     this._x0 = this._x1 =
     this._y0 = this._y1 =
     this._t0 = NaN
     this._point = 0
   },
-  lineEnd(): void {
+  lineEnd(this: any): void  {
     switch (this._point) {
       // eslint-disable-next-line pickier/no-unused-vars
       case 2: this._context.lineTo(this._x1, this._y1); break
@@ -71,7 +71,7 @@ MonotoneX.prototype = {
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath()
     this._line = 1 - this._line
   },
-  point(x: number, y: number): void {
+  point(this: any, x: number, y: number): void  {
     let t1 = NaN
 
     x = +x, y = +y
@@ -91,7 +91,7 @@ MonotoneX.prototype = {
     this._y0 = this._y1, this._y1 = y
     this._t0 = t1
   },
-}
+})
 
 function MonotoneY(this: any, context: CurveContext): void {
   this._context = new (ReflectContext as any)(context)
@@ -108,12 +108,12 @@ function ReflectContext(this: any, context: CurveContext): void {
   this._context = context
 }
 
-ReflectContext.prototype = {
-  moveTo(x: number, y: number): void { this._context.moveTo(y, x) },
-  closePath(): void { this._context.closePath() },
-  lineTo(x: number, y: number): void { this._context.lineTo(y, x) },
-  bezierCurveTo(x1: number, y1: number, x2: number, y2: number, x: number, y: number): void { this._context.bezierCurveTo(y1, x1, y2, x2, y, x) },
-}
+Object.assign(ReflectContext.prototype, {
+  moveTo(this: any, x: number, y: number): void { this._context.moveTo(y, x) },
+  closePath(this: any): void { this._context.closePath() },
+  lineTo(this: any, x: number, y: number): void { this._context.lineTo(y, x) },
+  bezierCurveTo(this: any, x1: number, y1: number, x2: number, y2: number, x: number, y: number): void { this._context.bezierCurveTo(y1, x1, y2, x2, y, x) },
+})
 
 export function monotoneX(context: CurveContext): CurveGenerator {
   return new (MonotoneX as any)(context)
