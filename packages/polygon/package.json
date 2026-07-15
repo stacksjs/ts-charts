@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/polygon",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Operations for two-dimensional polygons.",
   "author": "Chris Breuer <chris@stacksjs.com>",

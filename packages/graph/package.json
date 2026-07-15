@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/graph",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "High-level network graph (node-link) visualization built on @ts-charts/force.",
   "author": "Chris Breuer <chris@stacksjs.com>",
