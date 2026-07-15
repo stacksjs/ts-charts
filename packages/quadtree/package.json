@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/quadtree",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "sideEffects": false,
   "description": "Two-dimensional recursive spatial subdivision.",

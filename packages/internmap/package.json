@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/internmap",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "sideEffects": false,
   "description": "Map and Set with automatic key interning",

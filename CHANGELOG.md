@@ -1,3 +1,15 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.1...v0.2.2)
+
+## 🧹 Chores
+
+- release v0.2.2 ([ad535c9](https://github.com/stacksjs/ts-charts/commit/ad535c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add release:patch script ([f6b1b48](https://github.com/stacksjs/ts-charts/commit/f6b1b48)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **pkg**: add sideEffects:false to all @ts-charts packages ([cbc84f4](https://github.com/stacksjs/ts-charts/commit/cbc84f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.1.0...v0.1.1)
 
 ### 🧹 Chores
