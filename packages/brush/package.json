@@ -3,6 +3,7 @@
   "version": "0.2.1",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
+  "sideEffects": false,
   "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/brush#readme",
   "repository": {
     "type": "git",

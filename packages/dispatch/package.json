@@ -2,6 +2,7 @@
   "name": "@ts-charts/dispatch",
   "version": "0.2.1",
   "type": "module",
+  "sideEffects": false,
   "description": "Register named callbacks and call them with arguments.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
