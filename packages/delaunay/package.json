@@ -3,6 +3,17 @@
   "version": "0.2.0",
   "type": "module",
   "description": "Compute the Voronoi diagram of a set of two-dimensional points.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/delaunay#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/delaunay"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "dependencies": {
     "@ts-charts/delaunator": "workspace:*"
   },

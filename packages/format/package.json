@@ -3,6 +3,17 @@
   "version": "0.2.0",
   "type": "module",
   "description": "Format numbers for human consumption.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/format#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/format"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

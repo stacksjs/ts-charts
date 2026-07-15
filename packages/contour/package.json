@@ -1,6 +1,17 @@
 {
   "name": "@ts-charts/contour",
   "version": "0.2.0",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/contour#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/contour"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "type": "module",
   "exports": {
     ".": {

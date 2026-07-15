@@ -3,6 +3,17 @@
   "version": "0.2.0",
   "type": "module",
   "description": "A parser and formatter for delimiter-separated values, such as CSV and TSV.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/dsv#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/dsv"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

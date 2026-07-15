@@ -3,6 +3,17 @@
   "version": "0.2.0",
   "type": "module",
   "description": "Fast Delaunay triangulation of 2D points",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/delaunator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/delaunator"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

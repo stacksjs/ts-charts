@@ -3,6 +3,17 @@
   "version": "0.2.0",
   "type": "module",
   "description": "Array manipulation, ordering, searching, summarizing, etc.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/array#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/array"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
   "dependencies": {
     "@ts-charts/internmap": "workspace:*"
   },
