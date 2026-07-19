@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/scale-chromatic",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
   "sideEffects": false,

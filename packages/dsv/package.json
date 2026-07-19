@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/dsv",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "sideEffects": false,
   "description": "A parser and formatter for delimiter-separated values, such as CSV and TSV.",

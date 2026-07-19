@@ -1,3 +1,18 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.2...v0.2.3)
+
+## 🐛 Bug Fixes
+
+- **shape**: emit valid generator declarations ([3e09f44](https://github.com/stacksjs/ts-charts/commit/3e09f44)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.3 ([87d86b7](https://github.com/stacksjs/ts-charts/commit/87d86b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: declare bun ^1.3.14 in deps.yaml ([ee70faf](https://github.com/stacksjs/ts-charts/commit/ee70faf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.1...v0.2.2)
 
 ## 🧹 Chores

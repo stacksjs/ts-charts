@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/random",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "sideEffects": false,
   "description": "Generate random numbers from various distributions.",
