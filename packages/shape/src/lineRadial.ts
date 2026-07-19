@@ -14,6 +14,6 @@ export function lineRadial(l: any): any {
   return l
 }
 
-export default function(): any {
+export default function createRadialLine(): any {
   return lineRadial(line().curve(curveRadialLinear))
 }

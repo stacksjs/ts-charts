@@ -4,7 +4,7 @@ import curveLinear from './curve/linear.ts'
 import { withPath } from './path.ts'
 import { x as pointX, y as pointY } from './point.ts'
 
-export default function(x?: any, y?: any): any {
+export default function createLine(x?: any, y?: any): any {
   let defined: any = constant(true)
   let context: any = null
   let curve: any = curveLinear

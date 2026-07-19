@@ -13,7 +13,7 @@ function stackSeries(key: string): any {
   return series
 }
 
-export default function(): any {
+export default function createStack(): any {
   let keys: any = constant([])
   let order: any = orderNone
   let offset: any = offsetNone

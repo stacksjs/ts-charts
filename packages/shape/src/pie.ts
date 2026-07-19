@@ -4,7 +4,7 @@ import descending from './descending.ts'
 import identity from './identity.ts'
 import { tau } from './math.ts'
 
-export default function(): any {
+export default function createPie(): any {
   let value: any = identity
   let sortValues: any = descending
   let sort: any = null

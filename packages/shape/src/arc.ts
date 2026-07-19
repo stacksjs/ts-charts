@@ -74,7 +74,7 @@ function cornerTangents(x0: number, y0: number, x1: number, y1: number, r1: numb
   }
 }
 
-export default function(): any {
+export default function createArc(): any {
   let innerRadius: any = arcInnerRadius
   let outerRadius: any = arcOuterRadius
   let cornerRadius: any = constant(0)

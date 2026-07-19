@@ -2,7 +2,7 @@ import curveRadial, { curveRadialLinear } from './curve/radial.ts'
 import area from './area.ts'
 import { lineRadial } from './lineRadial.ts'
 
-export default function(): any {
+export default function createRadialArea(): any {
   const a = area().curve(curveRadialLinear)
   const c = a.curve
   const x0 = a.lineX0

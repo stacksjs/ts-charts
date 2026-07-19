@@ -5,7 +5,7 @@ import line from './line.ts'
 import { withPath } from './path.ts'
 import { x as pointX, y as pointY } from './point.ts'
 
-export default function(x0?: any, y0?: any, y1?: any): any {
+export default function createArea(x0?: any, y0?: any, y1?: any): any {
   let x1: any = null
   let defined: any = constant(true)
   let context: any = null
