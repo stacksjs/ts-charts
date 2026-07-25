@@ -144,7 +144,7 @@ Made with 💙
 [releases-href]: https://github.com/stacksjs/ts-charts/releases
 [contributing-href]: .github/CONTRIBUTING.md
 [discussions-href]: https://github.com/stacksjs/ts-charts/discussions
-[discord-href]: https://discord.gg/stacksjs
+[discord-href]: https://stacksjs.com/discord
 [jetbrains-href]: https://www.jetbrains.com/
 [solana-href]: https://solana.com/
 [license-href]: LICENSE.md
