@@ -2,7 +2,9 @@
   "name": "@ts-charts/polygon",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Operations for two-dimensional polygons.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

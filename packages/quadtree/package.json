@@ -2,7 +2,9 @@
   "name": "@ts-charts/quadtree",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Two-dimensional recursive spatial subdivision.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

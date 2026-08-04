@@ -2,7 +2,9 @@
   "name": "@ts-charts/internmap",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Map and Set with automatic key interning",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

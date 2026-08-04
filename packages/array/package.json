@@ -2,7 +2,9 @@
   "name": "@ts-charts/array",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Array manipulation, ordering, searching, summarizing, etc.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

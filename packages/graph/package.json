@@ -2,7 +2,9 @@
   "name": "@ts-charts/graph",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "High-level network graph (node-link) visualization built on @ts-charts/force.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

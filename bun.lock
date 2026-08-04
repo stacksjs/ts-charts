@@ -6,20 +6,21 @@
       "name": "ts-charts",
       "devDependencies": {
         "better-dx": "^0.2.15",
+        "bun-plugin-dtsx": "^0.11.2",
         "bunfig": "^0.15.17",
         "very-happy-dom": "^0.0.9",
       },
     },
     "packages/array": {
       "name": "@ts-charts/array",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/internmap": "workspace:*",
       },
     },
     "packages/axis": {
       "name": "@ts-charts/axis",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "devDependencies": {
         "@ts-charts/scale": "workspace:*",
         "@ts-charts/selection": "workspace:*",
@@ -27,7 +28,7 @@
     },
     "packages/brush": {
       "name": "@ts-charts/brush",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/drag": "workspace:*",
@@ -38,40 +39,40 @@
     },
     "packages/chord": {
       "name": "@ts-charts/chord",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/path": "workspace:*",
       },
     },
     "packages/color": {
       "name": "@ts-charts/color",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/contour": {
       "name": "@ts-charts/contour",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/delaunator": {
       "name": "@ts-charts/delaunator",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/delaunay": {
       "name": "@ts-charts/delaunay",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/delaunator": "workspace:*",
       },
     },
     "packages/dispatch": {
       "name": "@ts-charts/dispatch",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/drag": {
       "name": "@ts-charts/drag",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/selection": "workspace:*",
@@ -79,22 +80,22 @@
     },
     "packages/dsv": {
       "name": "@ts-charts/dsv",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/ease": {
       "name": "@ts-charts/ease",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/fetch": {
       "name": "@ts-charts/fetch",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/dsv": "workspace:*",
       },
     },
     "packages/force": {
       "name": "@ts-charts/force",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/quadtree": "workspace:*",
@@ -103,18 +104,18 @@
     },
     "packages/format": {
       "name": "@ts-charts/format",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/geo": {
       "name": "@ts-charts/geo",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/graph": {
       "name": "@ts-charts/graph",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/drag": "workspace:*",
         "@ts-charts/force": "workspace:*",
@@ -124,38 +125,38 @@
     },
     "packages/hierarchy": {
       "name": "@ts-charts/hierarchy",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/internmap": {
       "name": "@ts-charts/internmap",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/interpolate": {
       "name": "@ts-charts/interpolate",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
       },
     },
     "packages/path": {
       "name": "@ts-charts/path",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/polygon": {
       "name": "@ts-charts/polygon",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/quadtree": {
       "name": "@ts-charts/quadtree",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/random": {
       "name": "@ts-charts/random",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/scale": {
       "name": "@ts-charts/scale",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
         "@ts-charts/format": "workspace:*",
@@ -166,7 +167,7 @@
     },
     "packages/scale-chromatic": {
       "name": "@ts-charts/scale-chromatic",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
         "@ts-charts/interpolate": "workspace:*",
@@ -174,36 +175,36 @@
     },
     "packages/selection": {
       "name": "@ts-charts/selection",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/shape": {
       "name": "@ts-charts/shape",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/path": "workspace:*",
       },
     },
     "packages/time": {
       "name": "@ts-charts/time",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
       },
     },
     "packages/time-format": {
       "name": "@ts-charts/time-format",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/time": "workspace:*",
       },
     },
     "packages/timer": {
       "name": "@ts-charts/timer",
-      "version": "0.2.3",
+      "version": "0.2.5",
     },
     "packages/transition": {
       "name": "@ts-charts/transition",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/color": "workspace:*",
         "@ts-charts/dispatch": "workspace:*",
@@ -215,7 +216,7 @@
     },
     "packages/ts-charts": {
       "name": "@ts-charts/charts",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/array": "workspace:*",
         "@ts-charts/axis": "workspace:*",
@@ -252,7 +253,7 @@
     },
     "packages/zoom": {
       "name": "@ts-charts/zoom",
-      "version": "0.2.3",
+      "version": "0.2.5",
       "dependencies": {
         "@ts-charts/dispatch": "workspace:*",
         "@ts-charts/drag": "workspace:*",
@@ -282,7 +283,7 @@
 
     "@stacksjs/desktop": ["@stacksjs/desktop@0.2.82", "", { "peerDependencies": { "craft": "*" }, "optionalPeers": ["craft"] }, "sha512-ymawT8XY6lT6hHdfOGgdOlKB/pUu2NB1eSG+zxmXs+vn/PuIO6rt1nibOuFyDdulkS0zTmeXo0uYiNHvY7mhoQ=="],
 
-    "@stacksjs/dtsx": ["@stacksjs/dtsx@0.9.26", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0" }, "peerDependencies": { "typescript": ">=5.9.3" }, "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-MOUxZn8BhXpFYM+vh7cnQLUOLjZ4G6q76V+4OypkRiu/Gvpek9ywBQLbmv8iWLjT6gXlFMpEdw33o3GKKLpMCw=="],
+    "@stacksjs/dtsx": ["@stacksjs/dtsx@0.11.2", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0" }, "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-r2KkpKV80wV55jpCh3lHgmvulCvQMBFf8KEzbtqwF36rx7NqYonn6w8TJ63MTPPHwOqLzNXA1oRSY4S+z2kTMQ=="],
 
     "@stacksjs/gitlint": ["@stacksjs/gitlint@0.1.6", "", { "bin": { "gitlint": "./dist/bin/cli.js" } }, "sha512-A4MTsddeWHEhz0mLKq+P/CqHxmWv4SWhrmWotP1UMtVbGlpYs/q+bwqrFyThT6L9xMR8iWKGVTV908oS6QDeNg=="],
 
@@ -472,7 +473,7 @@
 
     "bun-git-hooks": ["bun-git-hooks@0.3.2", "", { "bin": { "git-hooks": "./dist/bin/cli.js", "bun-git-hooks": "./dist/bin/cli.js" } }, "sha512-cHkmB7sxmtPNekzG0nGXqbN8Q+dZf4muvV4eCB8dBCduW1DHR+4YulKinPUk/C6Rogy+JMyL1ysVVVWwZobwZw=="],
 
-    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.9.26", "", { "dependencies": { "@stacksjs/dtsx": "0.9.26" } }, "sha512-dOlA+gx3mju+Be0uoZqsuQ3U+GPu08wv7QQwA1k569tw8Bv9GwVWJz0jjQw6tzJi9Rvwfl31MVXu9rHYQXSKow=="],
+    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.11.2", "", { "dependencies": { "@stacksjs/dtsx": "0.11.2" } }, "sha512-tbmU8noI7XtGYot1nANQ5owBpuJz2TldqH6mYG95kg3uFC0ul55fNRF3iWCCqc1RHFJKW1wYAXdPsFz2d9sm/Q=="],
 
     "bun-plugin-stx": ["bun-plugin-stx@0.2.82", "", { "dependencies": { "@stacksjs/stx": "^0.2.72", "stx-router": "^0.2.72" }, "bin": { "serve": "./dist/serve.js", "stx-serve": "./dist/serve.js" } }, "sha512-1H6J1C4hg0fFdw2Xs5qqyBSEsVBiCo5jjuASXqRPAS5WSCT7AY6D8MaUGHYCRSYQ7L+ZdA2/eTG0XwDgrN776A=="],
 
@@ -638,6 +639,8 @@
 
     "@stacksjs/ts-i18n/bunfig": ["bunfig@0.15.14", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/clarity": "^0.3.24" }, "bin": { "bunfig": "./bin/cli.js" } }, "sha512-9yzw5/MkTBF3X8Dc96DJUPpZDl/jIAYVlY6XxGrP8+o5fEf8sGgoIc53GkSFucyMoqC5jF1qM++3bD1LL7/N1Q=="],
 
+    "better-dx/bun-plugin-dtsx": ["bun-plugin-dtsx@0.9.26", "", { "dependencies": { "@stacksjs/dtsx": "0.9.26" } }, "sha512-dOlA+gx3mju+Be0uoZqsuQ3U+GPu08wv7QQwA1k569tw8Bv9GwVWJz0jjQw6tzJi9Rvwfl31MVXu9rHYQXSKow=="],
+
     "better-dx/bunfig": ["bunfig@0.15.14", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/clarity": "^0.3.24" }, "bin": { "bunfig": "./bin/cli.js" } }, "sha512-9yzw5/MkTBF3X8Dc96DJUPpZDl/jIAYVlY6XxGrP8+o5fEf8sGgoIc53GkSFucyMoqC5jF1qM++3bD1LL7/N1Q=="],
 
     "glob/minimatch": ["minimatch@9.0.9", "", { "dependencies": { "brace-expansion": "^2.0.2" } }, "sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg=="],
@@ -659,6 +662,8 @@
     "wrap-ansi-cjs/string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
 
     "wrap-ansi-cjs/strip-ansi": ["strip-ansi@6.0.1", "", { "dependencies": { "ansi-regex": "^5.0.1" } }, "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A=="],
+
+    "better-dx/bun-plugin-dtsx/@stacksjs/dtsx": ["@stacksjs/dtsx@0.9.26", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0" }, "peerDependencies": { "typescript": ">=5.9.3" }, "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-MOUxZn8BhXpFYM+vh7cnQLUOLjZ4G6q76V+4OypkRiu/Gvpek9ywBQLbmv8iWLjT6gXlFMpEdw33o3GKKLpMCw=="],
 
     "lazystream/readable-stream/safe-buffer": ["safe-buffer@5.1.2", "", {}, "sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g=="],
 

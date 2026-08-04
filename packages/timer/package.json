@@ -2,7 +2,9 @@
   "name": "@ts-charts/timer",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "An efficient queue for managing thousands of concurrent animations.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

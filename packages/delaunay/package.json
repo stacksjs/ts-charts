@@ -2,7 +2,9 @@
   "name": "@ts-charts/delaunay",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Compute the Voronoi diagram of a set of two-dimensional points.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

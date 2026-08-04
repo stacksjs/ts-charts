@@ -2,7 +2,9 @@
   "name": "@ts-charts/charts",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "A complete TypeScript rewrite of D3.js — umbrella package re-exporting all sub-packages.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

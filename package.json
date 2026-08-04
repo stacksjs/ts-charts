@@ -39,6 +39,7 @@
   "devDependencies": {
     "better-dx": "^0.2.15",
     "bunfig": "^0.15.17",
+    "bun-plugin-dtsx": "^0.11.2",
     "very-happy-dom": "^0.0.9"
   },
   "workspaces": [

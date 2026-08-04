@@ -2,7 +2,9 @@
   "name": "@ts-charts/format",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Format numbers for human consumption.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

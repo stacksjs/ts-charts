@@ -3,7 +3,9 @@
   "version": "0.2.5",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/chord#readme",
   "repository": {
     "type": "git",

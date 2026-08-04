@@ -2,7 +2,9 @@
   "name": "@ts-charts/color",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Color spaces! RGB, HSL, Cubehelix, CIELAB, and more.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

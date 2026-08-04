@@ -2,7 +2,9 @@
   "name": "@ts-charts/hierarchy",
   "version": "0.2.5",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/index.ts"
+  ],
   "description": "Layout algorithms for visualizing hierarchical data.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
