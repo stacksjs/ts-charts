@@ -1,3 +1,21 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.5...v0.2.6)
+
+## 🐛 Bug Fixes
+
+- **build**: preserve Bun package barrels ([419e17f](https://github.com/stacksjs/ts-charts/commit/419e17f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.6 ([c713dac](https://github.com/stacksjs/ts-charts/commit/c713dac)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📄 Miscellaneous
+
+- Revert "fix(build): emit executable package modules" ([84be402](https://github.com/stacksjs/ts-charts/commit/84be402)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.4...v0.2.5)
 
 ## 🐛 Bug Fixes
