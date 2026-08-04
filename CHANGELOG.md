@@ -1,3 +1,22 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.3...v0.2.4)
+
+## 🐛 Bug Fixes
+
+- **packaging**: expose published bundles to Bun ([b7e4e44](https://github.com/stacksjs/ts-charts/commit/b7e4e44)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📚 Documentation
+
+- link the community as stacksjs.com/discord ([a965a3c](https://github.com/stacksjs/ts-charts/commit/a965a3c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.4 ([1034503](https://github.com/stacksjs/ts-charts/commit/1034503)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: raise the bunfig floor to 0.15.17 ([9dedc07](https://github.com/stacksjs/ts-charts/commit/9dedc07)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.2...v0.2.3)
 
 ## 🐛 Bug Fixes
