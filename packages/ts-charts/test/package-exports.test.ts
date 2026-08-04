@@ -32,4 +32,17 @@ describe('published package exports', () => {
       expect(packageJson.files).toContain('dist')
     })
   }
+
+  it('fresh package output is executable by Bun', async () => {
+    const formatDirectory = resolve(packagesDirectory, 'format')
+    const build = Bun.spawn(['bun', '--bun', 'build.ts'], {
+      cwd: formatDirectory,
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+
+    expect(await build.exited).toBe(0)
+    const built = await import(`${resolve(formatDirectory, 'dist/index.js')}?test=${Date.now()}`)
+    expect(built.format('.0f')(42.4)).toBe('42')
+  })
 })
