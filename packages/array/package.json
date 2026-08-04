@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/array",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "sideEffects": false,
   "description": "Array manipulation, ordering, searching, summarizing, etc.",

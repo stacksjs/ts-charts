@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.4...v0.2.5)
+
+## 🐛 Bug Fixes
+
+- **build**: emit executable package modules ([6b0c13e](https://github.com/stacksjs/ts-charts/commit/6b0c13e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.5 ([83a341a](https://github.com/stacksjs/ts-charts/commit/83a341a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.3...v0.2.4)
 
 ## 🐛 Bug Fixes
