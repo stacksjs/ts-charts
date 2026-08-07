@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.6...v0.2.7)
+
+## 🚀 Features
+
+- **graph**: add a layered (Sugiyama) graph layout ([4e319b2](https://github.com/stacksjs/ts-charts/commit/4e319b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.7 ([09e4504](https://github.com/stacksjs/ts-charts/commit/09e4504)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.5...v0.2.6)
 
 ## 🐛 Bug Fixes

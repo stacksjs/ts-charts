@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/ease",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "sideEffects": [
     "./src/index.ts"
