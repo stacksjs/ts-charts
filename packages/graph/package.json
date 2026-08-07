@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js"
+    },
+    "./layered": {
+      "types": "./dist/layered.d.ts",
+      "bun": "./dist/layered.js",
+      "import": "./dist/layered.js"
     }
   },
   "module": "./dist/index.js",

@@ -74,6 +74,7 @@ const myLine = line()
 | `@ts-charts/force` | Force-directed graph layout |
 | `@ts-charts/format` | Number formatting (SI, fixed, currency, etc.) |
 | `@ts-charts/geo` | Geographic projections and path generators |
+| `@ts-charts/graph` | Node-link graphs: force-directed rendering, plus a layered (Sugiyama) layout via `@ts-charts/graph/layered` |
 | `@ts-charts/hierarchy` | Tree, treemap, pack, and partition layouts |
 | `@ts-charts/interpolate` | Value interpolation for animations |
 | `@ts-charts/path` | SVG path serialization |
