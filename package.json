@@ -37,10 +37,10 @@
     "release:patch": "bunx --bun bumpx patch --recursive --commit --tag --push --yes"
   },
   "devDependencies": {
-    "better-dx": "^0.2.15",
-    "bunfig": "^0.15.17",
+    "better-dx": "^0.2.25",
+    "bunfig": "^0.15.19",
     "bun-plugin-dtsx": "^0.11.10",
-    "very-happy-dom": "^0.0.9"
+    "very-happy-dom": "^0.1.10"
   },
   "workspaces": [
     "packages/*"
