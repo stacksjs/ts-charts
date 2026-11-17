@@ -22,6 +22,7 @@ ts-charts consists of 30 packages, each corresponding to a D3.js module. Install
 | [@ts-charts/hierarchy](/api/hierarchy) | Hierarchical data layouts (tree, treemap, pack) |
 | [@ts-charts/interpolate](/api/interpolate) | Value interpolation (numbers, colors, strings) |
 | [@ts-charts/path](/api/path) | SVG path serialization |
+| [@ts-charts/plot](/api/plot) | Finished charts rendered to SVG strings |
 | [@ts-charts/polygon](/api/polygon) | Polygon geometry operations |
 | [@ts-charts/quadtree](/api/quadtree) | Quadtree spatial indexing |
 | [@ts-charts/random](/api/random) | Random number generators |

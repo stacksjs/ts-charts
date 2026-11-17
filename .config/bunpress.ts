@@ -88,6 +88,7 @@ const config: BunPressOptions = {
         { text: 'Hierarchy', link: '/api/hierarchy' },
         { text: 'Interpolate', link: '/api/interpolate' },
         { text: 'Path', link: '/api/path' },
+        { text: 'Plot', link: '/api/plot' },
         { text: 'Polygon', link: '/api/polygon' },
         { text: 'Quadtree', link: '/api/quadtree' },
         { text: 'Random', link: '/api/random' },
