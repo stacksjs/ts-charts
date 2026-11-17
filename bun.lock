@@ -142,6 +142,14 @@
       "name": "@ts-charts/path",
       "version": "0.2.7",
     },
+    "packages/plot": {
+      "name": "@ts-charts/plot",
+      "version": "0.2.7",
+      "dependencies": {
+        "@ts-charts/scale": "workspace:*",
+        "@ts-charts/shape": "workspace:*",
+      },
+    },
     "packages/polygon": {
       "name": "@ts-charts/polygon",
       "version": "0.2.7",
@@ -237,6 +245,7 @@
         "@ts-charts/hierarchy": "workspace:*",
         "@ts-charts/interpolate": "workspace:*",
         "@ts-charts/path": "workspace:*",
+        "@ts-charts/plot": "workspace:*",
         "@ts-charts/polygon": "workspace:*",
         "@ts-charts/quadtree": "workspace:*",
         "@ts-charts/random": "workspace:*",
@@ -360,6 +369,8 @@
     "@ts-charts/interpolate": ["@ts-charts/interpolate@workspace:packages/interpolate"],
 
     "@ts-charts/path": ["@ts-charts/path@workspace:packages/path"],
+
+    "@ts-charts/plot": ["@ts-charts/plot@workspace:packages/plot"],
 
     "@ts-charts/polygon": ["@ts-charts/polygon@workspace:packages/polygon"],
 
