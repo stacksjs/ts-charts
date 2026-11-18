@@ -1,6 +1,6 @@
 {
   "name": "@ts-charts/plot",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "sideEffects": false,
   "description": "High-level charts rendered to SVG strings: multi-series probability lines with end labels, for the server or the browser.",

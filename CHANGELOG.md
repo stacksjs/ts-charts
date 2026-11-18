@@ -1,3 +1,20 @@
+[Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.7...v0.2.8)
+
+## ✨ Features
+
+- **plot**: add @ts-charts/plot with a prediction-market probability chart (#9) ([28ede3d](https://github.com/stacksjs/ts-charts/commit/28ede3d)) _(by Chris)_ ([#9](https://github.com/stacksjs/ts-charts/issues/9))
+
+## 🔧 Chores
+
+- run @stacksjs/logsmith, not the unrelated npm 'logsmith' ([a2dc534](https://github.com/stacksjs/ts-charts/commit/a2dc534)) _(by Chris)_
+- release through @stacksjs/bumpx, not the unrelated npm 'bumpx' ([fc6ed74](https://github.com/stacksjs/ts-charts/commit/fc6ed74)) _(by Chris)_
+- **deps**: dtsx 0.11.10 ([cd3651a](https://github.com/stacksjs/ts-charts/commit/cd3651a)) _(by Chris)_
+- **deps**: dtsx 0.11.8, for declarations that parse ([9ce5d52](https://github.com/stacksjs/ts-charts/commit/9ce5d52)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/ts-charts/compare/v0.2.6...v0.2.7)
 
 ## 🚀 Features
