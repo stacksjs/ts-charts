@@ -42,6 +42,7 @@
       "@ts-charts/internmap": ["./packages/internmap/src/index.ts"],
       "@ts-charts/interpolate": ["./packages/interpolate/src/index.ts"],
       "@ts-charts/path": ["./packages/path/src/index.ts"],
+      "@ts-charts/plot": ["./packages/plot/src/index.ts"],
       "@ts-charts/polygon": ["./packages/polygon/src/index.ts"],
       "@ts-charts/quadtree": ["./packages/quadtree/src/index.ts"],
       "@ts-charts/random": ["./packages/random/src/index.ts"],

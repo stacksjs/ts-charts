@@ -78,6 +78,7 @@ const myLine = line()
 | `@ts-charts/hierarchy` | Tree, treemap, pack, and partition layouts |
 | `@ts-charts/interpolate` | Value interpolation for animations |
 | `@ts-charts/path` | SVG path serialization |
+| `@ts-charts/plot` | Finished charts rendered to SVG strings, starting with a prediction-market probability chart |
 | `@ts-charts/polygon` | Polygon area, centroid, convex hull |
 | `@ts-charts/quadtree` | 2D spatial indexing |
 | `@ts-charts/random` | Random number generators for various distributions |
