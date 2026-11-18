@@ -60,6 +60,7 @@
     "@ts-charts/hierarchy": "workspace:*",
     "@ts-charts/interpolate": "workspace:*",
     "@ts-charts/path": "workspace:*",
+    "@ts-charts/plot": "workspace:*",
     "@ts-charts/polygon": "workspace:*",
     "@ts-charts/quadtree": "workspace:*",
     "@ts-charts/random": "workspace:*",

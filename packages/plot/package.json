@@ -1,0 +1,49 @@
+{
+  "name": "@ts-charts/plot",
+  "version": "0.2.7",
+  "type": "module",
+  "sideEffects": false,
+  "description": "High-level charts rendered to SVG strings: multi-series probability lines with end labels, for the server or the browser.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/plot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-charts.git",
+    "directory": "packages/plot"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-charts/issues"
+  },
+  "keywords": [
+    "charts",
+    "svg",
+    "line chart",
+    "probability",
+    "prediction market",
+    "ssr",
+    "typescript",
+    "bun"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "prepublishOnly": "bun --bun run build",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@ts-charts/scale": "workspace:*",
+    "@ts-charts/shape": "workspace:*"
+  }
+}
