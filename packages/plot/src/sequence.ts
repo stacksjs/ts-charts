@@ -1,5 +1,5 @@
 import type { ChartLabels } from './chronology.ts'
-import { chartPrefix, chronologySvg, wrappedLabel } from './chronology.ts'
+import { chartPrefix, chronologyInk, chronologySvg, wrappedLabel } from './chronology.ts'
 import { arrows, svgText, svgTextLines } from './diagram-svg.ts'
 
 export interface SequenceParticipant { id: string, name?: string, actor?: boolean }
@@ -109,7 +109,7 @@ export function sequenceChart(chart: SequenceChartOptions): string | undefined {
       const preferred = event.position === 'left of' ? first - noteWidth - 18 : event.position === 'right of' ? first + 18 : (first + last - noteWidth) / 2
       const x = Math.max(6, Math.min(width - noteWidth - 6, preferred))
       const height = lines.length * 16 + 13
-      foreground.push(`<g class="diagram-sequence-note"><rect fill="currentColor" fill-opacity=".13" stroke="currentColor" x="${x}" y="${y}" width="${noteWidth}" height="${height}" rx="4"/>${svgTextLines(lines, x + noteWidth / 2, y + height / 2)}</g>`)
+      foreground.push(`<g class="diagram-sequence-note"><rect fill="#edf3fa" stroke="currentColor" x="${x}" y="${y}" width="${noteWidth}" height="${height}" rx="4"/>${svgTextLines(lines, x + noteWidth / 2, y + height / 2, '', 'middle', chronologyInk)}</g>`)
       y += height + 23
       continue
     }
@@ -134,10 +134,10 @@ export function sequenceChart(chart: SequenceChartOptions): string | undefined {
   for (const entry of [...activity]) finish(entry.id, bottom)
   const lifelines = names.map(([id, participant]) => {
     const x = xOf.get(id)!
-    const actor = participant.actor
+    const glyph = participant.actor
       ? `<path class="diagram-edge" fill="none" stroke="currentColor" d="M${x} 22v20m-11 -15h22m-11 15l-10 12m10 -12l10 12"/><circle class="diagram-cross" fill="none" stroke="currentColor" cx="${x}" cy="15" r="7"/>`
       : `<rect class="diagram-participant" fill="currentColor" fill-opacity=".1" stroke="currentColor" x="${x - span / 2 + 10}" y="17" width="${span - 20}" height="${64 + extraHeader}" rx="6"/>`
-    return `<path class="diagram-lifeline" stroke="currentColor" stroke-opacity=".55" stroke-dasharray="5 4" d="M${x} ${actor ? 88 : 81}V${bottom}"/>${actor}${svgTextLines(actorLabels.get(id)!, x, (actor ? 71 : 49) + extraHeader / 2)}`
+    return `<path class="diagram-lifeline" stroke="currentColor" stroke-opacity=".55" stroke-dasharray="5 4" d="M${x} ${(participant.actor ? 88 : 81) + extraHeader}V${bottom}"/>${glyph}${svgTextLines(actorLabels.get(id)!, x, (participant.actor ? 71 : 49) + extraHeader / 2)}`
   })
   const offset = chart.title ? 36 : 0
   const content = sectionBoxes.join('') + lifelines.join('') + activeBars.join('') + foreground.join('')
