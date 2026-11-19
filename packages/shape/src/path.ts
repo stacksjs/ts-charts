@@ -1,4 +1,4 @@
-import { Path } from '@ts-charts/path'
+import { Path } from '../../path/src/index.ts'
 
 export function withPath(shape: any): () => Path {
   let digits: number | null = 3
