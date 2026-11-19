@@ -37,7 +37,10 @@ export interface GitGraphOptions extends ChartLabels {
   rotateCommitLabel?: boolean
   colors?: readonly (string | undefined)[]
   branchLabelColors?: readonly (string | undefined)[]
+  branchLabelBackgrounds?: readonly (string | undefined)[]
   highlightColors?: readonly (string | undefined)[]
+  background?: string
+  titleColor?: string
   commitLabel?: GitLabelAppearance
   tagLabel?: GitLabelAppearance
 }
@@ -169,12 +172,13 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const showBranches = chart.showBranches !== false
   const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
-  const branchLabelWidth = Math.max(80, Math.min(250, Math.max(...branches.map(branch => branch.name.length * 8)) + 30))
   const horizontal = direction === 'LR'
   const ranks = Math.max(...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = normalizeAppearance(chart.tagLabel)
   const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
+  const branchText = (branch: Branch) => abbreviated(branch.name, horizontal ? 28 : 21)
+  const branchLabelWidth = Math.max(80, Math.max(...branches.map(branch => labelWidth(branchText(branch), 14))) + 30)
   const commitSize = commitAppearance.fontSize ?? 14
   const tagSize = tagAppearance.fontSize ?? 14
   const labelLimit = rotateLabels ? 34 : horizontal ? 17 : 18
@@ -205,12 +209,16 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const first = branch.fork ? time(branch.fork.rank) : time(0) - progression * 13
     const last = time(ranks - 1) + progression * 18
     const line = horizontal ? `M${first} ${axis}H${last}` : `M${axis} ${Math.min(first, last)}V${Math.max(first, last)}`
-    const appearance = { color: safeColor(chart.branchLabelColors?.[colorIndex(branch)]) }
-    const label = horizontal ? svgText(abbreviated(branch.name, 28), 13, axis, 'diagram-git-branch-label', 'start', appearance)
-      : svgText(abbreviated(branch.name, 21), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
+    const appearance = {
+      color: safeColor(chart.branchLabelColors?.[colorIndex(branch)]),
+      background: safeColor(chart.branchLabelBackgrounds?.[colorIndex(branch)]),
+    }
+    const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance)
+      : decorateLabel(branchText(branch), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
     return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
   const commitsById = new Map(commits.map(commit => [commit.id, commit]))
+  const ringColor = safeColor(chart.background) ?? 'currentColor'
   const edges = commits.map((commit) => {
     const to = point(commit)
     function edge(parent: Commit, copy = false): string {
@@ -231,8 +239,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const { x, y } = point(commit)
     const stroke = color(commit.branch)
     let node = `<circle class="diagram-git-dot" cx="${x}" cy="${y}" r="8" fill="${stroke}"/>`
-    if (commit.kind === 'merge') node += `<circle class="diagram-git-ring" fill="none" stroke="currentColor" cx="${x}" cy="${y}" r="4.2"/>`
-    if (commit.kind === 'cherry-pick') node += `<path class="diagram-git-ring" fill="none" stroke="currentColor" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
+    if (commit.kind === 'merge') node += `<circle class="diagram-git-ring" fill="none" stroke="${ringColor}" cx="${x}" cy="${y}" r="4.2"/>`
+    if (commit.kind === 'cherry-pick') node += `<path class="diagram-git-ring" fill="none" stroke="${ringColor}" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
     if (commit.type === 'REVERSE') node = `<path class="diagram-git-edge" fill="none" stroke-width="2" d="M${x - 7} ${y - 7}l14 14m-14 0l14-14" stroke="${stroke}"/>`
     if (commit.type === 'HIGHLIGHT') {
       const highlight = safeColor(chart.highlightColors?.[colorIndex(commit.branch)]) ?? stroke
@@ -258,5 +266,5 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
   const body = `<g data-diagram-kind="gitgraph">${rails}${edges}${nodes}</g>`
-  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY)
+  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY, chart)
 }

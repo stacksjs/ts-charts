@@ -411,6 +411,6 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
   const height = bottom + 31 + referenceLanes.length * referenceLineHeight + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
-  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY, safeColor(palette?.title))
+  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY, { titleColor: palette?.title })
   return interactive ? svg.replace('role="img"', 'role="group"') : svg
 }

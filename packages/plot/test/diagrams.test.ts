@@ -313,6 +313,8 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
     title: 'History', titleTopMargin: 35, rotateCommitLabel: true,
     colors: ['#184454', '#2e6e40'], highlightColors: [undefined, '#e18464'],
     branchLabelColors: ['#a578f2'],
+    branchLabelBackgrounds: ['#223344'],
+    background: '#efeae5', titleColor: '#563322',
     commitLabel: { color: '#523675', background: '#eee6f1', fontSize: 18 },
     tagLabel: { color: 'black', background: '#fbe7d5', border: '#dc7854', fontSize: 16 },
     operations: [
@@ -322,9 +324,12 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   }
   const svg = gitGraphChart(graph)!
   expect(svg).toMatch(/y="35" class="diagram-title"/)
+  expect(svg).toContain('style="--diagram-background:#efeae5"')
+  expect(svg).toMatch(/<rect width="[\d.]+" height="[\d.]+" fill="#efeae5"\/><text[^>]*class="diagram-title"[^>]*style="fill:#563322;"/)
   expect(svg).toContain('stroke="#184454"')
   expect(svg).toMatch(/class="diagram-git-dot"[^>]*fill="#e18464"/)
   expect(svg).toMatch(/class="diagram-git-branch-label"[^>]*style="fill:#a578f2;"/)
+  expect(svg).toMatch(/class="diagram-git-branch-label-box"[^>]*fill="#223344"/)
   expect(svg).toMatch(/class="diagram-git-label"[^>]*style="fill:#523675;font-size:18px;"/)
   expect(svg).toMatch(/class="diagram-git-label-box"[^>]*fill="#eee6f1"/)
   expect(svg).toMatch(/class="diagram-git-tag-box"[^>]*fill="#fbe7d5" stroke="#dc7854"/)
