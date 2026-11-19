@@ -1,16 +1,6 @@
-import {
-  timeDay,
-  timeSunday,
-  timeMonday,
-  timeThursday,
-  timeYear,
-  // eslint-disable-next-line pickier/no-unused-vars
-  utcDay,
-  utcSunday,
-  utcMonday,
-  utcThursday,
-  utcYear,
-} from '@ts-charts/time'
+import { timeDay, utcDay } from '../../time/src/day.ts'
+import { timeMonday, timeSunday, timeThursday, utcMonday, utcSunday, utcThursday } from '../../time/src/week.ts'
+import { timeYear, utcYear } from '../../time/src/year.ts'
 
 export interface TimeLocaleDefinition {
   dateTime: string
