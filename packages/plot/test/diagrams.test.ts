@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { flowchartDiagram, journeyChart, timelineChart } from '../src/diagrams.ts'
+import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
+import { buildGitHistory, flowchartDiagram, ganttChart, gitGraphChart, journeyChart, scheduleGantt, timelineChart } from '../src/diagrams.ts'
 
 test('lays out a standalone SVG flowchart with decisions, branch labels, and loops', () => {
   const svg = flowchartDiagram({
@@ -41,4 +42,72 @@ test('plots native journey scores and deduplicates actors per task', () => {
   expect(drawing.match(/<title>Author<\/title>/g)).toHaveLength(1)
   expect(drawing).toMatch(/class="diagram-journey-trajectory"[^>]+d="M[^"]+L/)
   expect(journeyChart({ phases: [{ tasks: [{ name: 'Review', score: 6 }] }] })).toBeUndefined()
+})
+
+test('schedules structured tasks across exclusions and resolves multiple dependency endpoints', () => {
+  const chart: GanttChartOptions = {
+    idPrefix: 'delivery', accessibleTitle: 'Delivery window', now: Date.UTC(2026, 2, 6), todayMarker: false,
+    excludes: ['weekends', '2026-03-10'], includes: ['2026-03-08'],
+    sections: [
+      { name: 'Prepare', tasks: [
+        { id: 'scope', name: 'Agree scope', duration: '2d' },
+        { id: 'plan', name: 'Plan delivery', start: '2026-03-06', duration: '1d' },
+      ] },
+      { name: 'Deliver', tasks: [
+        { id: 'build', name: 'Build', after: ['scope', 'plan'], duration: '3d', tags: ['active'] },
+        { id: 'review', name: 'Review', after: ['scope'], until: ['build', 'ship'] },
+        { id: 'ship', name: 'Ship', start: '2026-03-13', duration: '0d', tags: ['milestone'] },
+      ] },
+    ],
+  }
+  const date = (time: number) => new Date(time).toISOString().slice(0, 10)
+  const tasks = scheduleGantt(chart)?.tasks
+  expect(tasks?.map(task => [task.id, date(task.start), date(task.end)])).toEqual([
+    ['scope', '2026-03-06', '2026-03-09'],
+    ['plan', '2026-03-06', '2026-03-07'],
+    ['build', '2026-03-09', '2026-03-13'],
+    ['review', '2026-03-09', '2026-03-09'],
+    ['ship', '2026-03-13', '2026-03-13'],
+  ])
+  const svg = ganttChart(chart)
+  expect(svg).toContain('data-diagram-kind="gantt"')
+  expect(svg).toContain('aria-labelledby="delivery-title"')
+  expect(svg).toContain('class="diagram-gantt-milestone-shape"')
+  expect(svg).not.toContain('diagram-gantt-today')
+  expect(scheduleGantt({ sections: [{ tasks: [
+    { name: 'First', id: 'a', after: ['b'], duration: '1d' },
+    { name: 'Second', id: 'b', after: ['a'], duration: '1d' },
+  ] }] })).toBeUndefined()
+  expect(scheduleGantt({ sections: [{ tasks: [{ name: 'Conflicting end', end: '2026-03-06', duration: '1d' }] }] })).toBeUndefined()
+})
+
+test('replays structured Git history with merge ordering, orientation, and cherry-pick validation', () => {
+  const chart: GitGraphOptions = {
+    idPrefix: 'history', accessibleTitle: 'Project history', direction: 'TB', parallelCommits: true,
+    operations: [
+      { op: 'commit', id: 'root' },
+      { op: 'branch', name: 'review', order: 3 },
+      { op: 'commit', id: 'draft' },
+      { op: 'checkout', name: 'main' },
+      { op: 'commit', id: 'prepare', label: 'Prep work' },
+      { op: 'merge', branch: 'review', id: 'release', tags: ['v1.0'] },
+      { op: 'checkout', name: 'review' },
+      { op: 'cherry-pick', commit: 'release', parent: 'draft', id: 'backport' },
+    ],
+  }
+  const history = buildGitHistory(chart)
+  expect(history?.commits.map(commit => [commit.id, commit.rank])).toEqual([
+    ['root', 0], ['draft', 1], ['prepare', 1], ['release', 2], ['backport', 2],
+  ])
+  expect(history?.commits[3].parents.map(commit => commit.id)).toEqual(['prepare', 'draft'])
+  expect(history?.commits.at(-1)?.picked).toBe('release')
+  const svg = gitGraphChart(chart)
+  expect(svg).toContain('data-diagram-kind="gitgraph"')
+  expect(svg).toContain('aria-label="Project history"')
+  expect(svg).toContain('data-commit-id="release" data-parent-ids="prepare, draft"')
+  expect(svg).toContain('>Prep work</tspan>')
+  expect(svg).toContain('>v1.0</tspan>')
+  expect(buildGitHistory({ ...chart, operations: [...chart.operations.slice(0, -1),
+    { op: 'cherry-pick', commit: 'release', parent: 'root' },
+  ] })).toBeUndefined()
 })

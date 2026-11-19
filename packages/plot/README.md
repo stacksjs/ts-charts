@@ -100,3 +100,34 @@ const journey = journeyChart({
 
 Provide an `idPrefix` when you want deterministic SVG IDs. Use unique prefixes
 when displaying multiple charts on the same page.
+
+## Gantt schedules and Git histories
+
+`ganttChart` and `gitGraphChart` render typed data to SVG. Use
+`scheduleGantt` to inspect the computed UTC task dates or `buildGitHistory`
+to inspect branch order, parent commits, and ranks.
+
+```ts
+import { ganttChart, gitGraphChart } from '@ts-charts/plot'
+
+ganttChart({
+  title: 'Ship the update',
+  excludes: ['weekends'],
+  sections: [{ name: 'Release', tasks: [
+    { id: 'review', name: 'Review', start: '2026-06-04', duration: '2d' },
+    { id: 'ship', name: 'Publish', after: ['review'], duration: '0d', tags: ['milestone'] },
+  ] }],
+})
+
+gitGraphChart({
+  direction: 'LR',
+  parallelCommits: true,
+  operations: [
+    { op: 'commit', id: 'start' },
+    { op: 'branch', name: 'review' },
+    { op: 'commit', id: 'draft' },
+    { op: 'checkout', name: 'main' },
+    { op: 'merge', branch: 'review', id: 'ship', tags: ['v1.0'] },
+  ],
+})
+```
