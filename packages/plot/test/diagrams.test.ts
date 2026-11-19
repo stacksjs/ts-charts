@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
-import { buildGitHistory, flowchartDiagram, ganttChart, gitGraphChart, journeyChart, scheduleGantt, timelineChart } from '../src/diagrams.ts'
+import { buildGitHistory, flowchartDiagram, ganttChart, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
 
 test('lays out a standalone SVG flowchart with decisions, branch labels, and loops', () => {
   const svg = flowchartDiagram({
@@ -31,6 +31,84 @@ test('renders ordered timeline data in both orientations with accessible metadat
   expect(down).toContain('stroke="currentColor"')
   expect(timelineChart({ sections, direction: 'LR' })).toContain('data-direction="LR"')
   expect(timelineChart({ sections: [] })).toBeUndefined()
+})
+
+test('groups flowchart steps and draws separate paths for parallel and returning connections', () => {
+  const svg = flowchartDiagram({
+    idPrefix: 'review',
+    direction: 'right',
+    routing: 'orthogonal',
+    accessibleTitle: 'Review stages',
+    description: 'Two services collaborate',
+    groups: [{ label: 'Workers', members: ['input', 'queue'] }],
+    nodes: [
+      { id: 'input', shape: 'stadium' },
+      { id: 'queue', shape: 'database', style: { fill: '#eceafd', strokeWidth: 2 } },
+    ],
+    edges: [
+      { from: 'input', to: 'queue' },
+      { from: 'input', to: 'queue', label: 'Fast path', style: 'dotted' },
+      { from: 'queue', to: 'input', label: 'Return', start: 'circle', end: 'none', style: 'thick' },
+    ],
+  })!
+  expect(svg).toContain('aria-describedby="review-description"')
+  expect(svg).toContain('class="diagram-cluster"')
+  expect(svg).toContain('--diagram-fill:#eceafd;--diagram-stroke-width:2')
+  expect(svg).toContain('stroke-dasharray="5 4"')
+  expect(svg).toContain('marker-start="url(#review-circle)"')
+  const paths = [...svg.matchAll(/class="diagram-edge [^"]+"[^>]* d="([^"]+)"/g)].map(match => match[1])
+  expect(paths).toHaveLength(3)
+  expect(new Set(paths).size).toBe(3)
+})
+
+test('renders sequence messages, nested sections, notes, activation, and an accessible description', () => {
+  const participants = [{ id: 'a', name: 'Author', actor: true }, { id: 'r', name: 'Review service' }]
+  const svg = sequenceChart({
+    idPrefix: 'exchange', numbered: true, accessibleTitle: 'Review exchange', description: 'An author shares a draft',
+    participants,
+    events: [
+      { kind: 'message', from: 'a', to: 'r', label: 'Share draft', change: 'start' },
+      { kind: 'section', title: 'Review' },
+      { kind: 'note', ids: ['a', 'r'], label: 'Read <draft> and annotate' },
+      { kind: 'branch', title: 'After approval' },
+      { kind: 'message', from: 'r', to: 'a', label: 'Feedback', change: 'end', dashed: true },
+      { kind: 'end' },
+    ],
+  })
+  expect(svg).toContain('aria-describedby="exchange-description"')
+  expect(svg).toContain('diagram-activation')
+  expect(svg).toContain('diagram-sequence-note')
+  expect(svg).toContain('2. Feedback')
+  expect(svg).toContain('Read &lt;draft&gt; and annotate')
+  expect(sequenceChart({ participants, events: [{ kind: 'end' }] })).toBeUndefined()
+  expect(sequenceChart({ participants, events: [{ kind: 'note', ids: ['unknown'], label: '' }] })).toBeUndefined()
+})
+
+test('renders class and ER cards and validates relationship endpoints', () => {
+  const cards = [{ id: 'project', fields: ['name: string'] }, { id: 'task', name: 'Task', operations: ['finish()'] }]
+  const svg = relationshipChart({
+    idPrefix: 'data', cards, kind: 'er', direction: 'right',
+    edges: [{ source: 'project', target: 'task', start: 'one', end: 'zero-many', label: 'contains', dashed: true }],
+  })
+  expect(svg).toContain('data-diagram-kind="er"')
+  expect(svg).toContain('marker-start="url(#data-one)"')
+  expect(svg).toContain('marker-end="url(#data-zero-many)"')
+  expect(svg).toContain('>finish()</tspan>')
+  expect(svg).toContain('stroke-dasharray="5 4"')
+  expect(relationshipChart({ cards, edges: [{ source: 'unknown', target: 'task' }] })).toBeUndefined()
+})
+
+test('renders full-circle donuts, raw legend values, and validated slice colors', () => {
+  const svg = pieChart({
+    title: 'Share of work', donutHole: 0.5, legendPosition: 'bottom', showData: true,
+    slices: [{ label: 'Review <drafts>', value: 7, color: '#b5d2ef' }],
+  })
+  expect(svg).toContain('>100%</tspan>')
+  expect(svg).toContain('Review &lt;drafts&gt; [7]')
+  expect(svg).toContain('fill="#b5d2ef"')
+  const wedge = /<path d="([^"]+)"/.exec(svg ?? '')?.[1] ?? ''
+  expect(wedge).toMatch(/^M.*A130,130.*M.*A65,65.*Z$/)
+  expect(pieChart({ slices: [{ label: 'Review', value: Number.NaN }] })).toBeUndefined()
 })
 
 test('plots native journey scores and deduplicates actors per task', () => {

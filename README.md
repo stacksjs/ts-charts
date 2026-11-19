@@ -78,7 +78,7 @@ const myLine = line()
 | `@ts-charts/hierarchy` | Tree, treemap, pack, and partition layouts |
 | `@ts-charts/interpolate` | Value interpolation for animations |
 | `@ts-charts/path` | SVG path serialization |
-| `@ts-charts/plot` | Finished charts rendered to SVG strings, starting with a prediction-market probability chart |
+| `@ts-charts/plot` | Finished SVG charts, including probability, flowchart, sequence, class, ER, pie, timeline, journey, Gantt, and Git history |
 | `@ts-charts/polygon` | Polygon area, centroid, convex hull |
 | `@ts-charts/quadtree` | 2D spatial indexing |
 | `@ts-charts/random` | Random number generators for various distributions |
@@ -91,6 +91,32 @@ const myLine = line()
 | `@ts-charts/timer` | Efficient animation scheduling via `requestAnimationFrame` |
 | `@ts-charts/transition` | Animated transitions on selections |
 | `@ts-charts/zoom` | Pan and zoom interaction |
+
+## Render diagrams
+
+`ts-charts/diagrams` takes typed data and returns SVG for browsers,
+documentation, and slide decks. Pass a title, accessible name, and
+description to document the diagram, and use distinct `idPrefix` values
+when placing several SVGs in one document.
+
+```ts
+import { flowchartDiagram } from 'ts-charts/diagrams'
+
+const svg = flowchartDiagram({
+  accessibleTitle: 'Publish a draft',
+  direction: 'right',
+  nodes: [
+    { id: 'draft', label: 'Draft' },
+    { id: 'review', label: 'Approved?', shape: 'diamond' },
+    { id: 'publish', label: 'Publish', shape: 'rounded' },
+  ],
+  edges: [
+    { from: 'draft', to: 'review' },
+    { from: 'review', to: 'publish', label: 'Approve' },
+    { from: 'review', to: 'draft', label: 'Revise', style: 'dotted' },
+  ],
+})
+```
 
 ## Testing
 
