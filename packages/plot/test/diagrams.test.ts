@@ -15,6 +15,7 @@ test('lays out a standalone SVG flowchart with decisions, branch labels, and loo
   expect(svg).toContain('>Retry</tspan>')
   expect(svg).toContain('>Yes</tspan>')
   expect(svg).toContain('>No</tspan>')
+  expect(svg).toMatch(/M[\d.]+,([\d.]+)C([\d.]+),\1 \2,[\d.]+ [\d.]+,[\d.]+/)
   expect(flowchartDiagram({ nodes: [{ id: 'a' }], edges: [{ from: 'a', to: 'b' }] })).toBeUndefined()
   expect(flowchartDiagram({ nodes: [{ id: 'a' }, { id: 'a' }], edges: [] })).toBeUndefined()
 })

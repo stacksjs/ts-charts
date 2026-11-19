@@ -47,7 +47,7 @@ export function flowchartDiagram(chart: FlowchartDiagramOptions): string | undef
     const labelX = (midpoint.x + next.x) / 2
     const labelY = (midpoint.y + next.y) / 2
     const caption = label ? svgTextLines(wrappedLabel(label, 17), labelX + 9, labelY - 12, 'diagram-edge-label') : ''
-    return `<path fill="none" stroke="currentColor" stroke-width="1.5" class="diagram-edge" d="${edgePath(points)}" marker-end="url(#${id})"/>${caption}`
+    return `<path fill="none" stroke="currentColor" stroke-width="1.5" class="diagram-edge" d="${edgePath(points, { direction: chart.direction })}" marker-end="url(#${id})"/>${caption}`
   }).join('')
   const positions = new Map(result.nodes.map(node => [node.id, node]))
   const loops = chart.edges.filter(edge => edge.from === edge.to).map((edge) => {
