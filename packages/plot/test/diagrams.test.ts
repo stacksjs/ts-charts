@@ -221,3 +221,17 @@ test('rotates Git commit labels in horizontal and vertical graphs and retains ta
   expect(gitGraphChart({ operations, rotateCommitLabel: false })).not.toContain('transform="rotate')
   expect(gitGraphChart({ operations, rotateCommitLabel: true, showCommitLabel: false })).not.toContain('diagram-git-label')
 })
+
+test('exposes accessible Gantt callback targets and escapes the serialized arguments', () => {
+  const svg = ganttChart({ sections: [{ tasks: [
+    { name: 'Review notes', id: 'review', start: '2026-03-06', duration: '1d', callback: { name: 'actions.review' } },
+    { name: 'Open details', id: 'open', duration: '1d', href: '#details', callback: { name: 'actions.open', args: ['red, blue', '<note>'] } },
+    { name: 'Invalid', duration: '1d', callback: { name: 'actions.constructor' } },
+  ] }] })!
+  expect(svg).toContain('role="group"')
+  expect(svg).toContain('role="button" tabindex="0" aria-label="Review notes" data-gantt-callback="actions.review" data-gantt-args="[&quot;review&quot;]"')
+  expect(svg).toContain('href="#details" target="_self" aria-label="Open details" data-gantt-callback="actions.open"')
+  expect(svg).toContain('[&quot;red, blue&quot;,&quot;&lt;note&gt;&quot;]')
+  expect(svg).not.toContain('actions.constructor')
+  expect(svg).not.toContain('onclick=')
+})

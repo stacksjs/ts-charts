@@ -7,6 +7,12 @@ export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
 export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
 const taskTags: ReadonlySet<string> = new Set(['active', 'done', 'crit', 'milestone', 'vert'])
 
+export interface GanttTaskCallback {
+  name: string
+  /** Strings passed to the callback. Defaults to the task ID when omitted. */
+  args?: readonly string[]
+}
+
 export interface GanttTask {
   id?: string
   name: string
@@ -19,6 +25,7 @@ export interface GanttTask {
   until?: readonly string[]
   tags?: readonly GanttTaskTag[]
   href?: string
+  callback?: GanttTaskCallback
 }
 
 export interface GanttSection { name?: string, tasks: readonly GanttTask[] }
@@ -214,6 +221,15 @@ function taskLink(value: unknown): string | undefined {
   if (url?.protocol === 'https:' || url?.protocol === 'http:') return href
 }
 
+function callbackAttributes(callback: GanttTaskCallback | undefined, id: string): string {
+  const name = callback?.name
+  if (typeof name !== 'string' || name.length > 120) return ''
+  if (name.split('.').some(part => !/^[a-z_$][\w$]*$/i.test(part) || ['constructor', 'prototype', '__proto__'].includes(part))) return ''
+  const args = callback?.args ?? []
+  if (!Array.isArray(args) || args.length > 32 || args.some(value => typeof value !== 'string' || value.length > 1024)) return ''
+  return ` data-gantt-callback="${escapeHtml(name)}" data-gantt-args="${escapeHtml(JSON.stringify(args.length ? args : [id]))}"`
+}
+
 export function ganttChart(chart: GanttChartOptions): string | undefined {
   const now = chart.now ?? Date.now()
   const schedule = scheduleGantt({ ...chart, now })
@@ -271,15 +287,19 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     return `<path class="diagram-gantt-grid" stroke="currentColor" stroke-opacity="0.25" fill="none" d="M${x} ${top}V${bottom}"/>${svgText(label, x, bottom + 13, 'diagram-gantt-tick')}${schedule.topAxis ? svgText(label, x, top + 8, 'diagram-gantt-tick') : ''}`
   })
   let interactive = false
-  function withLink(task: ScheduledGanttTask, content: string): string {
+  function withInteraction(task: ScheduledGanttTask, content: string): string {
     const href = taskLink(task.input.href)
-    if (!href) return content
+    const callback = callbackAttributes(task.input.callback, task.id)
+    if (!href && !callback) return content
     interactive = true
-    return `<a class="diagram-gantt-link" href="${escapeHtml(href)}" target="_self" aria-label="${escapeHtml(task.name)}">${content}</a>`
+    const label = ` aria-label="${escapeHtml(task.name)}"`
+    return href
+      ? `<a class="diagram-gantt-link" href="${escapeHtml(href)}" target="_self"${label}${callback}>${content}</a>`
+      : `<g class="diagram-gantt-action" role="button" tabindex="0"${label}${callback}>${content}</g>`
   }
   const markers = tasks.filter(task => task.tags.includes('vert')).map(task => {
     const x = xAt(task.start + (task.end - task.start) / 2)
-    return withLink(task, `<path class="diagram-gantt-reference" stroke="#548ba9" fill="none" d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>`)
+    return withInteraction(task, `<path class="diagram-gantt-reference" stroke="#548ba9" fill="none" d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>`)
   })
   if (schedule.todayMarker && now >= start && now <= end) {
     const x = xAt(now)
@@ -300,7 +320,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const max = compact ? Math.max(8, Math.floor((width - right - 18) / 7)) : Math.max(1, Math.floor((x0 - 22) / 7))
     const name = task.name.length > max ? `${task.name.slice(0, max - 1)}…` : task.name
     const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start')}</g>`
-    return withLink(task, content)
+    return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
   const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, bottom + 31, body)
