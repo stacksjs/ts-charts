@@ -176,19 +176,44 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   }
   const history = buildGitHistory(chart)
   expect(history?.commits.map(commit => [commit.id, commit.rank])).toEqual([
-    ['root', 0], ['draft', 1], ['prepare', 1], ['release', 2], ['backport', 2],
+    ['root', 0], ['draft', 1], ['prepare', 1], ['release', 2], ['backport', 3],
   ])
   expect(history?.commits[3].parents.map(commit => commit.id)).toEqual(['prepare', 'draft'])
   expect(history?.commits.at(-1)?.picked).toBe('release')
+  expect(history?.commits.at(-1)?.parents.map(commit => commit.id)).toEqual(['draft'])
   const svg = gitGraphChart(chart)
   expect(svg).toContain('data-diagram-kind="gitgraph"')
   expect(svg).toContain('aria-label="Project history"')
   expect(svg).toContain('data-commit-id="release" data-parent-ids="prepare, draft"')
   expect(svg).toContain('>Prep work</tspan>')
   expect(svg).toContain('>v1.0</tspan>')
+  expect(svg).toContain('data-commit-id="backport" data-parent-ids="draft" data-picked-id="release" data-picked-parent="draft"')
+  expect(svg).toMatch(/class="diagram-git-edge diagram-git-pick-edge"[^>]*stroke-dasharray="5 3" data-from-commit="release" data-to-commit="backport"/)
   expect(buildGitHistory({ ...chart, operations: [...chart.operations.slice(0, -1),
     { op: 'cherry-pick', commit: 'release', parent: 'root' },
   ] })).toBeUndefined()
+})
+
+test('accepts ISO holidays with custom task dates and packs touching bars around milestones', () => {
+  const calendar = scheduleGantt({
+    dateFormat: 'DD/MM/YYYY', excludes: ['2026-03-06', '07/03/2026'], includes: ['2026-03-07'],
+    sections: [{ tasks: [{ name: 'Delivery', start: '06/03/2026', duration: '1d' }] }],
+  })!
+  expect(calendar.isExcluded(Date.UTC(2026, 2, 6))).toBe(true)
+  expect(calendar.isExcluded(Date.UTC(2026, 2, 7))).toBe(false)
+  expect(calendar.tasks[0].end).toBe(Date.UTC(2026, 2, 8))
+  const compact = ganttChart({
+    displayMode: 'compact', sections: [{ tasks: [
+      { name: 'Build', id: 'build', start: '2026-03-06', duration: '1d' },
+      { name: 'Verify', id: 'verify', after: ['build'], duration: '1d' },
+      { name: 'Ship', id: 'ship', after: ['verify'], duration: '0d', tags: ['milestone'] },
+    ] }],
+  })!
+  const barRows = [...compact.matchAll(/class="diagram-gantt-bar"[^>]*\by="([\d.]+)"/g)].map(match => match[1])
+  expect(barRows).toHaveLength(2)
+  expect(barRows[0]).toBe(barRows[1])
+  const labels = [...compact.matchAll(/ y="([\d.]+)" class="diagram-gantt-label"/g)].map(match => Number(match[1]))
+  expect(labels[2]).toBeGreaterThan(labels[1])
 })
 
 test('supports linked Gantt tasks, marker styling, chart dimensions, and week start', () => {

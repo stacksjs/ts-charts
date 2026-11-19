@@ -54,6 +54,7 @@ interface Commit {
   rank: number
   index: number
   picked?: string
+  pickedParent?: string
 }
 export interface GitHistory {
   commits: Commit[]
@@ -72,7 +73,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
   const commits: Commit[] = []
   const byId = new Map<string, Commit>()
 
-  function add(kind: Commit['kind'], properties: GitCommitOptions, other?: Commit): boolean {
+  function add(kind: Commit['kind'], properties: GitCommitOptions, other?: Commit, pickedParent?: string): boolean {
     const { id: customId, label, style: type = 'NORMAL', tags = [] } = properties
     if (customId !== undefined && (typeof customId !== 'string' || !customId || byId.has(customId))) return false
     if (!['NORMAL', 'REVERSE', 'HIGHLIGHT'].includes(type)) return false
@@ -82,9 +83,9 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     const id = customId ?? `c${index}`
     const parents = current.head ? [current.head] : []
     if (kind === 'merge' && other) parents.push(other)
-    const rank = parallelCommits ? Math.max(-1, ...parents.map(commit => commit.rank)) + 1 : commits.length
+    const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
     const commit: Commit = { id, label: label || id, branch: current, parents, tags,
-      kind, type, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined }
+      kind, type, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
     commits.push(commit)
     byId.set(id, commit)
     current.head = commit
@@ -120,7 +121,8 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
         if (!from || from.branch === current || !current.head
           || (parent !== undefined && !from.parents.some(commit => commit.id === parent))
           || (from.kind === 'merge' && parent === undefined)) return
-        if (!add('cherry-pick', { ...operation, tags: tags ?? [`cherry-pick: ${from.id}`] }, from)) return
+        const marker = `cherry-pick:${from.id}${parent && from.kind === 'merge' ? `|parent:${parent}` : ''}`
+        if (!add('cherry-pick', { ...operation, tags: tags ?? [marker] }, from, parent)) return
         break
       }
       default: return
@@ -208,17 +210,22 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       : svgText(abbreviated(branch.name, 21), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
     return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
-  const edges = commits.flatMap((commit) => {
+  const commitsById = new Map(commits.map(commit => [commit.id, commit]))
+  const edges = commits.map((commit) => {
     const to = point(commit)
-    return commit.parents.map((parent) => {
+    function edge(parent: Commit, copy = false): string {
       const from = point(parent)
       const middleX = (from.x + to.x) / 2
       const middleY = (from.y + to.y) / 2
       const curve = horizontal
         ? `M${from.x} ${from.y}C${middleX} ${from.y} ${middleX} ${to.y} ${to.x} ${to.y}`
         : `M${from.x} ${from.y}C${from.x} ${middleY} ${to.x} ${middleY} ${to.x} ${to.y}`
-      return `<path class="diagram-git-edge" fill="none" stroke-width="2" d="${curve}" stroke="${color(parent.branch === commit.branch ? commit.branch : parent.branch)}"/>`
-    })
+      const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" stroke-width="2" d="${curve}" stroke="${color(parent.branch)}"`
+      if (!copy) return `${path}/>`
+      return `${path} stroke-dasharray="5 3" data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
+    }
+    const source = commit.picked === undefined ? undefined : commitsById.get(commit.picked)
+    return commit.parents.map(parent => edge(parent)).join('') + (source ? edge(source, true) : '')
   }).join('')
   const nodes = commits.map((commit) => {
     const { x, y } = point(commit)
@@ -246,8 +253,9 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const tag = commit.tags.join(' · ')
     const tagLabel = tag ? (horizontal ? decorateLabel(tagText(commit), x, y + (rotateLabels ? -tagOffset : tagOffset), 'diagram-git-tag', 'middle', tagAppearance)
       : decorateLabel(tagText(commit), x + 13, y + Math.max(11, tagSize / 2 + 4), 'diagram-git-tag', 'start', tagAppearance)) : ''
-    const detail = [commit.branch.name, commit.id, commit.picked, tag].filter(Boolean).join(' / ')
-    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
+    const detail = [commit.branch.name, commit.id, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
+    const provenance = commit.picked ? ` data-picked-id="${escapeHtml(commit.picked)}"${commit.pickedParent ? ` data-picked-parent="${escapeHtml(commit.pickedParent)}"` : ''}` : ''
+    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
   const body = `<g data-diagram-kind="gitgraph">${rails}${edges}${nodes}</g>`
   return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY)

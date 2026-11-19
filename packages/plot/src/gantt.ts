@@ -115,6 +115,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   const parseDate = ganttDateParser(dateFormat)
   const axisFormat = format || (/[Hh]|^X|^x/.test(dateFormat) ? '%H:%M' : '%b %d')
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
+  const isoDate = ganttDateParser('YYYY-MM-DD')
+  const parseCalendarDate = (value: string) => isoDate(value) ?? parseDate(value)
   const excludedDates = new Set<number>()
   const includedDates = new Set<number>()
   const excludedWeekdays = new Set<number>()
@@ -126,19 +128,21 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     }
     else if (weekdays.includes(name)) excludedWeekdays.add(weekdays.indexOf(name))
     else {
-      const date = parseDate(item)
+      const date = parseCalendarDate(item)
       if (date === undefined) return
       excludedDates.add(dayOf(date))
     }
   }
   for (const item of includes) {
-    const date = parseDate(item)
+    const date = parseCalendarDate(item)
     if (date === undefined) return
     includedDates.add(dayOf(date))
   }
   const isExcluded = (value: number) => {
     const day = dayOf(value)
-    return !includedDates.has(day) && (excludedDates.has(day) || excludedWeekdays.has(new Date(day).getUTCDay()))
+    if (includedDates.has(day)) return false
+    const weekday = ((day / dayMs + 4) % 7 + 7) % 7
+    return excludedDates.has(day) || excludedWeekdays.has(weekday)
   }
   function applyDuration(start: number, target: number): number | undefined {
     if (target === start || (!excludedDates.size && !excludedWeekdays.size)) return target
@@ -241,6 +245,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const { tasks, sections, title, axisFormat, ticks, isExcluded } = schedule
   const compact = chart.displayMode === 'compact'
   const visibleTasks = tasks.filter(task => !task.tags.includes('vert'))
+  const tasksBySection: ScheduledGanttTask[][] = sections.map(() => [])
+  for (const task of visibleTasks) tasksBySection[task.section].push(task)
   const fontSize = boundedNumber(chart.fontSize, 6, 96)
   const sectionFontSize = boundedNumber(chart.sectionFontSize, 6, 96)
   const letterWidth = (fontSize ?? 14) / 2
@@ -264,17 +270,18 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const groups: string[] = []
   let y = top + (schedule.topAxis ? 20 : 0)
   for (const [index, section] of sections.entries()) {
-    const children = visibleTasks.filter(task => task.section === index)
+    const children = tasksBySection[index]
     if (!children.length) continue
     const sectionTop = y
     if (section) y += sectionHeight
-    // Only reuse a lane after the previous bar (or milestone) has cleared it.
-    const lanes: number[] = []
+    // A milestone occupies both sides of its date even if its duration is zero.
+    const lanes: { end: number, point: boolean }[] = []
     const ordered = compact ? [...children].sort((a, b) => a.start - b.start) : children
     for (const [row, task] of ordered.entries()) {
-      let lane = compact ? lanes.findIndex(last => last < task.start) : row
+      const point = task.start === task.end || task.tags.includes('milestone')
+      let lane = compact ? lanes.findIndex(last => last.end < task.start || (last.end === task.start && !last.point && !point)) : row
       if (lane === -1) lane = lanes.length
-      lanes[lane] = task.end
+      lanes[lane] = { end: task.end, point }
       taskY.set(task, y + (lane + 0.5) * rowHeight)
     }
     y += lanes.length * rowHeight
