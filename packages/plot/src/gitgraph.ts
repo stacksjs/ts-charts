@@ -1,6 +1,6 @@
 import type { ChartLabels } from './chronology.ts'
-import { chartPrefix, chronologySvg, safeColor } from './chronology.ts'
-import { escapeHtml, svgText } from './diagram-svg.ts'
+import { boundedNumber, chartPrefix, chronologySvg, safeColor, titlePosition } from './chronology.ts'
+import { escapeHtml, labelLines, svgText } from './diagram-svg.ts'
 
 export type GitCommitStyle = 'NORMAL' | 'REVERSE' | 'HIGHLIGHT'
 export type GitGraphDirection = 'LR' | 'TB' | 'BT'
@@ -18,16 +18,28 @@ export type GitGraphOperation =
   | ({ op: 'merge', branch: string } & GitCommitOptions)
   | ({ op: 'cherry-pick', commit: string, parent?: string } & GitCommitOptions)
 
+export interface GitLabelAppearance {
+  color?: string
+  background?: string
+  border?: string
+  fontSize?: number
+}
+
 export interface GitGraphOptions extends ChartLabels {
   operations: readonly GitGraphOperation[]
   direction?: GitGraphDirection
   mainBranchName?: string
   mainBranchOrder?: number
+  titleTopMargin?: number
   parallelCommits?: boolean
   showCommitLabel?: boolean
   showBranches?: boolean
   rotateCommitLabel?: boolean
   colors?: readonly (string | undefined)[]
+  branchLabelColors?: readonly (string | undefined)[]
+  highlightColors?: readonly (string | undefined)[]
+  commitLabel?: GitLabelAppearance
+  tagLabel?: GitLabelAppearance
 }
 
 interface Branch { name: string, head?: Commit, fork?: Commit, order: number, index: number }
@@ -120,6 +132,33 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
 
 const branchColors = ['#6ba2db', '#e7b76f', '#70c1a4', '#b6a0da', '#e88998', '#59b9be', '#acc272', '#d68d61']
 
+function normalizeAppearance(value?: GitLabelAppearance): GitLabelAppearance {
+  return {
+    color: safeColor(value?.color),
+    background: safeColor(value?.background),
+    border: safeColor(value?.border),
+    fontSize: boundedNumber(value?.fontSize, 6, 72),
+  }
+}
+
+function labelWidth(label: string, size: number): number {
+  return Math.ceil(Math.max(...labelLines(label).map((line) => {
+    let width = 0
+    for (const char of line) width += /[^\x00-\xffMW@%]/.test(char) ? 1 : /[ilI.,:!'| ]/.test(char) ? 0.4 : 0.72
+    return width
+  })) * size)
+}
+
+function decorateLabel(label: string, x: number, y: number, classes: string, anchor: 'start' | 'middle', appearance: GitLabelAppearance): string {
+  const text = svgText(label, x, y, classes, anchor, appearance)
+  if (!appearance.background && !appearance.border) return text
+  const fontSize = appearance.fontSize ?? 14
+  const width = labelWidth(label, fontSize) + 10
+  const height = labelLines(label).length * (appearance.fontSize === undefined ? 16 : fontSize * 1.15) + 4
+  const left = anchor === 'start' ? x - 5 : x - width / 2
+  return `<rect class="${classes}-box" x="${left}" y="${y - height / 2}" width="${width}" height="${height}" rx="3" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'none'}"/>${text}`
+}
+
 export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const history = buildGitHistory(chart)
   if (!history) return
@@ -128,34 +167,45 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const showBranches = chart.showBranches !== false
   const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
-  const labelWidth = Math.max(80, Math.min(250, Math.max(...branches.map(branch => branch.name.length * 8)) + 30))
-  const longTag = Math.min(27, Math.max(0, ...commits.flatMap(commit => commit.tags.map(tag => tag.length))))
+  const branchLabelWidth = Math.max(80, Math.min(250, Math.max(...branches.map(branch => branch.name.length * 8)) + 30))
   const horizontal = direction === 'LR'
   const ranks = Math.max(...commits.map(commit => commit.rank)) + 1
-  const rotatedLimit = 34
-  const rotatedExtent = rotateLabels ? Math.ceil(Math.min(rotatedLimit, Math.max(...commits.map(commit => commit.label.length))) * 9 / Math.SQRT2) : 0
-  const gap = horizontal ? Math.max(84, longTag * 6 + 25, rotatedExtent + 15) : 47
-  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42) : Math.max(146, labelWidth, longTag * 7 + 40, 2 * rotatedExtent + 44)
-  const pad = title ? 54 : 23
-  const start = horizontal ? (showBranches ? labelWidth : 22) : pad + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
+  const commitAppearance = normalizeAppearance(chart.commitLabel)
+  const tagAppearance = normalizeAppearance(chart.tagLabel)
+  const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
+  const commitSize = commitAppearance.fontSize ?? 14
+  const tagSize = tagAppearance.fontSize ?? 14
+  const labelLimit = rotateLabels ? 34 : horizontal ? 17 : 18
+  const tagLimit = horizontal ? 27 : 20
+  const labelText = (commit: Commit) => abbreviated(commit.label, labelLimit)
+  const tagText = (commit: Commit) => abbreviated(commit.tags.join(' · '), tagLimit)
+  const longCommit = showLabels ? Math.max(...commits.map(commit => labelWidth(labelText(commit), commitSize))) : 0
+  const longTag = Math.max(...commits.map(commit => labelWidth(tagText(commit), tagSize)))
+  const rotatedExtent = rotateLabels ? Math.ceil((longCommit + commitSize) / Math.SQRT2) : 0
+  const tagOffset = Math.max(19, 11 + tagSize / 2)
+  const commitOffset = Math.max(19, 11 + commitSize / 2)
+  const gap = horizontal ? Math.max(84, longTag + 25, (rotateLabels ? rotatedExtent : longCommit) + 15) : Math.max(47, commitSize + tagSize + 20)
+  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42, 26 + commitSize + tagSize) : Math.max(146, branchLabelWidth, 2 * Math.max(longTag, rotateLabels ? rotatedExtent : longCommit) + 44)
+  const titleY = titlePosition(chart.titleTopMargin)
+  const pad = (title ? Math.max(54, titleY + 26) : 23) + Math.max(0, commitSize - 20, tagSize - 20)
+  const leftLabelSpace = Math.ceil(Math.max(longTag, rotateLabels ? 0 : longCommit) / 2) + 9
+  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace) : pad + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
   const time = (rank: number) => start + 25 + (direction === 'BT' ? ranks - 1 - rank : rank) * gap
   const lane = (branch: Branch) => horizontal ? pad + 26 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
   const width = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
   const height = horizontal ? pad + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
-  const color = (branch: Branch) => {
-    const index = lanes.get(branch)! % branchColors.length
-    return safeColor(chart.colors?.[index]) ?? branchColors[index]
-  }
-  const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
+  const colorIndex = (branch: Branch) => lanes.get(branch)! % branchColors.length
+  const color = (branch: Branch) => safeColor(chart.colors?.[colorIndex(branch)]) ?? branchColors[colorIndex(branch)]
   const rails = showBranches ? branches.map((branch) => {
     const axis = lane(branch)
     const progression = direction === 'BT' ? -1 : 1
     const first = branch.fork ? time(branch.fork.rank) : time(0) - progression * 13
     const last = time(ranks - 1) + progression * 18
     const line = horizontal ? `M${first} ${axis}H${last}` : `M${axis} ${Math.min(first, last)}V${Math.max(first, last)}`
-    const label = horizontal ? svgText(abbreviated(branch.name, 28), 13, axis, 'diagram-git-branch-label', 'start')
-      : svgText(abbreviated(branch.name, 21), axis, pad + 8, 'diagram-git-branch-label')
+    const appearance = { color: safeColor(chart.branchLabelColors?.[colorIndex(branch)]) }
+    const label = horizontal ? svgText(abbreviated(branch.name, 28), 13, axis, 'diagram-git-branch-label', 'start', appearance)
+      : svgText(abbreviated(branch.name, 21), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
     return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
   const edges = commits.flatMap((commit) => {
@@ -177,25 +227,28 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     if (commit.kind === 'merge') node += `<circle class="diagram-git-ring" fill="none" stroke="currentColor" cx="${x}" cy="${y}" r="4.2"/>`
     if (commit.kind === 'cherry-pick') node += `<path class="diagram-git-ring" fill="none" stroke="currentColor" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
     if (commit.type === 'REVERSE') node = `<path class="diagram-git-edge" fill="none" stroke-width="2" d="M${x - 7} ${y - 7}l14 14m-14 0l14-14" stroke="${stroke}"/>`
-    if (commit.type === 'HIGHLIGHT') node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${stroke}"/>`
+    if (commit.type === 'HIGHLIGHT') {
+      const highlight = safeColor(chart.highlightColors?.[colorIndex(commit.branch)]) ?? stroke
+      node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${highlight}"/>`
+    }
     let label = ''
     if (rotateLabels) {
       const angle = horizontal ? 45 : -45
-      const labelX = horizontal ? x + 4 : x + 14
-      const labelY = horizontal ? y + 15 : y - 8
-      const text = svgText(abbreviated(commit.label, rotatedLimit), labelX, labelY, 'diagram-git-label', 'start')
+      const labelX = horizontal ? x + 4 : x + 14 + Math.max(0, commitSize - 14) / 2
+      const labelY = horizontal ? y + 15 + Math.max(0, commitSize - 14) / 2 : y - 8
+      const text = decorateLabel(labelText(commit), labelX, labelY, 'diagram-git-label', 'start', commitAppearance)
       label = `<g transform="rotate(${angle} ${labelX} ${labelY})">${text}</g>`
     }
     else if (showLabels) {
-      label = horizontal ? svgText(abbreviated(commit.label, 17), x, y - 19, 'diagram-git-label')
-        : svgText(abbreviated(commit.label, 18), x + 13, y - 9, 'diagram-git-label', 'start')
+      label = horizontal ? decorateLabel(labelText(commit), x, y - commitOffset, 'diagram-git-label', 'middle', commitAppearance)
+        : decorateLabel(labelText(commit), x + 13, y - Math.max(9, commitSize / 2 + 2), 'diagram-git-label', 'start', commitAppearance)
     }
     const tag = commit.tags.join(' · ')
-    const tagLabel = tag ? (horizontal ? svgText(abbreviated(tag, 27), x, y + (rotateLabels ? -19 : 19), 'diagram-git-tag')
-      : svgText(abbreviated(tag, 20), x + 13, y + 11, 'diagram-git-tag', 'start')) : ''
+    const tagLabel = tag ? (horizontal ? decorateLabel(tagText(commit), x, y + (rotateLabels ? -tagOffset : tagOffset), 'diagram-git-tag', 'middle', tagAppearance)
+      : decorateLabel(tagText(commit), x + 13, y + Math.max(11, tagSize / 2 + 4), 'diagram-git-tag', 'start', tagAppearance)) : ''
     const detail = [commit.branch.name, commit.id, commit.picked, tag].filter(Boolean).join(' / ')
     return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
   const body = `<g data-diagram-kind="gitgraph">${rails}${edges}${nodes}</g>`
-  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body)
+  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY)
 }

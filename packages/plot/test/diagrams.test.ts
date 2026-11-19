@@ -235,3 +235,48 @@ test('exposes accessible Gantt callback targets and escapes the serialized argum
   expect(svg).not.toContain('actions.constructor')
   expect(svg).not.toContain('onclick=')
 })
+
+test('renders Gantt geometry, typography, and alternating section colors', () => {
+  const chart: GanttChartOptions = {
+    title: 'Plan', titleTopMargin: 30, width: 480, leftPadding: 112, fontSize: 16, sectionFontSize: 24,
+    gridLineStartPadding: 19, bottomMarginAdj: 12, sectionColors: ['#123456', '#f5c269'],
+    tickInterval: '1day', axisFormat: '%L %q %s %Z',
+    sections: ['Plan', 'Review', 'Ship'].map(name => ({
+      name, tasks: [{ name, start: '2026-01-01', duration: '1d' }],
+    })),
+  }
+  const svg = ganttChart(chart)!
+  expect(svg).toContain('viewBox="0 0 480 ')
+  expect(svg).toMatch(/y="30" class="diagram-title"/)
+  expect(svg).toMatch(/class="diagram-gantt-grid"[^>]*d="M[\d.]+ 19V/)
+  expect(svg).toMatch(/class="diagram-gantt-section-label"[^>]*style="font-size:24px;"/)
+  expect(svg).toMatch(/class="diagram-gantt-label"[^>]*style="font-size:16px;"/)
+  expect(svg.match(/style="fill:#123456;opacity:0.2"/g)).toHaveLength(2)
+  expect(svg.match(/style="fill:#f5c269;opacity:0.2"/g)).toHaveLength(1)
+  expect(svg).toContain('>000 1 1767225600 +0000</tspan>')
+  const heightOf = (html: string) => Number(/viewBox="0 0 \d+ ([\d.]+)"/.exec(html)?.[1])
+  expect(heightOf(svg) - heightOf(ganttChart({ ...chart, bottomMarginAdj: 0 })!)).toBe(12)
+})
+
+test('applies independent GitGraph palettes, label typography, and tag borders', () => {
+  const graph: GitGraphOptions = {
+    title: 'History', titleTopMargin: 35, rotateCommitLabel: true,
+    colors: ['#184454', '#2e6e40'], highlightColors: [undefined, '#e18464'],
+    branchLabelColors: ['#a578f2'],
+    commitLabel: { color: '#523675', background: '#eee6f1', fontSize: 18 },
+    tagLabel: { color: 'black', background: '#fbe7d5', border: '#dc7854', fontSize: 16 },
+    operations: [
+      { op: 'commit', id: 'draft' }, { op: 'branch', name: 'review' },
+      { op: 'commit', id: 'release candidate', style: 'HIGHLIGHT', tags: ['v1'] },
+    ],
+  }
+  const svg = gitGraphChart(graph)!
+  expect(svg).toMatch(/y="35" class="diagram-title"/)
+  expect(svg).toContain('stroke="#184454"')
+  expect(svg).toMatch(/class="diagram-git-dot"[^>]*fill="#e18464"/)
+  expect(svg).toMatch(/class="diagram-git-branch-label"[^>]*style="fill:#a578f2;"/)
+  expect(svg).toMatch(/class="diagram-git-label"[^>]*style="fill:#523675;font-size:18px;"/)
+  expect(svg).toMatch(/class="diagram-git-label-box"[^>]*fill="#eee6f1"/)
+  expect(svg).toMatch(/class="diagram-git-tag-box"[^>]*fill="#fbe7d5" stroke="#dc7854"/)
+  expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
+})

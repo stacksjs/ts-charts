@@ -7,13 +7,18 @@ export function labelLines(label: string): string[] {
   return label.trim().replace(/^"|"$/g, '').split(/<br\s*\/?>/i)
 }
 
-export function svgText(label: string, x: number, y: number, classes = '', anchor = 'middle'): string {
-  return svgTextLines(labelLines(label), x, y, classes, anchor)
+interface TextAppearance { color?: string, fontSize?: number }
+
+export function svgText(label: string, x: number, y: number, classes = '', anchor = 'middle', appearance?: TextAppearance): string {
+  return svgTextLines(labelLines(label), x, y, classes, anchor, 'currentColor', appearance)
 }
 
-export function svgTextLines(lines: string[], x: number, y: number, classes = '', anchor = 'middle', fill = 'currentColor'): string {
-  const dy = -(lines.length - 1) * 8
-  return `<text fill="${fill}" x="${x}" y="${y}" class="${classes}" text-anchor="${anchor}" dominant-baseline="central">${lines.map((line, index) => `<tspan x="${x}" dy="${index ? 16 : dy}">${escapeHtml(line)}</tspan>`).join('')}</text>`
+export function svgTextLines(lines: string[], x: number, y: number, classes = '', anchor = 'middle', fill = 'currentColor', appearance?: TextAppearance): string {
+  const { color, fontSize } = appearance ?? {}
+  const lineHeight = fontSize === undefined ? 16 : fontSize * 1.15
+  const dy = -(lines.length - 1) * lineHeight / 2
+  const style = (color ? `fill:${color};` : '') + (fontSize ? `font-size:${fontSize}px;` : '')
+  return `<text fill="${fill}" x="${x}" y="${y}" class="${classes}" text-anchor="${anchor}" dominant-baseline="central"${style ? ` style="${style}"` : ''}>${lines.map((line, index) => `<tspan x="${x}" dy="${index ? lineHeight : dy}">${escapeHtml(line)}</tspan>`).join('')}</text>`
 }
 
 export function diagramSvg(label: string, width: number, height: number, body: string): string {

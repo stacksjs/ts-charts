@@ -16,6 +16,14 @@ export function safeColor(value: unknown): string | undefined {
   return typeof value === 'string' && /^(?:#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})|[a-z]{1,24})$/i.test(value) ? value : undefined
 }
 
+export function boundedNumber(value: unknown, minimum: number, maximum: number): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum) return value
+}
+
+export function titlePosition(value: unknown): number {
+  return boundedNumber(value, 0, 2000) ?? 20
+}
+
 export function chronologyColor(index: number): string {
   return colors[index % colors.length]
 }
@@ -37,9 +45,9 @@ export function wrappedLabel(label: string, limit: number): string[] {
   })
 }
 
-export function chronologySvg(chart: ChartLabels, marker: string, kind: string, width: number, height: number, body: string): string {
+export function chronologySvg(chart: ChartLabels, marker: string, kind: string, width: number, height: number, body: string, titleY = 20): string {
   const id = escapeHtml(marker)
-  const title = chart.title ? svgText(chart.title, width / 2, 20, 'diagram-title') : ''
+  const title = chart.title ? svgText(chart.title, width / 2, titleY, 'diagram-title') : ''
   const accessibleTitle = chart.accessibleTitle ? `<title id="${id}-title">${escapeHtml(chart.accessibleTitle)}</title>` : ''
   const description = chart.description ? `<desc id="${id}-description">${escapeHtml(chart.description)}</desc>` : ''
   const label = chart.accessibleTitle || chart.title || kind

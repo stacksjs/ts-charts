@@ -1,5 +1,5 @@
 import type { ChartLabels } from './chronology.ts'
-import { chartPrefix, chronologySvg, safeColor } from './chronology.ts'
+import { boundedNumber, chartPrefix, chronologyColor, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, svgText } from './diagram-svg.ts'
 import { dayMs, durationEnd, ganttAxisDate, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
@@ -46,9 +46,17 @@ export interface GanttChartOptions extends ChartLabels {
   displayMode?: 'compact'
   barHeight?: number
   barGap?: number
+  width?: number
+  titleTopMargin?: number
   topPadding?: number
   leftPadding?: number
   rightPadding?: number
+  gridLineStartPadding?: number
+  bottomMarginAdj?: number
+  fontSize?: number
+  sectionFontSize?: number
+  numberSectionStyles?: number
+  sectionColors?: readonly (string | undefined)[]
   /** UTC timestamp used by the today marker and by the first undated task. */
   now?: number
 }
@@ -200,10 +208,6 @@ function validReferences(values: readonly string[]): boolean {
   return Array.isArray(values) && values.length > 0 && values.every(id => typeof id === 'string' && /^[\w.-]+$/.test(id))
 }
 
-function boundedNumber(value: unknown, minimum: number, maximum: number): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum) return value
-}
-
 function todayStyle(style: GanttMarkerStyle | undefined): string {
   const stroke = safeColor(style?.stroke)
   const thickness = boundedNumber(style?.strokeWidth, 0, 64)
@@ -237,13 +241,20 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const { tasks, sections, title, axisFormat, ticks, isExcluded } = schedule
   const compact = chart.displayMode === 'compact'
   const visibleTasks = tasks.filter(task => !task.tags.includes('vert'))
-  const labelWidth = compact ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * 7)) + 28))
-  const plotWidth = 710
+  const fontSize = boundedNumber(chart.fontSize, 6, 96)
+  const sectionFontSize = boundedNumber(chart.sectionFontSize, 6, 96)
+  const letterWidth = (fontSize ?? 14) / 2
+  const labelWidth = compact ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * letterWidth)) + 28))
   const x0 = boundedNumber(chart.leftPadding, 20, 2000) ?? labelWidth
-  const width = x0 + plotWidth + (boundedNumber(chart.rightPadding, 0, 2000) ?? 30)
-  const top = boundedNumber(chart.topPadding, title ? 33 : 0, 2000) ?? (title ? 55 : 23)
+  const rightPadding = boundedNumber(chart.rightPadding, 0, 2000) ?? 30
+  const width = Math.max(x0 + rightPadding + 48, boundedNumber(chart.width, 1, 10000) ?? x0 + 710 + rightPadding)
+  const plotWidth = width - x0 - rightPadding
+  const titleY = titlePosition(chart.titleTopMargin)
+  const top = Math.max(title ? titleY + 14 : 0, boundedNumber(chart.topPadding, 0, 2000) ?? (title ? 55 : 23))
   const barHeight = boundedNumber(chart.barHeight, 1, 200) ?? 16
-  const rowHeight = barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18)
+  const rowHeight = Math.max((fontSize ?? 0) + 4, barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18))
+  const sectionHeight = (sectionFontSize ?? 14) + 14
+  const sectionStyles = Math.floor(boundedNumber(chart.numberSectionStyles, 1, 12) ?? (Math.min(chart.sectionColors?.length ?? 0, 12) || 1))
   const start = Math.min(...tasks.map(task => task.start))
   const latest = Math.max(...tasks.map(task => task.end))
   const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : start + dayMs
@@ -256,7 +267,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const children = visibleTasks.filter(task => task.section === index)
     if (!children.length) continue
     const sectionTop = y
-    if (section) y += 28
+    if (section) y += sectionHeight
     // Only reuse a lane after the previous bar (or milestone) has cleared it.
     const lanes: number[] = []
     const ordered = compact ? [...children].sort((a, b) => a.start - b.start) : children
@@ -267,10 +278,15 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
       taskY.set(task, y + (lane + 0.5) * rowHeight)
     }
     y += lanes.length * rowHeight
-    groups.push(`<g class="diagram-gantt-section"><rect class="diagram-gantt-band" fill="#869eb6" fill-opacity="0.1" x="9" y="${sectionTop}" width="${width - 18}" height="${y - sectionTop}" rx="4"/>${section ? svgText(section, 20, sectionTop + 14, 'diagram-gantt-section-label', 'start') : ''}</g>`)
+    const slot = groups.length % sectionStyles
+    const sectionColor = safeColor(chart.sectionColors?.[slot]) ?? (sectionStyles > 1 ? chronologyColor(slot) : undefined)
+    const styledFill = sectionColor ? ` style="fill:${sectionColor};opacity:0.2"` : ''
+    const heading = section ? svgText(section, 20, sectionTop + sectionHeight / 2, 'diagram-gantt-section-label', 'start', { fontSize: sectionFontSize }) : ''
+    groups.push(`<g class="diagram-gantt-section"><rect class="diagram-gantt-band" fill="#869eb6" fill-opacity="${sectionColor ? 1 : 0.1}"${styledFill} x="9" y="${sectionTop}" width="${width - 18}" height="${y - sectionTop}" rx="4"/>${heading}</g>`)
     y += 6
   }
   const bottom = Math.max(top + 33, y)
+  const gridStart = boundedNumber(chart.gridLineStartPadding, 0, bottom - 1) ?? top
   const bands: string[] = []
   // At extremely broad date ranges individual exclusion days are too narrow to show.
   if ((end - start) / dayMs <= 180) {
@@ -278,13 +294,13 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
       if (!isExcluded(day)) continue
       const left = xAt(Math.max(start, day))
       const right = xAt(Math.min(end, day + dayMs))
-      bands.push(`<rect class="diagram-gantt-excluded" fill="#869eb6" fill-opacity="0.15" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/>`)
+      bands.push(`<rect class="diagram-gantt-excluded" fill="#869eb6" fill-opacity="0.15" x="${left}" y="${gridStart}" width="${right - left}" height="${bottom - gridStart}"/>`)
     }
   }
   const grid = ganttTicks(start, end, ticks, chart.weekday).map((time) => {
     const x = xAt(time)
     const label = ganttAxisDate(time, axisFormat)
-    return `<path class="diagram-gantt-grid" stroke="currentColor" stroke-opacity="0.25" fill="none" d="M${x} ${top}V${bottom}"/>${svgText(label, x, bottom + 13, 'diagram-gantt-tick')}${schedule.topAxis ? svgText(label, x, top + 8, 'diagram-gantt-tick') : ''}`
+    return `<path class="diagram-gantt-grid" stroke="currentColor" stroke-opacity="0.25" fill="none" d="M${x} ${gridStart}V${bottom}"/>${svgText(label, x, bottom + 13, 'diagram-gantt-tick')}${schedule.topAxis ? svgText(label, x, top + 8, 'diagram-gantt-tick') : ''}`
   })
   let interactive = false
   function withInteraction(task: ScheduledGanttTask, content: string): string {
@@ -317,12 +333,12 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const shape = task.tags.includes('milestone')
       ? `<path class="diagram-gantt-milestone-shape" fill="${fill}" d="M${middle} ${center - half}L${middle + half} ${center}L${middle} ${center + half}L${middle - half} ${center}Z"/>`
       : `<rect class="diagram-gantt-bar" fill="${fill}" x="${left}" y="${center - half}" width="${Math.max(2, right - left)}" height="${barHeight}" rx="4"/>`
-    const max = compact ? Math.max(8, Math.floor((width - right - 18) / 7)) : Math.max(1, Math.floor((x0 - 22) / 7))
+    const max = compact ? Math.max(1, Math.floor((width - right - 18) / letterWidth)) : Math.max(1, Math.floor((x0 - 22) / letterWidth))
     const name = task.name.length > max ? `${task.name.slice(0, max - 1)}…` : task.name
-    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start')}</g>`
+    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start', { fontSize })}</g>`
     return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
-  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, bottom + 31, body)
+  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, bottom + 31 + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0), body, titleY)
   return interactive ? svg.replace('role="img"', 'role="group"') : svg
 }
