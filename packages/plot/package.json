@@ -3,7 +3,7 @@
   "version": "0.2.8",
   "type": "module",
   "sideEffects": false,
-  "description": "High-level charts rendered to SVG strings: multi-series probability lines with end labels, for the server or the browser.",
+  "description": "High-level SVG probability charts, flowcharts, timelines, and user journeys for the server or browser.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/ts-charts/tree/main/packages/plot#readme",

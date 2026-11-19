@@ -65,6 +65,7 @@
     "./layered": "./packages/graph/src/layered.ts",
     "./interpolate": "./packages/interpolate/src/index.ts",
     "./path": "./packages/path/src/index.ts",
+    "./diagrams": "./packages/plot/src/diagrams.ts",
     "./plot": "./packages/plot/src/index.ts",
     "./scale": "./packages/scale/src/index.ts",
     "./scale-chromatic": "./packages/scale-chromatic/src/index.ts",

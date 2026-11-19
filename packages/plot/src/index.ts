@@ -1,3 +1,5 @@
+export * from './diagrams.ts'
+
 import { scaleLinear } from '@ts-charts/scale'
 import { area, curveLinear, curveMonotoneX, curveStepAfter, line } from '@ts-charts/shape'
 

@@ -71,3 +71,32 @@ resolveLabelPositions([100, 110], 50, 0, 300) // [100, 150]
 ```
 
 Spaces label positions at least `gap` apart within `top`..`bottom`, keeping each as close to where it wanted to be as the bounds allow. The chart uses it so that two outcomes priced 52% and 48% do not print one label over the other.
+
+## Flowcharts, timelines, and user journeys
+
+`flowchartDiagram`, `timelineChart`, and `journeyChart` accept structured data
+and return SVG for the browser or server. Import them from `@ts-charts/plot`
+or from `ts-charts/diagrams` when using the monorepo entry point.
+
+```ts
+import { flowchartDiagram, journeyChart, timelineChart } from '@ts-charts/plot'
+
+const flow = flowchartDiagram({
+  title: 'Approve a proposal',
+  direction: 'right',
+  nodes: [{ id: 'draft', label: 'Draft' }, { id: 'review', label: 'Review?', shape: 'diamond' }],
+  edges: [{ from: 'draft', to: 'review' }],
+})
+
+const timeline = timelineChart({
+  direction: 'TD',
+  sections: [{ name: 'Delivery', periods: [{ label: 'Week 1', events: ['Open a preview'] }] }],
+})
+
+const journey = journeyChart({
+  phases: [{ name: 'Review', tasks: [{ name: 'Request feedback', score: 2, actors: ['Author'] }] }],
+})
+```
+
+Provide an `idPrefix` when you want deterministic SVG IDs. Use unique prefixes
+when displaying multiple charts on the same page.

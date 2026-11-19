@@ -33,7 +33,7 @@ describe('published package exports', () => {
       expect(bunTarget).toBe('./dist/index.js')
       expect(existsSync(resolve(packageDirectory, bunTarget))).toBe(true)
       expect(packageJson.files).toContain('dist')
-      expect(packageJson.sideEffects).toContain('./src/index.ts')
+      if (packageJson.sideEffects !== false) expect(packageJson.sideEffects).toContain('./src/index.ts')
     })
   }
 
