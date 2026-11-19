@@ -211,3 +211,37 @@ describe('edgePath', () => {
     for (const edge of result.edges) expect(edgePath(edge.points).startsWith('M')).toBe(true)
   })
 })
+
+describe('orthogonal edge routing', () => {
+  it('rounds corners in the travel direction for leftward return edges', () => {
+    expect(edgePath([{ x: 60, y: 0 }, { x: 0, y: 40 }], {
+      curve: 'orthogonal',
+      direction: 'right',
+    })).toBe('M60,0L40,0Q30,0 30,10L30,30Q30,40 20,40L0,40')
+  })
+
+  it('rounds corners in the travel direction for upward return edges', () => {
+    expect(edgePath([{ x: 40, y: 60 }, { x: 0, y: 0 }], {
+      curve: 'orthogonal',
+    })).toBe('M40,60L40,40Q40,30 30,30L10,30Q0,30 0,20L0,0')
+  })
+
+  it('keeps corners within the endpoints when layers are close', () => {
+    expect(edgePath([{ x: 3, y: 0 }, { x: 0, y: 40 }], {
+      curve: 'orthogonal',
+      direction: 'right',
+    })).toBe('M3,0L3,0Q1.5,0 1.5,1.5L1.5,38.5Q1.5,40 0,40L0,40')
+  })
+
+  it('uses right angles when radius is zero, and a straight segment on one axis', () => {
+    expect(edgePath([{ x: 0, y: 0 }, { x: 10, y: 10 }], {
+      curve: 'orthogonal',
+      direction: 'right',
+      radius: 0,
+    })).toBe('M0,0L5,0L5,10L10,10')
+    expect(edgePath([{ x: 0, y: 0 }, { x: 0, y: 10 }], {
+      curve: 'orthogonal',
+      direction: 'right',
+    })).toBe('M0,0L0,10')
+  })
+})

@@ -625,24 +625,32 @@ export function edgePath(points: Array<{ x: number, y: number }>, options: EdgeP
     for (let at = 1; at < points.length; at++) {
       const from = points[at - 1]
       const to = points[at]
-      const mid = horizontal ? (from.x + to.x) / 2 : (from.y + to.y) / 2
-      const corner = Math.min(radius, Math.abs(horizontal ? to.y - from.y : to.x - from.x) / 2)
-      if (corner < 0.5) {
+      const depth = horizontal ? to.x - from.x : to.y - from.y
+      const breadth = horizontal ? to.y - from.y : to.x - from.x
+      const halfDepth = Math.abs(depth) / 2
+      const corner = Math.min(Math.max(0, radius), halfDepth, Math.abs(breadth) / 2)
+
+      if (depth === 0 || breadth === 0) {
         path += `L${round(to.x)},${round(to.y)}`
         continue
       }
+
+      const mid = horizontal ? from.x + depth / 2 : from.y + depth / 2
+      const along = Math.sign(depth) * corner
+      const across = Math.sign(breadth) * corner
       if (horizontal) {
-        const sign = to.y > from.y ? 1 : -1
-        path += `L${round(mid - corner)},${round(from.y)}Q${round(mid)},${round(from.y)} ${round(mid)},${round(from.y + corner * sign)}`
-        path += `L${round(mid)},${round(to.y - corner * sign)}Q${round(mid)},${round(to.y)} ${round(mid + corner)},${round(to.y)}`
-        path += `L${round(to.x)},${round(to.y)}`
+        path += `L${round(mid - along)},${round(from.y)}`
+        if (corner > 0) path += `Q${round(mid)},${round(from.y)} ${round(mid)},${round(from.y + across)}`
+        path += `L${round(mid)},${round(to.y - across)}`
+        if (corner > 0) path += `Q${round(mid)},${round(to.y)} ${round(mid + along)},${round(to.y)}`
       }
       else {
-        const sign = to.x > from.x ? 1 : -1
-        path += `L${round(from.x)},${round(mid - corner)}Q${round(from.x)},${round(mid)} ${round(from.x + corner * sign)},${round(mid)}`
-        path += `L${round(to.x - corner * sign)},${round(mid)}Q${round(to.x)},${round(mid)} ${round(to.x)},${round(mid + corner)}`
-        path += `L${round(to.x)},${round(to.y)}`
+        path += `L${round(from.x)},${round(mid - along)}`
+        if (corner > 0) path += `Q${round(from.x)},${round(mid)} ${round(from.x + across)},${round(mid)}`
+        path += `L${round(to.x - across)},${round(mid)}`
+        if (corner > 0) path += `Q${round(to.x)},${round(mid)} ${round(to.x)},${round(mid + along)}`
       }
+      path += `L${round(to.x)},${round(to.y)}`
     }
     return path
   }
