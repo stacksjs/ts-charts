@@ -214,6 +214,7 @@ test('accepts ISO holidays with custom task dates and packs touching bars around
   expect(barRows[0]).toBe(barRows[1])
   const labels = [...compact.matchAll(/ y="([\d.]+)" class="diagram-gantt-label"/g)].map(match => Number(match[1]))
   expect(labels[2]).toBeGreaterThan(labels[1])
+  expect(compact.match(/class="diagram-gantt-label" text-anchor="middle"[^>]*style="fill:#122434;"/g)).toHaveLength(2)
 })
 
 test('supports linked Gantt tasks, marker styling, chart dimensions, and week start', () => {

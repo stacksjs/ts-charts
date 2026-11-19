@@ -1,5 +1,5 @@
 import type { ChartLabels } from './chronology.ts'
-import { boundedNumber, chartPrefix, chronologyColor, chronologySvg, safeColor, titlePosition } from './chronology.ts'
+import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, svgText } from './diagram-svg.ts'
 import { dayMs, durationEnd, ganttAxisDate, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
@@ -267,6 +267,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   if (!Number.isFinite(new Date(end).valueOf())) return
   const xAt = (time: number) => x0 + 12 + (time - start) / (end - start) * (plotWidth - 24)
   const taskY = new Map<ScheduledGanttTask, number>()
+  const nextInLane = new Map<ScheduledGanttTask, number>()
   const groups: string[] = []
   let y = top + (schedule.topAxis ? 20 : 0)
   for (const [index, section] of sections.entries()) {
@@ -275,13 +276,14 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const sectionTop = y
     if (section) y += sectionHeight
     // A milestone occupies both sides of its date even if its duration is zero.
-    const lanes: { end: number, point: boolean }[] = []
+    const lanes: { task: ScheduledGanttTask, point: boolean }[] = []
     const ordered = compact ? [...children].sort((a, b) => a.start - b.start) : children
     for (const [row, task] of ordered.entries()) {
       const point = task.start === task.end || task.tags.includes('milestone')
-      let lane = compact ? lanes.findIndex(last => last.end < task.start || (last.end === task.start && !last.point && !point)) : row
+      let lane = compact ? lanes.findIndex(last => last.task.end < task.start || (last.task.end === task.start && !last.point && !point)) : row
       if (lane === -1) lane = lanes.length
-      lanes[lane] = { end: task.end, point }
+      if (lanes[lane]) nextInLane.set(lanes[lane].task, task.start)
+      lanes[lane] = { task, point }
       taskY.set(task, y + (lane + 0.5) * rowHeight)
     }
     y += lanes.length * rowHeight
@@ -337,12 +339,24 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const middle = (left + right) / 2
     const fill = task.tags.includes('crit') ? '#db8c95' : task.tags.includes('done') ? '#83bb9f' : task.tags.includes('active') ? '#e7bb71' : '#85b7dd'
     const half = barHeight / 2
-    const shape = task.tags.includes('milestone')
+    const milestone = task.tags.includes('milestone')
+    const shape = milestone
       ? `<path class="diagram-gantt-milestone-shape" fill="${fill}" d="M${middle} ${center - half}L${middle + half} ${center}L${middle} ${center + half}L${middle - half} ${center}Z"/>`
       : `<rect class="diagram-gantt-bar" fill="${fill}" x="${left}" y="${center - half}" width="${Math.max(2, right - left)}" height="${barHeight}" rx="4"/>`
-    const max = compact ? Math.max(1, Math.floor((width - right - 18) / letterWidth)) : Math.max(1, Math.floor((x0 - 22) / letterWidth))
-    const name = task.name.length > max ? `${task.name.slice(0, max - 1)}…` : task.name
-    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start', { fontSize })}</g>`
+    const next = nextInLane.get(task)
+    const inside = right - left - 12
+    const after = (next === undefined ? width - 5 : xAt(next) - 5) - right - 13
+    const centerLabel = compact && !milestone && inside > 0 && (inside >= task.name.length * letterWidth || inside >= after)
+    const available = !compact ? x0 - 22 : centerLabel ? inside : after
+    const capacity = Math.max(compact ? 0 : 1, Math.floor(available / letterWidth))
+    let label = ''
+    if (capacity) {
+      const name = task.name.length > capacity ? `${task.name.slice(0, capacity - 1)}…` : task.name
+      const x = !compact ? 20 : centerLabel ? middle : right + 13
+      label = svgText(name, x, center, 'diagram-gantt-label', centerLabel ? 'middle' : 'start',
+        { fontSize, color: centerLabel ? chronologyInk : undefined })
+    }
+    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${label}</g>`
     return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
