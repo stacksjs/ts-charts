@@ -190,3 +190,34 @@ test('replays structured Git history with merge ordering, orientation, and cherr
     { op: 'cherry-pick', commit: 'release', parent: 'root' },
   ] })).toBeUndefined()
 })
+
+test('supports linked Gantt tasks, marker styling, chart dimensions, and week start', () => {
+  const svg = ganttChart({
+    now: Date.UTC(2026, 2, 9), tickInterval: '1week', axisFormat: '%A',
+    weekday: 'monday', topAxis: true, barHeight: 24, barGap: 6, topPadding: 30, leftPadding: 90, rightPadding: 40,
+    todayMarkerStyle: { stroke: '#0a5', strokeWidth: 5, opacity: 0.5 },
+    sections: [{ tasks: [
+      { name: 'A & B', start: '2026-03-06', duration: '8d', href: '#review' },
+      { name: 'Review', start: '2026-03-10', duration: '1d', href: 'javascript:alert(1)' },
+    ] }],
+  })!
+  expect(svg).toContain('viewBox="0 0 840 ')
+  expect(svg).toContain('role="group"')
+  expect(svg).toContain('<a class="diagram-gantt-link" href="#review" target="_self" aria-label="A &amp; B">')
+  expect(svg).not.toContain('javascript:')
+  expect(svg).toContain('style="stroke:#0a5;stroke-width:5px;opacity:0.5"')
+  expect(svg).toMatch(/class="diagram-gantt-bar"[^>]*height="24"/)
+  expect(svg.match(/>monday<\/tspan>/g)).toHaveLength(2)
+  expect(svg).not.toContain('>sunday</tspan>')
+})
+
+test('rotates Git commit labels in horizontal and vertical graphs and retains tags', () => {
+  const operations = [{ op: 'commit', id: 'start', label: 'A descriptive label for a commit', tags: ['v1'] }] as const
+  const sideways = gitGraphChart({ operations, rotateCommitLabel: true })
+  expect(sideways).toMatch(/transform="rotate\(45 [\d.]+ [\d.]+\)"><text/)
+  expect(sideways).toContain('>A descriptive label for a commit</tspan>')
+  expect(sideways).toContain('>v1</tspan>')
+  expect(gitGraphChart({ operations, direction: 'BT', rotateCommitLabel: true })).toMatch(/transform="rotate\(-45 /)
+  expect(gitGraphChart({ operations, rotateCommitLabel: false })).not.toContain('transform="rotate')
+  expect(gitGraphChart({ operations, rotateCommitLabel: true, showCommitLabel: false })).not.toContain('diagram-git-label')
+})

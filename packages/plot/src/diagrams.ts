@@ -6,7 +6,7 @@ export type { JourneyChartOptions, JourneyPhase, JourneyTask } from './journey.t
 export { timelineChart } from './timeline.ts'
 export type { TimelineChartOptions, TimelinePeriod, TimelineSection } from './timeline.ts'
 export { ganttChart, scheduleGantt } from './gantt.ts'
-export type { GanttChartOptions, GanttSchedule, GanttSection, GanttTask, GanttTaskTag, ScheduledGanttTask } from './gantt.ts'
+export type { GanttChartOptions, GanttMarkerStyle, GanttSchedule, GanttSection, GanttTask, GanttTaskTag, GanttWeekday, ScheduledGanttTask } from './gantt.ts'
 export { durationEnd as ganttDurationEnd, ganttDateParser } from './gantt-time.ts'
 export { buildGitHistory, gitGraphChart } from './gitgraph.ts'
 export type { GitCommitStyle, GitGraphDirection, GitGraphOperation, GitGraphOptions, GitHistory } from './gitgraph.ts'

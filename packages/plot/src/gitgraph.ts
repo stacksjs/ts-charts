@@ -26,6 +26,7 @@ export interface GitGraphOptions extends ChartLabels {
   parallelCommits?: boolean
   showCommitLabel?: boolean
   showBranches?: boolean
+  rotateCommitLabel?: boolean
   colors?: readonly (string | undefined)[]
 }
 
@@ -125,15 +126,18 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const { commits, branches, direction, title } = history
   const showLabels = chart.showCommitLabel !== false
   const showBranches = chart.showBranches !== false
+  const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
   const labelWidth = Math.max(80, Math.min(250, Math.max(...branches.map(branch => branch.name.length * 8)) + 30))
   const longTag = Math.min(27, Math.max(0, ...commits.flatMap(commit => commit.tags.map(tag => tag.length))))
   const horizontal = direction === 'LR'
   const ranks = Math.max(...commits.map(commit => commit.rank)) + 1
-  const gap = horizontal ? Math.max(84, longTag * 6 + 25) : 47
-  const laneWidth = horizontal ? 71 : Math.max(146, labelWidth, longTag * 7 + 40)
+  const rotatedLimit = 34
+  const rotatedExtent = rotateLabels ? Math.ceil(Math.min(rotatedLimit, Math.max(...commits.map(commit => commit.label.length))) * 9 / Math.SQRT2) : 0
+  const gap = horizontal ? Math.max(84, longTag * 6 + 25, rotatedExtent + 15) : 47
+  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42) : Math.max(146, labelWidth, longTag * 7 + 40, 2 * rotatedExtent + 44)
   const pad = title ? 54 : 23
-  const start = horizontal ? (showBranches ? labelWidth : 22) : pad + (showBranches ? 32 : 8)
+  const start = horizontal ? (showBranches ? labelWidth : 22) : pad + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
   const time = (rank: number) => start + 25 + (direction === 'BT' ? ranks - 1 - rank : rank) * gap
   const lane = (branch: Branch) => horizontal ? pad + 26 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
@@ -174,10 +178,20 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     if (commit.kind === 'cherry-pick') node += `<path class="diagram-git-ring" fill="none" stroke="currentColor" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
     if (commit.type === 'REVERSE') node = `<path class="diagram-git-edge" fill="none" stroke-width="2" d="M${x - 7} ${y - 7}l14 14m-14 0l14-14" stroke="${stroke}"/>`
     if (commit.type === 'HIGHLIGHT') node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${stroke}"/>`
-    const label = showLabels ? (horizontal ? svgText(abbreviated(commit.label, 17), x, y - 19, 'diagram-git-label')
-      : svgText(abbreviated(commit.label, 18), x + 13, y - 9, 'diagram-git-label', 'start')) : ''
+    let label = ''
+    if (rotateLabels) {
+      const angle = horizontal ? 45 : -45
+      const labelX = horizontal ? x + 4 : x + 14
+      const labelY = horizontal ? y + 15 : y - 8
+      const text = svgText(abbreviated(commit.label, rotatedLimit), labelX, labelY, 'diagram-git-label', 'start')
+      label = `<g transform="rotate(${angle} ${labelX} ${labelY})">${text}</g>`
+    }
+    else if (showLabels) {
+      label = horizontal ? svgText(abbreviated(commit.label, 17), x, y - 19, 'diagram-git-label')
+        : svgText(abbreviated(commit.label, 18), x + 13, y - 9, 'diagram-git-label', 'start')
+    }
     const tag = commit.tags.join(' · ')
-    const tagLabel = tag ? (horizontal ? svgText(abbreviated(tag, 27), x, y + 19, 'diagram-git-tag')
+    const tagLabel = tag ? (horizontal ? svgText(abbreviated(tag, 27), x, y + (rotateLabels ? -19 : 19), 'diagram-git-tag')
       : svgText(abbreviated(tag, 20), x + 13, y + 11, 'diagram-git-tag', 'start')) : ''
     const detail = [commit.branch.name, commit.id, commit.picked, tag].filter(Boolean).join(' / ')
     return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`

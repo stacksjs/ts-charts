@@ -1,9 +1,10 @@
 import type { ChartLabels } from './chronology.ts'
-import { chartPrefix, chronologySvg } from './chronology.ts'
+import { chartPrefix, chronologySvg, safeColor } from './chronology.ts'
 import { escapeHtml, svgText } from './diagram-svg.ts'
 import { dayMs, durationEnd, ganttAxisDate, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
+export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
 const taskTags: ReadonlySet<string> = new Set(['active', 'done', 'crit', 'milestone', 'vert'])
 
 export interface GanttTask {
@@ -17,9 +18,11 @@ export interface GanttTask {
   duration?: string
   until?: readonly string[]
   tags?: readonly GanttTaskTag[]
+  href?: string
 }
 
 export interface GanttSection { name?: string, tasks: readonly GanttTask[] }
+export interface GanttMarkerStyle { stroke?: string, strokeWidth?: number, opacity?: number }
 export interface GanttChartOptions extends ChartLabels {
   sections: readonly GanttSection[]
   dateFormat?: string
@@ -28,10 +31,17 @@ export interface GanttChartOptions extends ChartLabels {
   excludes?: readonly string[]
   includes?: readonly string[]
   weekend?: 'friday' | 'saturday'
+  weekday?: GanttWeekday
   topAxis?: boolean
   todayMarker?: boolean
+  todayMarkerStyle?: GanttMarkerStyle
   inclusiveEndDates?: boolean
   displayMode?: 'compact'
+  barHeight?: number
+  barGap?: number
+  topPadding?: number
+  leftPadding?: number
+  rightPadding?: number
   /** UTC timestamp used by the today marker and by the first undated task. */
   now?: number
 }
@@ -183,6 +193,27 @@ function validReferences(values: readonly string[]): boolean {
   return Array.isArray(values) && values.length > 0 && values.every(id => typeof id === 'string' && /^[\w.-]+$/.test(id))
 }
 
+function boundedNumber(value: unknown, minimum: number, maximum: number): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum) return value
+}
+
+function todayStyle(style: GanttMarkerStyle | undefined): string {
+  const stroke = safeColor(style?.stroke)
+  const thickness = boundedNumber(style?.strokeWidth, 0, 64)
+  const opacity = boundedNumber(style?.opacity, 0, 1)
+  const rules = [stroke && `stroke:${stroke}`, thickness !== undefined && `stroke-width:${thickness}px`, opacity !== undefined && `opacity:${opacity}`]
+    .filter(Boolean).join(';')
+  return rules ? ` style="${rules}"` : ''
+}
+
+function taskLink(value: unknown): string | undefined {
+  if (typeof value !== 'string') return
+  const href = value.trim()
+  if (!href || href.length > 2048 || /[\0-\x1f\x7f\\]/.test(href)) return
+  const url = URL.parse(href, 'https://ts-charts.invalid')
+  if (url?.protocol === 'https:' || url?.protocol === 'http:') return href
+}
+
 export function ganttChart(chart: GanttChartOptions): string | undefined {
   const now = chart.now ?? Date.now()
   const schedule = scheduleGantt({ ...chart, now })
@@ -192,10 +223,11 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const visibleTasks = tasks.filter(task => !task.tags.includes('vert'))
   const labelWidth = compact ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * 7)) + 28))
   const plotWidth = 710
-  const x0 = labelWidth
-  const width = x0 + plotWidth + 30
-  const top = title ? 55 : 23
-  const rowHeight = 34
+  const x0 = boundedNumber(chart.leftPadding, 20, 2000) ?? labelWidth
+  const width = x0 + plotWidth + (boundedNumber(chart.rightPadding, 0, 2000) ?? 30)
+  const top = boundedNumber(chart.topPadding, title ? 33 : 0, 2000) ?? (title ? 55 : 23)
+  const barHeight = boundedNumber(chart.barHeight, 1, 200) ?? 16
+  const rowHeight = barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18)
   const start = Math.min(...tasks.map(task => task.start))
   const latest = Math.max(...tasks.map(task => task.end))
   const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : start + dayMs
@@ -233,18 +265,25 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
       bands.push(`<rect class="diagram-gantt-excluded" fill="#869eb6" fill-opacity="0.15" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/>`)
     }
   }
-  const grid = ganttTicks(start, end, ticks).map((time) => {
+  const grid = ganttTicks(start, end, ticks, chart.weekday).map((time) => {
     const x = xAt(time)
     const label = ganttAxisDate(time, axisFormat)
     return `<path class="diagram-gantt-grid" stroke="currentColor" stroke-opacity="0.25" fill="none" d="M${x} ${top}V${bottom}"/>${svgText(label, x, bottom + 13, 'diagram-gantt-tick')}${schedule.topAxis ? svgText(label, x, top + 8, 'diagram-gantt-tick') : ''}`
   })
+  let interactive = false
+  function withLink(task: ScheduledGanttTask, content: string): string {
+    const href = taskLink(task.input.href)
+    if (!href) return content
+    interactive = true
+    return `<a class="diagram-gantt-link" href="${escapeHtml(href)}" target="_self" aria-label="${escapeHtml(task.name)}">${content}</a>`
+  }
   const markers = tasks.filter(task => task.tags.includes('vert')).map(task => {
     const x = xAt(task.start + (task.end - task.start) / 2)
-    return `<path class="diagram-gantt-reference" stroke="#548ba9" fill="none" d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>`
+    return withLink(task, `<path class="diagram-gantt-reference" stroke="#548ba9" fill="none" d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>`)
   })
   if (schedule.todayMarker && now >= start && now <= end) {
     const x = xAt(now)
-    markers.push(`<path class="diagram-gantt-today" stroke="#d66550" fill="none" d="M${x} ${top}V${bottom}"><title>Today</title></path>`)
+    markers.push(`<path class="diagram-gantt-today" stroke="#d66550" fill="none"${todayStyle(chart.todayMarkerStyle)} d="M${x} ${top}V${bottom}"><title>Today</title></path>`)
   }
   const bars = visibleTasks.map((task) => {
     const center = taskY.get(task)!
@@ -254,13 +293,16 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const kind = task.tags.map(tag => `diagram-gantt-${tag}`).join(' ')
     const middle = (left + right) / 2
     const fill = task.tags.includes('crit') ? '#db8c95' : task.tags.includes('done') ? '#83bb9f' : task.tags.includes('active') ? '#e7bb71' : '#85b7dd'
+    const half = barHeight / 2
     const shape = task.tags.includes('milestone')
-      ? `<path class="diagram-gantt-milestone-shape" fill="${fill}" d="M${middle} ${center - 8}L${middle + 8} ${center}L${middle} ${center + 8}L${middle - 8} ${center}Z"/>`
-      : `<rect class="diagram-gantt-bar" fill="${fill}" x="${left}" y="${center - 8}" width="${Math.max(2, right - left)}" height="16" rx="4"/>`
-    const max = compact ? Math.max(8, Math.floor((width - right - 18) / 7)) : Math.floor((labelWidth - 22) / 7)
+      ? `<path class="diagram-gantt-milestone-shape" fill="${fill}" d="M${middle} ${center - half}L${middle + half} ${center}L${middle} ${center + half}L${middle - half} ${center}Z"/>`
+      : `<rect class="diagram-gantt-bar" fill="${fill}" x="${left}" y="${center - half}" width="${Math.max(2, right - left)}" height="${barHeight}" rx="4"/>`
+    const max = compact ? Math.max(8, Math.floor((width - right - 18) / 7)) : Math.max(1, Math.floor((x0 - 22) / 7))
     const name = task.name.length > max ? `${task.name.slice(0, max - 1)}…` : task.name
-    return `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start')}</g>`
+    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${svgText(name, compact ? right + 13 : 20, center, 'diagram-gantt-label', 'start')}</g>`
+    return withLink(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
-  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, bottom + 31, body)
+  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, bottom + 31, body)
+  return interactive ? svg.replace('role="img"', 'role="group"') : svg
 }

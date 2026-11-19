@@ -96,7 +96,7 @@ export function durationEnd(start: number, spec: string): number | undefined {
   return Number(date) + (months % 1) * 30 * dayMs
 }
 
-export function ganttTicks(start: number, end: number, spec: string): number[] {
+export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday'): number[] {
   const [, amount, unit, weekStart] = /^(\d{1,3})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
   const values: Record<string, number> = { millisecond: 1, second: 1000, minute: 60000, hour: 3600000, day: dayMs, week: 7 * dayMs }
   const requestedStep = Math.max(1, Number(amount))
@@ -117,8 +117,9 @@ export function ganttTicks(start: number, end: number, spec: string): number[] {
     return ticks.length ? ticks : [start]
   }
   const step = unit ? requestedStep * values[unit] : fallback
-  const weekday = weekdays.indexOf(weekStart ?? 'sunday')
-  const origin = unit === 'week' ? (4 + (weekday < 0 ? 0 : weekday)) * dayMs : 0
+  const weekday = weekdays.indexOf(weekStart ?? defaultWeekStart)
+  // The first Sunday on or after the Unix epoch is January 4, 1970.
+  const origin = unit === 'week' ? (3 + (weekday < 0 ? 0 : weekday)) * dayMs : 0
   const safeStep = span / step > 60 ? fallback : step
   const first = origin + Math.ceil((start - origin) / safeStep) * safeStep
   const ticks = Array.from({ length: Math.max(0, Math.floor((end - first) / safeStep) + 1) }, (_, index) => first + index * safeStep)
