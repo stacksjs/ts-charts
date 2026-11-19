@@ -63,26 +63,6 @@ export function ganttDateParser(format: string): (value: string) => number | und
   }
 }
 
-export function ganttAxisDate(time: number, format: string): string {
-  const date = new Date(time)
-  const padded = (n: number) => String(n).padStart(2, '0')
-  const fields: Record<string, string> = {
-    Y: String(date.getUTCFullYear()), y: padded(date.getUTCFullYear() % 100),
-    m: padded(date.getUTCMonth() + 1), d: padded(date.getUTCDate()), e: String(date.getUTCDate()),
-    b: months[date.getUTCMonth()].slice(0, 3), B: months[date.getUTCMonth()],
-    a: weekdays[date.getUTCDay()].slice(0, 3), A: weekdays[date.getUTCDay()],
-    H: padded(date.getUTCHours()), I: padded(date.getUTCHours() % 12 || 12),
-    M: padded(date.getUTCMinutes()), S: padded(date.getUTCSeconds()), p: date.getUTCHours() < 12 ? 'AM' : 'PM',
-    L: String(date.getUTCMilliseconds()).padStart(3, '0'),
-    f: String(date.getUTCMilliseconds() * 1000).padStart(6, '0'),
-    q: String(Math.floor(date.getUTCMonth() / 3) + 1),
-    Q: String(date.valueOf()), s: String(Math.floor(date.valueOf() / 1000)), Z: '+0000',
-    w: String(date.getUTCDay()), u: String(date.getUTCDay() || 7),
-    '%': '%',
-  }
-  return format.replace(/%./g, token => fields[token[1]] ?? token)
-}
-
 export function durationEnd(start: number, spec: string): number | undefined {
   const [, digits, unit] = /^(\d+(?:\.\d+)?)(ms|[smhdwMy])$/.exec(spec) ?? []
   if (!digits) return

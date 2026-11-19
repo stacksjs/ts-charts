@@ -123,6 +123,30 @@ test('plots native journey scores and deduplicates actors per task', () => {
   expect(journeyChart({ phases: [{ tasks: [{ name: 'Review', score: 6 }] }] })).toBeUndefined()
 })
 
+test('paints critical task borders independently of status and labels vertical references', () => {
+  const svg = ganttChart({
+    displayMode: 'compact',
+    palette: { task: { fill: '#bbccdd' }, active: { fill: '#117766', border: '#ddffee' }, critical: { border: '#aa1122' }, reference: '#abcdef', grid: '#123456', statusText: '#eee' },
+    sections: [{ tasks: [
+      { name: 'Build', id: 'build', start: '2026-03-06', duration: '3d', tags: ['active', 'crit'] },
+      { name: 'Review', id: 'review', start: '2026-03-06', duration: '1d' },
+      { name: 'Review opens', id: 'opens', start: '2026-03-06', duration: '1d', tags: ['vert'] },
+      { name: 'Deadline', id: 'deadline', start: '2026-03-06', duration: '0d', tags: ['vert'] },
+    ] }],
+  })!
+  expect(svg).toContain('style="fill:#117766;stroke:#aa1122;stroke-width:2px"')
+  expect(svg).toContain('style="fill:#bbccdd"')
+  expect(svg).toContain('style="stroke:#123456"')
+  expect(svg).toMatch(/class="diagram-gantt-label"[^>]*style="fill:#eee;"[^>]*><tspan[^>]*>Build</)
+  const markerX = [...svg.matchAll(/class="diagram-gantt-reference"[^>]*style="stroke:#abcdef" d="M([\d.]+)/g)].map(match => match[1])
+  const barX = /class="diagram-gantt-bar"[^>]*\bx="([\d.]+)"/.exec(svg)?.[1]
+  expect(markerX).toEqual([barX, barX])
+  expect(svg).toMatch(/data-task-id="opens"[^>]*data-task-start="2026-03-06T00:00:00.000Z"/)
+  const captions = [...svg.matchAll(/ y="([\d.]+)" class="diagram-gantt-reference-label"[^>]*><tspan[^>]*>([^<]+)</g)]
+  expect(captions.map(match => match[2])).toEqual(['Review opens', 'Deadline'])
+  expect(Number(captions[1][1])).toBeGreaterThan(Number(captions[0][1]))
+})
+
 test('schedules structured tasks across exclusions and resolves multiple dependency endpoints', () => {
   const chart: GanttChartOptions = {
     idPrefix: 'delivery', accessibleTitle: 'Delivery window', now: Date.UTC(2026, 2, 6), todayMarker: false,
@@ -233,7 +257,7 @@ test('supports linked Gantt tasks, marker styling, chart dimensions, and week st
   expect(svg).not.toContain('javascript:')
   expect(svg).toContain('style="stroke:#0a5;stroke-width:5px;opacity:0.5"')
   expect(svg).toMatch(/class="diagram-gantt-bar"[^>]*height="24"/)
-  expect(svg.match(/>monday<\/tspan>/g)).toHaveLength(2)
+  expect(svg.match(/>Monday<\/tspan>/g)).toHaveLength(2)
   expect(svg).not.toContain('>sunday</tspan>')
 })
 
