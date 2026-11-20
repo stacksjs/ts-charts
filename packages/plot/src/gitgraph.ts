@@ -31,6 +31,14 @@ export interface GitTagAppearance extends GitLabelAppearance {
   holeColor?: string
 }
 
+export interface GitLabelShadow {
+  color?: string
+  opacity?: number
+  offsetX?: number
+  offsetY?: number
+  blur?: number
+}
+
 export interface GitGraphOptions extends ChartLabels {
   operations: readonly GitGraphOperation[]
   direction?: GitGraphDirection
@@ -63,12 +71,15 @@ export interface GitGraphOptions extends ChartLabels {
   branchLabelColors?: readonly (string | undefined)[]
   branchLabelBackgrounds?: readonly (string | undefined)[]
   branchLabelBorders?: readonly (string | undefined)[]
+  branchLabelGradient?: { start: string, end: string, width?: number }
+  branchLabelShadow?: GitLabelShadow
   highlightColors?: readonly (string | undefined)[]
   symbolDetailColor?: string
   background?: string
   titleColor?: string
   commitLabel?: GitLabelAppearance
   tagLabel?: GitTagAppearance
+  tagLabelShadow?: GitLabelShadow
   /** Give each tag its own label above or beside the commit. */
   tagLayout?: 'stacked'
 }
@@ -203,7 +214,7 @@ function labelHeight(label: string, size?: number): number {
   return labelLines(label).length * (size === undefined ? 16 : size * 1.15) + 4
 }
 
-function decorateLabel(label: string, x: number, y: number, classes: string, anchor: 'start' | 'middle', appearance: GitLabelAppearance, compact = false): string {
+function decorateLabel(label: string, x: number, y: number, classes: string, anchor: 'start' | 'middle', appearance: GitLabelAppearance, compact = false, boxAttributes = ''): string {
   const text = svgText(label, x, y, classes, anchor, appearance)
   if (!appearance.background && !appearance.border) return text
   const fontSize = appearance.fontSize ?? 14
@@ -211,12 +222,12 @@ function decorateLabel(label: string, x: number, y: number, classes: string, anc
   const width = labelWidth(label, fontSize) + inset * 2
   const height = labelHeight(label, appearance.fontSize) + (compact ? 12 : 0)
   const left = anchor === 'start' ? x - inset : x - width / 2
-  return `<rect class="${classes}-box" x="${left}" y="${y - height / 2}" width="${width}" height="${height}" rx="${compact ? 0 : 3}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'none'}"/>${text}`
+  return `<rect class="${classes}-box" x="${left}" y="${y - height / 2}" width="${width}" height="${height}" rx="${compact ? 0 : 3}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'none'}"${boxAttributes}/>${text}`
 }
 
 const tagTipWidth = 10
 
-function decorateTag(label: string, x: number, y: number, width: number, anchor: 'start' | 'middle', appearance: GitTagAppearance): string {
+function decorateTag(label: string, x: number, y: number, width: number, anchor: 'start' | 'middle', appearance: GitTagAppearance, boxAttributes: string): string {
   const halfHeight = labelHeight(label, appearance.fontSize) / 2
   const boxWidth = width + tagTipWidth + 10
   const left = anchor === 'middle' ? x - boxWidth / 2 : x - 5
@@ -226,7 +237,7 @@ function decorateTag(label: string, x: number, y: number, width: number, anchor:
     [left, y - 2], [shoulder, y - halfHeight], [right, y - halfHeight],
     [right, y + halfHeight], [shoulder, y + halfHeight], [left, y + 2],
   ].map(point => point.join(',')).join(' ')
-  const shape = `<polygon class="diagram-git-tag-box" points="${points}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'currentColor'}"/>`
+  const shape = `<polygon class="diagram-git-tag-box" points="${points}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'currentColor'}"${boxAttributes}/>`
   const hole = `<circle class="diagram-git-tag-hole" cx="${left + 6}" cy="${y}" r="1.5" fill="${appearance.holeColor ?? 'currentColor'}"/>`
   const textX = shoulder + 5 + (anchor === 'middle' ? width / 2 : 0)
   return shape + hole + svgText(label, textX, y, 'diagram-git-tag', anchor, appearance)
@@ -253,6 +264,7 @@ function roundedEdge(points: EdgePoint[], horizontal: boolean): string {
 export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const history = buildGitHistory(chart)
   if (!history) return
+  const prefix = chartPrefix(chart.idPrefix)
   const { commits, branches, direction, title } = history
   const canShowLabel = (commit: Commit) => !commit.generatedOperationLabel || chart.showGeneratedOperationLabels !== false
   const labelledCommits = chart.showCommitLabel !== false ? commits.filter(canShowLabel) : []
@@ -270,6 +282,32 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     ...normalizeAppearance(chart.tagLabel),
     holeColor: safeColor(chart.tagLabel?.holeColor),
   }
+  const gradientStart = safeColor(chart.branchLabelGradient?.start)
+  const gradientEnd = safeColor(chart.branchLabelGradient?.end)
+  const gradientId = showBranches && gradientStart && gradientEnd ? `${prefix}-branch-label-gradient` : undefined
+  const gradientWidth = boundedNumber(chart.branchLabelGradient?.width, 0, 16) ?? 2
+  const shadowFilters = new Map<string, string>()
+  function shadowAttribute(shadow: GitLabelShadow | undefined): string {
+    if (!shadow) return ''
+    const dx = boundedNumber(shadow.offsetX, -24, 24) ?? 0
+    const dy = boundedNumber(shadow.offsetY, -24, 24) ?? 2
+    const blur = boundedNumber(shadow.blur, 0, 12) ?? 2
+    const opacity = boundedNumber(shadow.opacity, 0, 1) ?? 0.25
+    if (!opacity) return ''
+    const color = safeColor(shadow.color) ?? '#000000'
+    // The smallest label box is about 10 units tall. Grow each filter
+    // relative to that size so shadows have room without filtering the graph.
+    const region = Math.max(20, Math.ceil(10 * (Math.max(Math.abs(dx), Math.abs(dy)) + 3 * blur)))
+    const effect = `x="-${region}%" y="-${region}%" width="${100 + 2 * region}%" height="${100 + 2 * region}%" color-interpolation-filters="sRGB"><feDropShadow dx="${dx}" dy="${dy}" stdDeviation="${blur}" flood-color="${color}" flood-opacity="${opacity}"/></filter>`
+    let id = shadowFilters.get(effect)
+    if (!id) {
+      id = `${prefix}-label-shadow-${shadowFilters.size + 1}`
+      shadowFilters.set(effect, id)
+    }
+    return ` filter="url(#${id})"`
+  }
+  const branchBoxStyle = showBranches ? shadowAttribute(chart.branchLabelShadow)
+    + (gradientId ? ` stroke-width="${gradientWidth}"` : '') : ''
   const shapedTags = chart.tagLabel?.shape === 'tag'
   const abbreviated = (text: string, size: number) => chart.truncateLabels !== false && text.length > size ? `${text.slice(0, size - 1)}…` : text
   const branchLines = branches.map(branch => labelLines(branch.name.replace(/\r?\n|\\n/g, '<br>'))
@@ -305,6 +343,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     if (labels.length) longTag = Math.max(longTag, stackWidth + (shapedTags ? tagTipWidth : 0))
     return { labels, width: stackWidth }
   })
+  const tagBoxStyle = tags.some(tag => tag.labels.length) ? shadowAttribute(chart.tagLabelShadow) : ''
   const commitOffset = Math.max(19, 11 + commitSize / 2)
   const gap = horizontal ? Math.max(84, longTag + 25, (rotateLabels ? rotatedExtent : longCommit) + 15) : Math.max(47, commitSize + tagSize + 20) + extraTagHeight
   const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42, 26 + commitSize + tagSize, extraBranchHeight + 24) + extraTagHeight
@@ -339,10 +378,10 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const appearance = {
       color: laneColor(chart.branchLabelColors, branch),
       background: laneColor(chart.branchLabelBackgrounds, branch),
-      border: laneColor(chart.branchLabelBorders, branch),
+      border: gradientId ? `url(#${gradientId})` : laneColor(chart.branchLabelBorders, branch),
     }
-    const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance, compact)
-      : decorateLabel(branchText(branch), axis, pad + 8 + extraBranchHeight / 2, 'diagram-git-branch-label', 'middle', appearance, compact)
+    const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance, compact, branchBoxStyle)
+      : decorateLabel(branchText(branch), axis, pad + 8 + extraBranchHeight / 2, 'diagram-git-branch-label', 'middle', appearance, compact, branchBoxStyle)
     return `<g class="diagram-git-branch" data-git-branch-index="${lanes.get(branch)}"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="${railPattern ? 1 : 0.65}" stroke="${railColor ?? color(branch)}"${railStyle}/>${label}</g>`
   }).join('') : ''
   const symbolDetail = safeColor(chart.symbolDetailColor)
@@ -427,8 +466,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const tagX = horizontal ? x : x + 13
     const tagLabels = tagStack.labels.map(({ text, center }) => {
       const tagY = horizontal ? y - center : y + center
-      return shapedTags ? decorateTag(text, tagX, tagY, tagStack.width, tagAnchor, tagAppearance)
-        : decorateLabel(text, tagX, tagY, 'diagram-git-tag', tagAnchor, tagAppearance)
+      return shapedTags ? decorateTag(text, tagX, tagY, tagStack.width, tagAnchor, tagAppearance, tagBoxStyle)
+        : decorateLabel(text, tagX, tagY, 'diagram-git-tag', tagAnchor, tagAppearance, false, tagBoxStyle)
     }).join('')
     const detail = [commit.branch.name, commit.id, commit.message, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
     const message = commit.message ? ` data-commit-message="${escapeHtml(commit.message)}"` : ''
@@ -438,6 +477,11 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   }).join('')
   const padding = boundedNumber(chart.diagramPadding, 0, 2000) ?? 0
   const transform = padding ? ` transform="translate(${padding} ${padding})"` : ''
-  const body = `<g data-diagram-kind="gitgraph"${transform}>${rails}${edges}${nodes}</g>`
-  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width + padding * 2, height + padding * 2, body, titleY + padding, chart)
+  const gradient = gradientId
+    ? `<linearGradient id="${gradientId}" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="${gradientStart}"/><stop offset="100%" stop-color="${gradientEnd}"/></linearGradient>`
+    : ''
+  const filters = Array.from(shadowFilters, ([effect, id]) => `<filter id="${id}" ${effect}`).join('')
+  const definitions = gradient || filters ? `<defs>${gradient}${filters}</defs>` : ''
+  const body = `${definitions}<g data-diagram-kind="gitgraph"${transform}>${rails}${edges}${nodes}</g>`
+  return chronologySvg(chart, prefix, 'Git graph', width + padding * 2, height + padding * 2, body, titleY + padding, chart)
 }

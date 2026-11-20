@@ -798,6 +798,34 @@ test('renders GitGraph geometry, branch lines, and independent styles for more t
   expect(svg).toMatch(/class="diagram-git-edge"[^>]*stroke-width="3" stroke-linecap="round"[^>]*stroke="#336699"/)
 })
 
+test('scopes GitGraph gradients and deduplicates label shadow filters', () => {
+  const shadow = { color: '#535379', offsetX: 2, offsetY: 3, blur: 1.5, opacity: 0.4 }
+  const chart: GitGraphOptions = {
+    operations: [{ op: 'commit', tags: ['ready'] }, { op: 'branch', name: 'review' }, { op: 'commit', tags: ['v1'] }],
+    branchLabelBackgrounds: ['white', 'white'],
+    branchLabelGradient: { start: '#0042eb', end: '#eb0042', width: 3.5 },
+    branchLabelShadow: shadow, tagLabelShadow: { ...shadow },
+    tagLabel: { shape: 'tag', background: 'white' },
+  }
+  const svg = gitGraphChart({ ...chart, idPrefix: 'release' })!
+  expect(svg.match(/<linearGradient\b/g)).toHaveLength(1)
+  expect(svg).toContain('stop-color="#0042eb"')
+  expect(svg).toContain('stop-color="#eb0042"')
+  expect(svg.match(/<filter\b/g)).toHaveLength(1)
+  expect(svg).toContain('dx="2" dy="3" stdDeviation="1.5" flood-color="#535379" flood-opacity="0.4"')
+  expect(svg.match(/stroke="url\(#release-branch-label-gradient\)" filter="url\(#release-label-shadow-1\)" stroke-width="3.5"/g)).toHaveLength(2)
+  expect(svg.match(/class="diagram-git-tag-box"[^>]*filter="url\(#release-label-shadow-1\)"/g)).toHaveLength(2)
+
+  const other = gitGraphChart({ ...chart, idPrefix: 'review', showBranches: false })!
+  expect(other).not.toContain('release-')
+  expect(other).not.toContain('linearGradient')
+  expect(other).toContain('filter="url(#review-label-shadow-1)"')
+  const hidden = gitGraphChart({ ...chart, showBranches: false, tagLabelShadow: { opacity: 0 } })!
+  expect(hidden).not.toContain('<defs>')
+  const invalid = gitGraphChart({ ...chart, branchLabelGradient: { start: 'url(https://example.invalid)', end: 'red' } })!
+  expect(invalid).not.toContain('linearGradient')
+})
+
 test('renders branch-only histories and snapshots duplicate commit IDs for cherry-picks', () => {
   const empty = { operations: [{ op: 'branch', name: 'draft' }, { op: 'checkout', name: 'draft' }] } as const
   expect(buildGitHistory(empty)?.commits).toEqual([])
