@@ -1,6 +1,6 @@
 import type { ChartLabels } from './chronology.ts'
 import { boundedNumber, chartPrefix, chronologySvg, safeColor, titlePosition } from './chronology.ts'
-import { escapeHtml, labelLines, svgText } from './diagram-svg.ts'
+import { escapeHtml, svgTextLines } from './diagram-svg.ts'
 
 export type GitCommitStyle = 'NORMAL' | 'REVERSE' | 'HIGHLIGHT'
 export type GitGraphDirection = 'LR' | 'TB' | 'BT'
@@ -161,7 +161,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
         break
       case 'branch': {
         const { name, order = 0 } = operation
-        if (typeof name !== 'string' || !name || branches.has(name) || !Number.isSafeInteger(order) || branches.size >= 40) return
+        if (typeof name !== 'string' || !name || branches.has(name) || !Number.isSafeInteger(order)) return
         current = { name, head: current.head, fork: current.head, order, index: branches.size }
         branches.set(name, current)
         break
@@ -198,6 +198,23 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
 }
 
 const branchColors = ['#6ba2db', '#e7b76f', '#70c1a4', '#b6a0da', '#e88998', '#59b9be', '#acc272', '#d68d61']
+const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+
+function labelLines(label: string): string[] {
+  // GitGraph receives decoded labels, including any authored literal quotes.
+  return label.trim().split(/<br\s*\/?>|\r?\n|\\n/i)
+}
+
+function abbreviateLabel(label: string, limit: number): string {
+  if (label.length <= limit) return label
+  let count = 0
+  let cutoff = 0
+  for (const { index } of graphemes.segment(label)) {
+    if (++count === limit) cutoff = index
+    if (count > limit) return `${label.slice(0, cutoff)}…`
+  }
+  return label
+}
 
 function normalizeAppearance(value?: GitLabelAppearance): GitLabelAppearance {
   return {
@@ -224,7 +241,7 @@ type LabelAnchor = 'start' | 'middle' | 'end'
 const labelInset = 5
 
 function decorateLabel(label: string, x: number, y: number, classes: string, anchor: LabelAnchor, appearance: GitLabelAppearance, compact = false, boxAttributes = ''): string {
-  const text = svgText(label, x, y, classes, anchor, appearance)
+  const text = svgTextLines(labelLines(label), x, y, classes, anchor, 'currentColor', appearance)
   if (!appearance.background && !appearance.border) return text
   const fontSize = appearance.fontSize ?? 14
   const inset = compact ? 12 : labelInset
@@ -279,7 +296,7 @@ function decorateTag(label: string, x: number, y: number, width: number, anchor:
   const shape = `<polygon class="diagram-git-tag-box" points="${points}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'currentColor'}"${boxAttributes}/>`
   const hole = `<circle class="diagram-git-tag-hole" cx="${left + 6}" cy="${y}" r="1.5" fill="${appearance.holeColor ?? 'currentColor'}"/>`
   const textX = shoulder + labelInset + (anchor === 'middle' ? width / 2 : 0)
-  return shape + hole + svgText(label, textX, y, 'diagram-git-tag', anchor, appearance)
+  return shape + hole + svgTextLines(labelLines(label), textX, y, 'diagram-git-tag', anchor, 'currentColor', appearance)
 }
 
 type EdgePoint = [time: number, lane: number]
@@ -351,9 +368,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const branchBoxStyle = showBranches ? shadowAttribute(chart.branchLabelShadow)
     + (gradientId ? ` stroke-width="${gradientWidth}"` : '') : ''
   const shapedTags = chart.tagLabel?.shape === 'tag'
-  const abbreviated = (text: string, size: number) => chart.truncateLabels !== false && text.length > size ? `${text.slice(0, size - 1)}…` : text
-  const multiline = (text: string) => text.replace(/\r?\n|\\n/g, '<br>')
-  const branchLines = branches.map(branch => labelLines(multiline(branch.name))
+  const abbreviated = (text: string, size: number) => chart.truncateLabels === false ? text : abbreviateLabel(text, size)
+  const branchLines = branches.map(branch => labelLines(branch.name)
     .map(line => abbreviated(line.trim(), horizontal ? 28 : 21)))
   const branchText = (branch: Branch) => branchLines[lanes.get(branch)!].join('<br>')
   const branchLabelWidth = !showBranches && chart.truncateLabels === false
@@ -363,7 +379,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const labelLimit = rotateLabels ? 34 : horizontal ? 17 : 18
   const tagLimit = horizontal ? 27 : 20
   const labels = new Map(labelledCommits.map(commit => [commit, commitLabelLayout(
-    labelLines(multiline(commit.label)).map(line => abbreviated(line, labelLimit)).join('<br>'), commitAppearance, horizontal, rotateLabels, clearance,
+    labelLines(commit.label).map(line => abbreviated(line, labelLimit)).join('<br>'), commitAppearance, horizontal, rotateLabels, clearance,
   )]))
   const extent = { left: -dotRadius, right: dotRadius, top: -dotRadius, bottom: dotRadius }
   for (const label of labels.values()) {
@@ -377,7 +393,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     let offset = horizontal ? clearance : 0
     let stackWidth = 0
     const labels = values.filter(value => value.trim()).map((value) => {
-      const text = labelLines(multiline(value)).map(line => abbreviated(line, tagLimit)).join('<br>')
+      const text = labelLines(value).map(line => abbreviated(line, tagLimit)).join('<br>')
       const height = labelHeight(text, tagAppearance.fontSize)
       const center = offset + height / 2
       stackWidth = Math.max(stackWidth, labelWidth(text, tagSize))

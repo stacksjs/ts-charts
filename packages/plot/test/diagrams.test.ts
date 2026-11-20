@@ -1120,6 +1120,30 @@ test('reserves explicit GitGraph IDs before numbering commits, merges, and cherr
   expect(svg).toContain('data-commit-id="c6" data-parent-ids="c4" data-picked-id="c5"')
 })
 
+test('keeps literal quotes and grapheme clusters intact in GitGraph SVG labels', () => {
+  const svg = gitGraphChart({
+    mainBranchName: '"Main"',
+    tagLabel: { shape: 'tag' },
+    operations: [
+      { op: 'commit', id: '"Release"', tags: ['"Ready"'] },
+      { op: 'commit', id: 'revision', label: `${'a'.repeat(15)}👩‍🔬zz` },
+      { op: 'branch', name: '"Support"\n"QA"' },
+    ],
+  })!
+  expect(svg).toContain('>&quot;Main&quot;</tspan>')
+  expect(svg).toContain('>&quot;Release&quot;</tspan>')
+  expect(svg).toContain('>&quot;Ready&quot;</tspan>')
+  expect(svg).toMatch(/>&quot;Support&quot;<\/tspan><tspan[^>]*>&quot;QA&quot;<\/tspan>/)
+  expect(svg).toContain(`>${'a'.repeat(15)}👩‍🔬…</tspan>`)
+})
+
+test('renders every branch within the GitGraph operation limit', () => {
+  const names = Array.from({ length: 50 }, (_, index) => `branch-${index + 1}`)
+  const chart: GitGraphOptions = { mainBranchOrder: 2, operations: names.map(name => ({ op: 'branch', name })) }
+  expect(buildGitHistory(chart)?.branches.map(branch => branch.name)).toEqual([...names, 'main'])
+  expect(gitGraphChart(chart)?.match(/class="diagram-git-branch"/g)).toHaveLength(51)
+})
+
 test('includes GitGraph padding in the title position and view box for every direction', () => {
   for (const direction of ['LR', 'TB', 'BT'] as const) {
     const graph: GitGraphOptions = { title: 'Work', direction, operations: [{ op: 'commit', id: 'first' }] }
