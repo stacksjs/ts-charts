@@ -233,7 +233,8 @@ const localIntervals = {
 const utcWeeks = [utcSunday, utcMonday, utcTuesday, utcWednesday, utcThursday, utcFriday, utcSaturday]
 const localWeeks = [timeSunday, timeMonday, timeTuesday, timeWednesday, timeThursday, timeFriday, timeSaturday]
 
-export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday', timeZone: GanttTimeZone = 'UTC'): number[] {
+export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday', timeZone: GanttTimeZone = 'UTC', maxExplicitTicks = 60): number[] {
+  const tickLimit = Number.isFinite(maxExplicitTicks) ? Math.max(1, Math.min(10_000, Math.floor(maxExplicitTicks))) : 60
   const [, amount, unit, weekStart] = /^([1-9]\d{0,2})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
   const local = timeZone === 'local'
   const tickIntervals = local ? localIntervals : utcIntervals
@@ -245,7 +246,7 @@ export function ganttTicks(start: number, end: number, spec: string, defaultWeek
     const ticks: number[] = []
     // Fall back to automatic ticks for crowded axes instead of truncating the grid.
     let tick = +step.ceil(Math.ceil(start))
-    while (ticks.length < 60 && tick <= end) {
+    while (ticks.length < tickLimit && tick <= end) {
       ticks.push(tick)
       tick = +step.offset(tick)
     }

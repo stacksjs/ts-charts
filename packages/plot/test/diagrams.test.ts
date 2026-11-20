@@ -79,6 +79,17 @@ test('anchors Gantt ticks to the calendar field and keeps crowded axes bounded',
   expect(wide.at(-1)).toBeGreaterThan(Date.UTC(2025, 11, 31))
 })
 
+test('preserves dense explicit Gantt ticks up to the configured limit', () => {
+  const start = Date.UTC(2026, 0, 1)
+  const end = start + 9999
+  const ms = (last: number, limit: number) => ganttTicks(start, last, '1millisecond', 'sunday', 'UTC', limit)
+  expect(ms(end, 10_000)).toHaveLength(10_000)
+  expect(ms(end, 10_000).at(-1)).toBe(end)
+  const pastLimit = end + 1
+  expect(ms(pastLimit, 100_000)).toEqual(ganttTicks(start, pastLimit, ''))
+  expect(ms(end, 60)).toEqual(ganttTicks(start, end, ''))
+})
+
 test('lays out a standalone SVG flowchart with decisions, branch labels, and loops', () => {
   const svg = flowchartDiagram({
     title: 'Publish or revise',
@@ -603,6 +614,31 @@ test('fits complete GitGraph branch, commit, and tag labels when truncation is d
       expect(width(full)).toBeGreaterThan(width(compact))
     }
   }
+})
+
+test('places vertical GitGraph branch labels at the beginning of the timeline', () => {
+  const chart: GitGraphOptions = {
+    geometry: 'compact',
+    branchLabelBackgrounds: ['#eeeeee', '#eeeeee'],
+    operations: [
+      { op: 'commit', id: 'root', tags: ['tagged<br>initial'] },
+      { op: 'branch', name: 'maintenance<br>review' },
+      { op: 'commit', id: 'second' },
+    ],
+  }
+  const rootY = (svg: string) => Number(/data-commit-id="root".*?<circle[^>]+cy="([\d.]+)"/.exec(svg)?.[1])
+  const branchBoxes = (svg: string) => [...svg.matchAll(/class="diagram-git-branch-label-box"[^>]+y="([\d.]+)"[^>]+height="([\d.]+)"/g)]
+    .map(([, y, height]) => ({ top: Number(y), bottom: Number(y) + Number(height) }))
+  const bottom = gitGraphChart({ ...chart, direction: 'BT' })!
+  const top = gitGraphChart({ ...chart, direction: 'TB' })!
+  expect(branchBoxes(bottom)).toHaveLength(2)
+  expect(branchBoxes(top)).toHaveLength(2)
+  const bottomEdge = Number(/viewBox="0 0 [\d.]+ ([\d.]+)"/.exec(bottom)?.[1])
+  for (const { top, bottom: edge } of branchBoxes(bottom)) {
+    expect(top).toBeGreaterThan(rootY(bottom))
+    expect(edge).toBeLessThan(bottomEdge)
+  }
+  for (const box of branchBoxes(top)) expect(box.bottom).toBeLessThan(rootY(top))
 })
 
 test('can lay out GitGraph tags individually and preserve joined labels by default', () => {

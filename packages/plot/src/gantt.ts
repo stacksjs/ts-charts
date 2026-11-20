@@ -69,6 +69,8 @@ export interface GanttChartOptions extends ChartLabels {
   startDateFallback?: 'iso'
   axisFormat?: string
   tickInterval?: string
+  /** Fall back to automatic ticks above this count. Defaults to 60, with a maximum of 10,000. */
+  maxExplicitTicks?: number
   excludes?: readonly string[]
   includes?: readonly string[]
   /** Match custom inclusion and exclusion entries against the full formatted timestamp. */
@@ -515,7 +517,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const axisStyle = { color: safeColor(palette?.axisText) }
   const axisFontSize = 12
   const formatTick = formatDate(axisFormat)
-  const axisTicks = ganttTicks(start, end, ticks, chart.weekday, timeZone).map(time => ({ x: xAt(time), text: formatTick(time) }))
+  const axisTicks = ganttTicks(start, end, ticks, chart.weekday, timeZone, chart.maxExplicitTicks)
+    .map(time => ({ x: xAt(time), text: formatTick(time) }))
   const axisLabels = layoutAxisLabels(axisTicks, width, axisFontSize)
   const axes = (schedule.topAxis ? ['bottom', 'top'] as const : ['bottom'] as const).map((position) => {
     const above = position === 'top'

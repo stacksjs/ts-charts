@@ -282,6 +282,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
   const horizontal = direction === 'LR'
+  const reverse = direction === 'BT'
   const ranks = Math.max(0, ...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = {
@@ -358,14 +359,18 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const pad = (title ? Math.max(54, titleY + 26) : 23) + Math.max(0, commitSize - 20, tagSize - 20)
     + (horizontal ? extraTagHeight : 0)
   const leftLabelSpace = Math.ceil(Math.max(longTag, rotateLabels ? 0 : longCommit) / 2) + 9
-  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace) : pad + extraBranchHeight + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
-  const time = (rank: number) => start + 25 + (direction === 'BT' ? ranks - 1 - rank : rank) * gap
+  const topBranchHeight = direction === 'TB' ? extraBranchHeight : 0
+  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace)
+    : pad + topBranchHeight + Math.max(showBranches && direction === 'TB' ? 32 : 8, rotatedExtent + 14)
+  const time = (rank: number) => start + 25 + (reverse ? ranks - 1 - rank : rank) * gap
   const lane = (branch: Branch) => horizontal ? pad + 26 + extraBranchHeight / 2 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
   const titleWidth = chart.truncateLabels === false && title ? labelWidth(title, 14) + 24 : 0
   const diagramWidth = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
   const width = Math.max(diagramWidth, titleWidth)
   const height = horizontal ? pad + extraBranchHeight / 2 + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
+  const bottomBranchSpace = reverse && showBranches ? extraBranchHeight + 36 : 0
+  const verticalLabelY = reverse ? height + bottomBranchSpace / 2 : pad + 8 + extraBranchHeight / 2
   const colorIndex = (branch: Branch) => lanes.get(branch)! % branchColors.length
   const laneColor = (values: readonly (string | undefined)[] | undefined, branch: Branch) =>
     safeColor(values?.[lanes.get(branch)!] ?? values?.[colorIndex(branch)])
@@ -377,7 +382,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     + (railPattern ? ` stroke-dasharray="${railPattern}"` : '')
   const rails = showBranches ? branches.map((branch) => {
     const axis = lane(branch)
-    const progression = direction === 'BT' ? -1 : 1
+    const progression = reverse ? -1 : 1
     const first = !fullRails && branch.fork ? time(branch.fork.rank) : time(0) - progression * 13
     const last = time(ranks - 1) + progression * 18
     const line = horizontal ? `M${first} ${axis}H${last}` : `M${axis} ${Math.min(first, last)}V${Math.max(first, last)}`
@@ -387,7 +392,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       border: gradientId ? `url(#${gradientId})` : laneColor(chart.branchLabelBorders, branch),
     }
     const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance, compact, branchBoxStyle)
-      : decorateLabel(branchText(branch), axis, pad + 8 + extraBranchHeight / 2, 'diagram-git-branch-label', 'middle', appearance, compact, branchBoxStyle)
+      : decorateLabel(branchText(branch), axis, verticalLabelY, 'diagram-git-branch-label', 'middle', appearance, compact, branchBoxStyle)
     return `<g class="diagram-git-branch" data-git-branch-index="${lanes.get(branch)}"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="${railPattern ? 1 : 0.65}" stroke="${railColor ?? color(branch)}"${railStyle}/>${label}</g>`
   }).join('') : ''
   const symbolDetail = safeColor(chart.symbolDetailColor)
@@ -489,5 +494,5 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const filters = Array.from(shadowFilters, ([effect, id]) => `<filter id="${id}" ${effect}`).join('')
   const definitions = gradient || filters ? `<defs>${gradient}${filters}</defs>` : ''
   const body = `${definitions}<g data-diagram-kind="gitgraph"${transform}>${rails}${edges}${nodes}</g>`
-  return chronologySvg(chart, prefix, 'Git graph', width + padding * 2, height + padding * 2, body, titleY + padding, chart)
+  return chronologySvg(chart, prefix, 'Git graph', width + padding * 2, height + bottomBranchSpace + padding * 2, body, titleY + padding, chart)
 }
