@@ -424,6 +424,33 @@ test('keeps styled merges connected and preserves commit messages alongside IDs'
   expect(svg).toMatch(/data-commit-id="release"[^>]*><title>[^<]*<\/title><rect[^>]+fill="#ddccbb"\/><rect class="diagram-git-highlight-inner"[^>]+fill="#225566"/)
 })
 
+test('fits complete GitGraph branch, commit, and tag labels when truncation is disabled', () => {
+  const labels = {
+    branch: 'feature/review-release-candidate-across-all-supported-platforms',
+    commit: 'reviewed-and-approved-release-candidate-for-production',
+    tag: 'release-candidate-build-with-integration-verification',
+  }
+  const chart: GitGraphOptions = {
+    operations: [
+      { op: 'commit', id: 'root' },
+      { op: 'branch', name: labels.branch },
+      { op: 'commit', id: labels.commit, tags: [labels.tag] },
+    ],
+  }
+  const width = (svg: string) => Number(/viewBox="0 0 ([\d.]+)/.exec(svg)?.[1])
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    for (const rotateCommitLabel of [true, false]) {
+      const options = { ...chart, direction, rotateCommitLabel }
+      const compact = gitGraphChart(options)!
+      const full = gitGraphChart({ ...options, truncateLabels: false })!
+      expect(compact).toContain('…</tspan>')
+      for (const label of Object.values(labels)) expect(full).toContain(`>${label}</tspan>`)
+      expect(full).not.toContain('…</tspan>')
+      expect(width(full)).toBeGreaterThan(width(compact))
+    }
+  }
+})
+
 test('shows authored Git labels below horizontal commits and keeps generated operation metadata', () => {
   const chart: GitGraphOptions = { showGeneratedOperationLabels: false, operations: [
     { op: 'commit', id: 'root', tags: ['v1'] },

@@ -42,6 +42,8 @@ export interface GitGraphOptions extends ChartLabels {
   /** Warn on duplicate commit IDs and resolve later references to the latest commit with that ID. */
   duplicateCommitIds?: 'latest'
   rotateCommitLabel?: boolean
+  /** Keep the complete branch, commit, and tag labels and fit the graph to them. */
+  truncateLabels?: boolean
   colors?: readonly (string | undefined)[]
   branchLabelColors?: readonly (string | undefined)[]
   branchLabelBackgrounds?: readonly (string | undefined)[]
@@ -201,11 +203,12 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const ranks = Math.max(0, ...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = normalizeAppearance(chart.tagLabel)
-  const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
+  const abbreviated = (text: string, size: number) => chart.truncateLabels !== false && text.length > size ? `${text.slice(0, size - 1)}…` : text
   const branchLines = branches.map(branch => labelLines(branch.name.replace(/\r?\n|\\n/g, '<br>'))
     .map(line => abbreviated(line.trim(), horizontal ? 28 : 21)))
   const branchText = (branch: Branch) => branchLines[lanes.get(branch)!].join('<br>')
-  const branchLabelWidth = Math.max(80, Math.max(...branches.map(branch => labelWidth(branchText(branch), 14))) + 30)
+  const branchLabelWidth = !showBranches && chart.truncateLabels === false
+    ? 80 : Math.max(80, Math.max(...branches.map(branch => labelWidth(branchText(branch), 14))) + 30)
   const extraBranchHeight = showBranches ? (Math.max(...branchLines.map(lines => lines.length)) - 1) * 16 : 0
   const commitSize = commitAppearance.fontSize ?? 14
   const tagSize = tagAppearance.fontSize ?? 14
@@ -227,7 +230,9 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const time = (rank: number) => start + 25 + (direction === 'BT' ? ranks - 1 - rank : rank) * gap
   const lane = (branch: Branch) => horizontal ? pad + 26 + extraBranchHeight / 2 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
-  const width = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
+  const titleWidth = chart.truncateLabels === false && title ? labelWidth(title, 14) + 24 : 0
+  const diagramWidth = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
+  const width = Math.max(diagramWidth, titleWidth)
   const height = horizontal ? pad + extraBranchHeight / 2 + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
   const colorIndex = (branch: Branch) => lanes.get(branch)! % branchColors.length
   const color = (branch: Branch) => safeColor(chart.colors?.[colorIndex(branch)]) ?? branchColors[colorIndex(branch)]
