@@ -248,6 +248,32 @@ test('keeps whole-day exclusions between bars while advancing dependent tasks', 
   expect(bars[1].width).toBeCloseTo(bars[0].width * 3)
 })
 
+test('adjusts custom end dates and until targets when a fixed date format is supplied', () => {
+  const march = (day: number) => Date.UTC(2026, 2, day)
+  const chart: GanttChartOptions = {
+    dateFormat: 'DD-MM-YYYY', exclusionMode: 'whole-days', excludes: ['weekends'],
+    sections: [{ tasks: [
+      { name: 'Custom end date', id: 'custom', start: '06-03-2026', end: '07-03-2026' },
+      { name: 'Review window', id: 'window', start: '06-03-2026', until: ['ship'] },
+      { name: 'Ship', id: 'ship', start: '07-03-2026', duration: '0d', tags: ['milestone'] },
+      { name: 'Follow-up', after: ['custom', 'window'], duration: '1d' },
+    ] }],
+  }
+  const times = (options: GanttChartOptions) => scheduleGantt(options)?.tasks.map(({ start, end, barEnd }) => [start, end, barEnd])
+  expect(times(chart)).toEqual([
+    [march(6), march(7), undefined],
+    [march(6), march(7), undefined],
+    [march(7), march(7), undefined],
+    [march(7), march(9), march(8)],
+  ])
+  expect(times({ ...chart, fixedEndDateFormat: 'YYYY-MM-DD' })).toEqual([
+    [march(6), march(9), march(7)],
+    [march(6), march(9), march(7)],
+    [march(7), march(7), undefined],
+    [march(9), march(10), undefined],
+  ])
+})
+
 test('recovers missing Gantt references when requested and rejects cycles', () => {
   const chart: GanttChartOptions = {
     now: Date.UTC(2026, 2, 6, 15),

@@ -56,8 +56,10 @@ export interface GanttChartOptions extends ChartLabels {
   tickInterval?: string
   excludes?: readonly string[]
   includes?: readonly string[]
-  /** Shift duration endpoints by whole excluded dates, preserving gaps between tasks. */
+  /** Shift adjustable endpoints by whole excluded dates, preserving gaps between tasks. */
   exclusionMode?: 'working-time' | 'whole-days'
+  /** When set, only end dates matching this format stay fixed through exclusions. Other explicit dates and until targets can move. */
+  fixedEndDateFormat?: string
   /** Calendar mode rounds fractional days and weeks to whole days and uses whole months or years. */
   durationMode?: 'elapsed' | 'calendar'
   /** Skip unknown IDs and use the reference day when none of the IDs exist. */
@@ -145,6 +147,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   }
   if (!definitions.length) return
   const parseDate = ganttDateParser(dateFormat, now)
+  const parseFixedEnd = chart.fixedEndDateFormat === undefined ? undefined : ganttDateParser(chart.fixedEndDateFormat, now)
   const axisFormat = format || defaultGanttAxisFormat(dateFormat)
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
   const today = dayOf(now)
@@ -243,16 +246,23 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     const previous = definitions[task.index - 1]
     return previous ? resolve(previous, 'end') : today
   }
-  function end(task: TaskDefinition): number | undefined {
+  function targetEnd(task: TaskDefinition, start: number): number | undefined {
     if (task.input.until) return dependency(task, task.input.until, 'start')
     if (task.input.end !== undefined) {
       const explicit = parseDate(task.input.end)
       return explicit === undefined ? undefined : explicit + (inclusiveEndDates ? dayMs : 0)
     }
+    if (task.input.duration !== undefined) return durationEnd(start, task.input.duration, chart.durationMode)
+  }
+  function end(task: TaskDefinition): number | undefined {
     const start = resolve(task, 'start')
-    if (start === undefined || task.input.duration === undefined) return
-    const target = durationEnd(start, task.input.duration, chart.durationMode)
-    if (target === undefined || !hasExclusions || target === start) return target
+    if (start === undefined) return
+    const target = targetEnd(task, start)
+    if (target === undefined || !hasExclusions || target <= start) return target
+    const fixed = parseFixedEnd
+      ? task.input.end !== undefined && parseFixedEnd(task.input.end) !== undefined
+      : task.input.end !== undefined || task.input.until !== undefined
+    if (fixed) return target
     if (chart.exclusionMode !== 'whole-days') return applyDuration(start, target)
     const adjusted = shiftByExcludedDays(start, target)
     if (adjusted && adjusted.barEnd !== adjusted.end && !task.tags.includes('milestone')) {
