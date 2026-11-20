@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'bun:test'
-import { timeDay, timeHour, timeInterval, timeMinute, timeSecond, timeYear } from '../src/index.ts'
+import { timeDay, timeHour, timeInterval, timeMinute, timeSecond, timeYear, utcDay, utcMonth } from '../src/index.ts'
 import { local, utc } from './date.ts'
 
 describe('timeInterval', () => {
+  it('stops searching filtered boundaries when a date exceeds the supported range', () => {
+    const earliest = -8_640_000_000_000_000
+    const latest = 8_640_000_000_000_000
+    expect(+utcMonth.every!(3)!.floor(earliest)).toBeNaN()
+    expect(+utcDay.every!(4)!.offset(latest)).toBeNaN()
+    expect(+utcMonth.every!(3)!.offset(earliest, -1)).toBeNaN()
+  })
+
   it('timeInterval() is equivalent to timeInterval.floor(new Date)', () => {
     const t = new Date()
     expect(timeYear()).toEqual(timeYear.floor(t))

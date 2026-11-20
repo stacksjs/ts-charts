@@ -121,7 +121,9 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
       }
       case 'merge': {
         const source = branches.get(operation.branch)
-        if (!source?.head || source === current || !current.head || source.head === current.head || !add('merge', operation, source.head)) return
+        if (!source?.head || source === current || !current.head || source.head === current.head) return
+        const message = operation.message ?? `merged branch ${source.name} into ${current.name}`
+        if (!add('merge', { ...operation, message }, source.head)) return
         break
       }
       case 'cherry-pick': {
@@ -131,7 +133,8 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
           || (parent !== undefined && !from.parents.some(commit => commit.id === parent))
           || (from.kind === 'merge' && parent === undefined)) return
         const marker = `cherry-pick:${from.id}${parent && from.kind === 'merge' ? `|parent:${parent}` : ''}`
-        if (!add('cherry-pick', { ...operation, tags: tags ?? [marker] }, from, parent)) return
+        const message = operation.message ?? `cherry-picked ${from.message || from.id} into ${current.name}`
+        if (!add('cherry-pick', { ...operation, tags: tags ?? [marker], message }, from, parent)) return
         break
       }
       default: return

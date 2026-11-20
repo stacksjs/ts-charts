@@ -1,3 +1,5 @@
+import { utcDay, utcFriday, utcHour, utcMillisecond, utcMinute, utcMonday, utcMonth, utcSaturday, utcSecond, utcSunday, utcThursday, utcTicks, utcTuesday, utcWednesday, utcYear } from '../../time/src/index.ts'
+
 export const dayMs: number = 86_400_000
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -94,32 +96,27 @@ export function durationEnd(start: number, spec: string): number | undefined {
   return Number(date) + (months % 1) * 30 * dayMs
 }
 
+const tickIntervals = {
+  millisecond: utcMillisecond, second: utcSecond, minute: utcMinute, hour: utcHour,
+  day: utcDay, month: utcMonth, year: utcYear,
+} as const
+const weekIntervals = [utcSunday, utcMonday, utcTuesday, utcWednesday, utcThursday, utcFriday, utcSaturday]
+
 export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday'): number[] {
-  const [, amount, unit, weekStart] = /^(\d{1,3})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
-  const values: Record<string, number> = { millisecond: 1, second: 1000, minute: 60000, hour: 3600000, day: dayMs, week: 7 * dayMs }
-  const requestedStep = Math.max(1, Number(amount))
-  const span = end - start
-  const milestones = [1, 1000, 60000, 300000, 900000, 3600000, 10800000, 21600000, 43200000, dayMs, 2 * dayMs, 7 * dayMs, 14 * dayMs, 30 * dayMs, 90 * dayMs, 365 * dayMs]
-  const fallback = milestones.find(value => span / value <= 9) ?? Math.ceil(span / (3650 * dayMs)) * 365 * dayMs
-  if (unit === 'month' || unit === 'year') {
-    const date = new Date(start)
-    date.setUTCHours(0, 0, 0, 0)
-    date.setUTCDate(1)
-    if (unit === 'year') date.setUTCMonth(0)
-    const months = requestedStep * (unit === 'year' ? 12 : 1)
+  const [, amount, unit, weekStart] = /^([1-9]\d{0,2})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
+  const interval = unit === 'week' ? weekIntervals[Math.max(0, weekdays.indexOf(weekStart ?? defaultWeekStart))]
+    : tickIntervals[unit as keyof typeof tickIntervals]
+  const step = interval?.every?.(Number(amount))
+  if (step) {
     const ticks: number[] = []
-    for (let count = 0; date.valueOf() <= end && count < 50; count++) {
-      if (date.valueOf() >= start) ticks.push(date.valueOf())
-      date.setUTCMonth(date.getUTCMonth() + months)
+    // Fall back to automatic ticks for crowded axes instead of truncating the grid.
+    let tick = +step.ceil(Math.ceil(start))
+    while (ticks.length < 60 && tick <= end) {
+      ticks.push(tick)
+      tick = +step.offset(tick)
     }
-    return ticks.length ? ticks : [start]
+    if (!(tick <= end)) return ticks.length ? ticks : [start]
   }
-  const step = unit ? requestedStep * values[unit] : fallback
-  const weekday = weekdays.indexOf(weekStart ?? defaultWeekStart)
-  // The first Sunday on or after the Unix epoch is January 4, 1970.
-  const origin = unit === 'week' ? (3 + (weekday < 0 ? 0 : weekday)) * dayMs : 0
-  const safeStep = span / step > 60 ? fallback : step
-  const first = origin + Math.ceil((start - origin) / safeStep) * safeStep
-  const ticks = Array.from({ length: Math.max(0, Math.floor((end - first) / safeStep) + 1) }, (_, index) => first + index * safeStep)
+  const ticks = utcTicks(Math.ceil(start), Math.floor(end), 10).map(Number)
   return ticks.length ? ticks : [start]
 }

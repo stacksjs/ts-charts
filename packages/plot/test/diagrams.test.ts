@@ -1,6 +1,22 @@
 import { expect, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
 import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
+import { ganttTicks } from '../src/gantt-time.ts'
+
+test('anchors Gantt ticks to the calendar field and keeps crowded axes bounded', () => {
+  expect(ganttTicks(Date.UTC(2026, 1, 15), Date.UTC(2026, 10, 1), '3month')).toEqual([
+    Date.UTC(2026, 3, 1), Date.UTC(2026, 6, 1), Date.UTC(2026, 9, 1),
+  ])
+  expect(ganttTicks(Date.UTC(2026, 2, 6, 7, 55), Date.UTC(2026, 2, 6, 8, 15), '7minute')).toEqual([
+    Date.UTC(2026, 2, 6, 7, 56), Date.UTC(2026, 2, 6, 8, 0), Date.UTC(2026, 2, 6, 8, 7), Date.UTC(2026, 2, 6, 8, 14),
+  ])
+  const start = Date.UTC(2018, 1, 1)
+  const end = Date.UTC(2026, 9, 1)
+  const wide = ganttTicks(start, end, '1month')
+  expect(wide).toEqual(ganttTicks(start, end, ''))
+  expect(wide.length).toBeLessThan(60)
+  expect(wide.at(-1)).toBeGreaterThan(Date.UTC(2025, 11, 31))
+})
 
 test('lays out a standalone SVG flowchart with decisions, branch labels, and loops', () => {
   const svg = flowchartDiagram({
@@ -263,7 +279,9 @@ test('replays structured Git history with merge ordering, orientation, and cherr
     ['root', 0], ['draft', 1], ['prepare', 1], ['release', 2], ['backport', 3],
   ])
   expect(history?.commits[3].parents.map(commit => commit.id)).toEqual(['prepare', 'draft'])
+  expect(history?.commits[3].message).toBe('merged branch review into main')
   expect(history?.commits.at(-1)?.picked).toBe('release')
+  expect(history?.commits.at(-1)?.message).toBe('cherry-picked merged branch review into main into review')
   expect(history?.commits.at(-1)?.parents.map(commit => commit.id)).toEqual(['draft'])
   const svg = gitGraphChart(chart)
   expect(svg).toContain('data-diagram-kind="gitgraph"')

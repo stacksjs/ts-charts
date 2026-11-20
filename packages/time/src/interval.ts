@@ -70,15 +70,18 @@ export function timeInterval(
 
   interval.filter = (test: (date: Date) => boolean): TimeInterval => {
     return timeInterval((date: Date): void => {
-      if (date >= date) while (floori(date), !test(date)) date.setTime(+date - 1)
+      while (date >= date) {
+        floori(date)
+        if (!(date >= date) || test(date)) break
+        date.setTime(+date - 1)
+      }
     }, (date: Date, step: number): void => {
-      if (date >= date) {
-        if (step < 0) while (++step <= 0) {
-          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
-        }
-        else while (--step >= 0) {
-          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
-        }
+      if (!Number.isFinite(step)) return
+      const direction = Math.sign(step)
+      while (step && date >= date) {
+        do offseti(date, direction)
+        while (date >= date && !test(date))
+        step -= direction
       }
     })
   }

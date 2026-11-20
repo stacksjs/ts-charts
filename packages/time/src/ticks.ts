@@ -1,5 +1,6 @@
 import type { TimeInterval } from './interval.ts'
-import { bisector, tickStep } from '@ts-charts/array'
+import bisector from '../../array/src/bisector.ts'
+import { tickStep } from '../../array/src/ticks.ts'
 import { durationDay, durationHour, durationMinute, durationMonth, durationSecond, durationWeek, durationYear } from './duration.ts'
 import { millisecond } from './millisecond.ts'
 import { second } from './second.ts'
