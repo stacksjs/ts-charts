@@ -39,6 +39,8 @@ export interface GitGraphOptions extends ChartLabels {
   /** Include generated IDs as visible labels for merges and cherry-picks. */
   showGeneratedOperationLabels?: boolean
   showBranches?: boolean
+  /** Warn on duplicate commit IDs and resolve later references to the latest commit with that ID. */
+  duplicateCommitIds?: 'latest'
   rotateCommitLabel?: boolean
   colors?: readonly (string | undefined)[]
   branchLabelColors?: readonly (string | undefined)[]
@@ -66,12 +68,14 @@ interface Commit {
   index: number
   picked?: string
   pickedParent?: string
+  pickedCommit?: Commit
 }
 export interface GitHistory {
   commits: Commit[]
   branches: Branch[]
   direction: GitGraphDirection
   title: string
+  currentBranch: string
 }
 
 export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined {
@@ -87,7 +91,9 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
   function add(kind: Commit['kind'], properties: GitCommitOptions, other?: Commit, pickedParent?: string): boolean {
     const { id: customId, label, message, style, tags = [] } = properties
     const type = style ?? 'NORMAL'
-    if (customId !== undefined && (typeof customId !== 'string' || !customId || byId.has(customId))) return false
+    if (customId !== undefined && (typeof customId !== 'string' || !customId)) return false
+    const duplicate = customId !== undefined && byId.has(customId)
+    if (duplicate && (kind !== 'commit' || chart.duplicateCommitIds !== 'latest')) return false
     if (!['NORMAL', 'REVERSE', 'HIGHLIGHT'].includes(type)) return false
     if (message !== undefined && typeof message !== 'string') return false
     if (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string')) return false
@@ -101,7 +107,9 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     const generatedOperationLabel = kind !== 'commit' && !label && customId === undefined
     const visibleTags = kind === 'cherry-pick' ? tags.filter(Boolean) : tags
     const commit: Commit = { id, label: label || id, generatedOperationLabel, message, branch: current, parents, tags: visibleTags,
-      kind, type, symbol, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
+      kind, type, symbol, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent,
+      ...(kind === 'cherry-pick' ? { pickedCommit: other } : {}) }
+    if (duplicate) console.warn(`Commit ID ${id} already exists`)
     commits.push(commit)
     byId.set(id, commit)
     current.head = commit
@@ -147,8 +155,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
       default: return
     }
   }
-  if (!commits.length) return
-  return { commits, branches: [...branches.values()].sort((a, b) => a.order - b.order || a.index - b.index), direction, title }
+  return { commits, branches: [...branches.values()].sort((a, b) => a.order - b.order || a.index - b.index), direction, title, currentBranch: current.name }
 }
 
 const branchColors = ['#6ba2db', '#e7b76f', '#70c1a4', '#b6a0da', '#e88998', '#59b9be', '#acc272', '#d68d61']
@@ -191,7 +198,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
   const horizontal = direction === 'LR'
-  const ranks = Math.max(...commits.map(commit => commit.rank)) + 1
+  const ranks = Math.max(0, ...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = normalizeAppearance(chart.tagLabel)
   const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
@@ -204,7 +211,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const labelText = (commit: Commit) => abbreviated(commit.label, labelLimit)
   const tagText = (commit: Commit) => abbreviated(commit.tags.join(' · '), tagLimit)
   const longCommit = Math.max(0, ...labelledCommits.map(commit => labelWidth(labelText(commit), commitSize)))
-  const longTag = Math.max(...commits.map(commit => labelWidth(tagText(commit), tagSize)))
+  const longTag = Math.max(0, ...commits.map(commit => labelWidth(tagText(commit), tagSize)))
   const rotatedExtent = rotateLabels ? Math.ceil((longCommit + commitSize) / Math.SQRT2) : 0
   const tagOffset = Math.max(19, 11 + tagSize / 2)
   const commitOffset = Math.max(19, 11 + commitSize / 2)
@@ -235,7 +242,6 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       : decorateLabel(branchText(branch), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
     return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
-  const commitsById = new Map(commits.map(commit => [commit.id, commit]))
   const ringColor = safeColor(chart.background) ?? 'currentColor'
   const edges = commits.map((commit) => {
     const to = point(commit)
@@ -250,7 +256,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       if (!copy) return `${path}/>`
       return `${path} stroke-dasharray="5 3" data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
     }
-    const source = commit.picked === undefined ? undefined : commitsById.get(commit.picked)
+    const source = commit.pickedCommit
     return commit.parents.map(parent => edge(parent)).join('') + (source ? edge(source, true) : '')
   }).join('')
   const nodes = commits.map((commit) => {

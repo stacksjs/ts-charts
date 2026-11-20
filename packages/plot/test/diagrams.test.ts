@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, spyOn, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
 import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
 import { ganttTicks } from '../src/gantt-time.ts'
@@ -429,6 +429,21 @@ test('accepts ISO holidays with custom task dates and packs touching bars around
   expect(compact.match(/class="diagram-gantt-label" text-anchor="middle"[^>]*style="fill:#122434;"/g)).toHaveLength(2)
 })
 
+test('reserves vertical space for multiline Gantt headings and draws repeated markers once', () => {
+  const chart: GanttChartOptions = { sections: [{ name: 'Release<br>Review<br />Ship', tasks: [
+    { id: 'edge', name: 'Review', start: '2026-01-01', duration: '1d', tags: ['vert'] },
+    { id: 'edge', name: 'Review', start: '2026-01-01', duration: '1d', tags: ['vert'] },
+    { id: 'work', name: 'Draft', after: ['edge'], duration: '1d' },
+  ] }] }
+  expect(scheduleGantt(chart)?.tasks.at(-1)?.start).toBe(Date.UTC(2026, 0, 2))
+  const svg = ganttChart(chart)!
+  expect(svg.match(/class="diagram-gantt-reference-label"/g)).toHaveLength(1)
+  expect(svg).toMatch(/class="diagram-gantt-section-label"[^>]*><tspan[^>]*dy="-16">Release<\/tspan><tspan[^>]*dy="16">Review<\/tspan><tspan[^>]*dy="16">Ship/)
+  const band = (output: string) => Number(/class="diagram-gantt-band"[^>]*height="([^"]+)"/.exec(output)?.[1])
+  expect(band(svg) - band(ganttChart({ sections: [{ ...chart.sections[0], name: 'Release' }] })!)).toBe(32)
+  expect(scheduleGantt({ sections: [{ tasks: [...chart.sections[0].tasks, { id: 'work', name: 'Second draft', duration: '1d' }] }] })).toBeUndefined()
+})
+
 test('supports linked Gantt tasks, marker styling, chart dimensions, and week start', () => {
   const svg = ganttChart({
     now: Date.UTC(2026, 2, 9), tickInterval: '1week', axisFormat: '%A',
@@ -542,6 +557,34 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   expect(svg).toMatch(/class="diagram-git-label-box"[^>]*fill="#eee6f1"/)
   expect(svg).toMatch(/class="diagram-git-tag-box"[^>]*fill="#fbe7d5" stroke="#dc7854"/)
   expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
+})
+
+test('renders branch-only histories and snapshots duplicate commit IDs for cherry-picks', () => {
+  const empty = { operations: [{ op: 'branch', name: 'draft' }, { op: 'checkout', name: 'draft' }] } as const
+  expect(buildGitHistory(empty)?.commits).toEqual([])
+  expect(buildGitHistory(empty)?.currentBranch).toBe('draft')
+  expect(gitGraphChart(empty)).toContain('>draft</tspan>')
+
+  const chart: GitGraphOptions = { operations: [
+    { op: 'commit', id: 'base' },
+    { op: 'branch', name: 'work' },
+    { op: 'commit', id: 'revision', message: 'first' },
+    { op: 'checkout', name: 'main' },
+    { op: 'cherry-pick', commit: 'revision' },
+    { op: 'checkout', name: 'work' },
+    { op: 'commit', id: 'revision', message: 'second' },
+    { op: 'checkout', name: 'main' },
+    { op: 'cherry-pick', commit: 'revision' },
+  ] }
+  expect(buildGitHistory(chart)).toBeUndefined()
+  const warn = spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    const history = buildGitHistory({ ...chart, duplicateCommitIds: 'latest' })
+    expect(warn).toHaveBeenCalledWith('Commit ID revision already exists')
+    expect(history?.commits.filter(commit => commit.picked).map(commit => commit.pickedCommit?.message)).toEqual(['first', 'second'])
+    expect(buildGitHistory({ duplicateCommitIds: 'latest', operations: [...chart.operations, { op: 'merge', branch: 'work', id: 'revision' }] })).toBeUndefined()
+  }
+  finally { warn.mockRestore() }
 })
 
 test('includes GitGraph padding in the title position and view box for every direction', () => {

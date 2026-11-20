@@ -133,7 +133,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     for (const input of group.tasks) {
       const { name, id = '', tags = [], start, after, end, duration, until } = input
       if (!name?.trim() || definitions.length >= 180 || tags.some(tag => !taskTags.has(tag))) return
-      if (id && (!/^[\w.-]+$/.test(id) || byId.has(id))) return
+      const previous = id ? byId.get(id) : undefined
+      if (id && (!/^[\w.-]+$/.test(id) || (previous && !(tags.includes('vert') && previous.tags.includes('vert'))))) return
       if ((start !== undefined && after !== undefined) || (after !== undefined && !validReferences(after))) return
       if ([end, duration, until].filter(value => value !== undefined).length !== 1 || (until !== undefined && !validReferences(until))) return
       const definition = { name, section, id, input, tags, index: definitions.length }
@@ -334,7 +335,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const top = Math.max(title ? titleY + 14 : 0, boundedNumber(chart.topPadding, 0, 2000) ?? (title ? 55 : 23))
   const barHeight = boundedNumber(chart.barHeight, 1, 200) ?? 16
   const rowHeight = Math.max((fontSize ?? 0) + 4, barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18))
-  const sectionHeight = (sectionFontSize ?? 14) + 14
+  const sectionLineHeight = sectionFontSize === undefined ? 16 : sectionFontSize * 1.15
   const sectionStyles = Math.floor(boundedNumber(chart.numberSectionStyles, 1, 12) ?? (Math.min(chart.sectionColors?.length ?? 0, 12) || 1))
   const start = Math.min(...tasks.map(task => task.start))
   const latest = Math.max(...tasks.map(task => task.end))
@@ -349,6 +350,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const children = tasksBySection[index]
     if (!children.length) continue
     const sectionTop = y
+    const sectionHeight = (sectionFontSize ?? 14) + 14 + (labelLines(section).length - 1) * sectionLineHeight
     if (section) y += sectionHeight
     // A milestone occupies both sides of its date even if its duration is zero.
     const lanes: { task: ScheduledGanttTask, point: boolean }[] = []
@@ -411,7 +413,15 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const referenceLanes: number[] = []
   const referenceFont = Math.min(fontSize ?? 14, 24)
   const referenceLineHeight = referenceFont + 5
-  const markers = tasks.filter(task => task.tags.includes('vert')).sort((a, b) => a.start - b.start).map(task => {
+  const referenceKeys = new Set<string>()
+  const markers = tasks.filter(task => {
+    if (!task.tags.includes('vert')) return false
+    if (!task.id) return true
+    const key = JSON.stringify([task.id, task.start, task.name])
+    if (referenceKeys.has(key)) return false
+    referenceKeys.add(key)
+    return true
+  }).sort((a, b) => a.start - b.start).map(task => {
     const x = xAt(task.start)
     const label = Array.from(task.name.replace(/<br\s*\/?>/gi, ' '))
     const limit = Math.floor((width - 20) / (referenceFont * 0.6))
