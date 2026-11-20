@@ -2,7 +2,7 @@ import type { ChartLabels } from './chronology.ts'
 import type { GanttTimeZone } from './gantt-time.ts'
 import { timeFormat, utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
-import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
+import { escapeHtml, labelLines, minimumGlyphAdvance, svgText, svgTextLines } from './diagram-svg.ts'
 import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel, wrapGanttLabel } from './gantt-labels.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatIncludesTime, ganttDateFormatter, ganttDateParser, ganttDayOffset, ganttDaySampler, ganttDayStart, ganttIsoStart, ganttNextDayStart, ganttTicks, weekdays } from './gantt-time.ts'
 
@@ -403,13 +403,14 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   for (const task of visibleTasks) tasksBySection[task.section].push(task)
   const fontSize = boundedNumber(chart.fontSize, 6, 96)
   const sectionFontSize = boundedNumber(chart.sectionFontSize, 6, 96)
-  const letterWidth = (fontSize ?? 14) / 2
+  const minimumAdvance = minimumGlyphAdvance(chart.fontFamily)
+  const letterWidth = (fontSize ?? 14) * Math.max(0.5, minimumAdvance)
   const labelWidth = compact || barLabels ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * letterWidth)) + 28))
   const x0 = boundedNumber(chart.leftPadding, 20, 2000) ?? labelWidth
   const rightPadding = boundedNumber(chart.rightPadding, 0, 2000) ?? 30
   const width = Math.max(x0 + rightPadding + 48, boundedNumber(chart.width, 1, 10000) ?? x0 + 710 + rightPadding)
   const plotWidth = width - x0 - rightPadding
-  const titleLines = wrapGanttLabel(title, width - 28, 14)
+  const titleLines = wrapGanttLabel(title, width - 28, 14, minimumAdvance)
   const extraTitleHeight = (titleLines.length - 1) * 16
   const titleY = Math.max(10, titlePosition(chart.titleTopMargin)) + extraTitleHeight / 2
   const top = Math.max(title ? titleY + extraTitleHeight / 2 + 14 : 0, boundedNumber(chart.topPadding, 0, 2000) ?? (title ? 55 : 23))
@@ -445,7 +446,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
         if (otherSpan.left >= right) neighbors.right = Math.min(neighbors.right, otherSpan.left)
       }
     }
-    const label = layoutTaskLabel(task.name, span, { width, barHeight, fontSize }, neighbors)
+    const label = layoutTaskLabel(task.name, span, { width, barHeight, fontSize, minimum: minimumAdvance }, neighbors)
     return [task, { label, left: Math.min(left, label.left), right: Math.max(right, label.right) }] as const
   }))
   const taskY = new Map<ScheduledGanttTask, number>()
@@ -456,7 +457,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const children = tasksBySection[index]
     if (!children.length) continue
     const sectionTop = y
-    const sectionLines = wrapGanttLabel(section, width - 40, sectionFontSize ?? 14)
+    const sectionLines = wrapGanttLabel(section, width - 40, sectionFontSize ?? 14, minimumAdvance)
     const sectionHeight = (sectionFontSize ?? 14) + 14 + (sectionLines.length - 1) * sectionLineHeight
     if (section) y += sectionHeight
     // A milestone occupies both sides of its date even if its duration is zero.
@@ -534,7 +535,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const formatTick = formatDate(axisFormat)
   const axisTicks = ganttTicks(start, end, ticks, chart.weekday, timeZone, chart.maxExplicitTicks)
     .map(time => ({ x: xAt(time), text: formatTick(time) }))
-  const axisLabels = layoutAxisLabels(axisTicks, width, axisFontSize)
+  const axisLabels = layoutAxisLabels(axisTicks, width, axisFontSize, minimumAdvance)
   const axes = (schedule.topAxis ? ['bottom', 'top'] as const : ['bottom'] as const).map((position) => {
     const above = position === 'top'
     const y = above ? topAxisLine : bottom
@@ -573,7 +574,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     referenceKeys.add(key)
     return true
   }).sort((a, b) => a.start - b.start).map(task => ({ task, x: xAt(task.start), name: task.name }))
-  const referenceLabels = layoutReferenceLabels(references, width, referenceFont)
+  const referenceLabels = layoutReferenceLabels(references, width, referenceFont, minimumAdvance)
   const markers = references.map(({ task, x }, index) => {
     const label = referenceLabels.labels[index]
     const caption = svgTextLines(label.lines, label.x, referenceTop + label.y, 'diagram-gantt-reference-label', 'middle', 'currentColor', { fontSize: referenceFont, color: reference })
@@ -623,7 +624,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     }
     else if (barLabels) {
       const lines = labelLines(task.name).map(line => Array.from(line))
-      const glyphWidth = (fontSize ?? 14) * 0.6
+      const glyphWidth = (fontSize ?? 14) * Math.max(0.6, minimumAdvance)
       const longest = Math.max(...lines.map(line => line.length))
       const placement = barLabel(milestone ? middle - half : left, milestone ? middle + half : right, width, longest * glyphWidth, milestone)
       const limit = Math.floor(placement.space / glyphWidth)

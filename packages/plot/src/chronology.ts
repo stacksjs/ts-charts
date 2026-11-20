@@ -5,6 +5,8 @@ export interface ChartLabels {
   title?: string
   accessibleTitle?: string
   description?: string
+  /** CSS font family or fallback list for the SVG labels. */
+  fontFamily?: string
   /** Optional chart ID prefix. */
   idPrefix?: string
 }
@@ -58,7 +60,7 @@ export function chronologySvg(chart: ChartLabels, marker: string, kind: string, 
   const accessibleTitle = chart.accessibleTitle ? `<title id="${id}-title">${escapeHtml(chart.accessibleTitle)}</title>` : ''
   const description = chart.description ? `<desc id="${id}-description">${escapeHtml(chart.description)}</desc>` : ''
   const label = chart.accessibleTitle || chart.title || kind
-  const svg = diagramSvg(label, width, height, accessibleTitle + description + surface + title + body)
+  const svg = diagramSvg(label, width, height, accessibleTitle + description + surface + title + body, chart.fontFamily)
     .replace('role="img"', `role="img"${accessibleTitle ? ` aria-labelledby="${id}-title"` : ''}${description ? ` aria-describedby="${id}-description"` : ''}`)
   return background ? svg.replace('<svg ', `<svg style="--diagram-background:${background}" `) : svg
 }

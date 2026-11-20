@@ -11,18 +11,18 @@ function glyphWidth(glyph: string, size: number): number {
 
 interface Line { glyphs: string[], widths: number[], width: number }
 
-function measureLine(text: string, size: number): Line {
+function measureLine(text: string, size: number, minimum: number): Line {
   const glyphs = Array.from(graphemes.segment(text), ({ segment }) => segment)
-  const widths = glyphs.map(glyph => glyphWidth(glyph, size))
+  const widths = glyphs.map(glyph => Math.max(size * minimum, glyphWidth(glyph, size)))
   return { glyphs, widths, width: widths.reduce((total, width) => total + width, 0) }
 }
 
 /** Label a subset of the grid ticks when their text would overlap. */
-export function layoutAxisLabels(ticks: readonly { x: number, text: string }[], width: number, fontSize: number): Map<number, { x: number, text: string }> {
+export function layoutAxisLabels(ticks: readonly { x: number, text: string }[], width: number, fontSize: number, minimum: number): Map<number, { x: number, text: string }> {
   const margin = 4
   const available = width - 2 * margin
   const labels = ticks.map(({ x, text }) => {
-    const measured = measureLine(text, fontSize)
+    const measured = measureLine(text, fontSize, minimum)
     const fitted = measured.width <= available ? text
       : wrapLine(measured, available - glyphWidth('…', fontSize))[0] + '…'
     const half = Math.min(available, measured.width) / 2
@@ -64,11 +64,11 @@ function wrapLine({ glyphs, widths }: Line, limit: number): string[] {
   return lines
 }
 
-export function wrapGanttLabel(label: string, available: number, fontSize: number): string[] {
-  return labelLines(label).flatMap(line => wrapLine(measureLine(line, fontSize), available))
+export function wrapGanttLabel(label: string, available: number, fontSize: number, minimum: number): string[] {
+  return labelLines(label).flatMap(line => wrapLine(measureLine(line, fontSize, minimum), available))
 }
 
-export function layoutReferenceLabels(references: readonly { x: number, name: string }[], width: number, fontSize: number): {
+export function layoutReferenceLabels(references: readonly { x: number, name: string }[], width: number, fontSize: number, minimum: number): {
   labels: { x: number, y: number, lines: string[] }[]
   height: number
 } {
@@ -76,8 +76,8 @@ export function layoutReferenceLabels(references: readonly { x: number, name: st
   const gap = 5
   const rows: { right: number, height: number, top: number }[] = []
   const plans = references.map(({ x, name }) => {
-    const lines = wrapGanttLabel(name, width - 2 * margin, fontSize)
-    const half = Math.max(...lines.map(line => measureLine(line, fontSize).width)) / 2
+    const lines = wrapGanttLabel(name, width - 2 * margin, fontSize, minimum)
+    const half = Math.max(...lines.map(line => measureLine(line, fontSize, minimum).width)) / 2
     const center = Math.max(margin + half, Math.min(width - margin - half, x))
     let row = rows.find(candidate => candidate.right + gap <= center - half)
     if (!row) {
@@ -113,13 +113,13 @@ export interface GanttTaskLabel {
 export function layoutTaskLabel(
   name: string,
   { left, right, milestone }: { left: number, right: number, milestone: boolean },
-  { width, barHeight, fontSize }: { width: number, barHeight: number, fontSize?: number },
+  { width, barHeight, fontSize, minimum }: { width: number, barHeight: number, fontSize?: number, minimum: number },
   neighbors?: { left: number, right: number },
 ): GanttTaskLabel {
   const size = fontSize ?? 14
   const lineHeight = fontSize === undefined ? 16 : fontSize * 1.15
   const source = labelLines(name)
-  const measured = source.map(line => measureLine(line, size))
+  const measured = source.map(line => measureLine(line, size, minimum))
   const longest = Math.max(...measured.map(line => line.width))
   const gap = 8
   const before = left - gap * 2
@@ -138,7 +138,7 @@ export function layoutTaskLabel(
   const below = longest > available && available < size * 7
   const lines = longest <= available ? source : measured.flatMap(line => wrapLine(line, below ? width - 2 * gap : available))
   const height = lines.length * lineHeight
-  const textWidth = lines === source ? longest : Math.max(...lines.map(line => measureLine(line, size).width))
+  const textWidth = lines === source ? longest : Math.max(...lines.map(line => measureLine(line, size, minimum).width))
   if (below) {
     const x = Math.max(gap + textWidth / 2, Math.min(width - gap - textWidth / 2, (left + right) / 2))
     return { lines, x, anchor: 'middle', offset: barHeight / 2 + 4 + height / 2, height, left: x - textWidth / 2, right: x + textWidth / 2 }

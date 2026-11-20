@@ -2,6 +2,17 @@ import { expect, spyOn, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
 import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
 
+test('renders chart font stacks as escaped SVG attributes', () => {
+  const fontFamily = ' "Courier New", monospace; '
+  const gantt = { sections: [{ tasks: [{ name: 'Review', start: '2026-01-03', duration: '1d' }] }] }
+  const git = { operations: [{ op: 'commit', id: 'release' }] } satisfies GitGraphOptions
+  expect(ganttChart({ ...gantt, fontFamily })).toContain('font-family="&quot;Courier New&quot;, monospace"')
+  expect(gitGraphChart({ ...git, fontFamily })).toContain('font-family="&quot;Courier New&quot;, monospace"')
+  expect(gitGraphChart({ ...git, fontFamily: '   ' })).toContain('font-family="system-ui, sans-serif"')
+  expect(ganttChart({ ...gantt, fontFamily: 'Family" data-example="other' }))
+    .toContain('font-family="Family&quot; data-example=&quot;other"')
+})
+
 test('uses the local Gantt calendar for durations, deadlines, exclusions, and axis labels', async () => {
   const entry = new URL('../src/diagrams.ts', import.meta.url).pathname
   const source = `

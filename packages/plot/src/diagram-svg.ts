@@ -21,8 +21,19 @@ export function svgTextLines(lines: string[], x: number, y: number, classes = ''
   return `<text fill="${fill}" x="${x}" y="${y}" class="${classes}" text-anchor="${anchor}" dominant-baseline="central"${style ? ` style="${style}"` : ''}>${lines.map((line, index) => `<tspan x="${x}" dy="${index ? lineHeight : dy}">${escapeHtml(line)}</tspan>`).join('')}</text>`
 }
 
-export function diagramSvg(label: string, width: number, height: number, body: string): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" class="slide-diagram" font-family="system-ui, sans-serif" font-size="14" fill="currentColor" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">${body}</svg>`
+const defaultFontFamily = 'system-ui, sans-serif'
+
+function diagramFontFamily(value: unknown): string {
+  return (typeof value === 'string' && value.trim().replace(/;$/, '').trim()) || defaultFontFamily
+}
+
+export function minimumGlyphAdvance(fontFamily: string | undefined): number {
+  // Narrow proportional glyphs can occupy a full cell in a custom monospace font.
+  return diagramFontFamily(fontFamily) === defaultFontFamily ? 0.4 : 0.7
+}
+
+export function diagramSvg(label: string, width: number, height: number, body: string, fontFamily?: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="slide-diagram" font-family="${escapeHtml(diagramFontFamily(fontFamily))}" font-size="14" fill="currentColor" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">${body}</svg>`
 }
 
 export function arrows(marker: string): string {
