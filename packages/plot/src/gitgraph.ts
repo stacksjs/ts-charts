@@ -99,7 +99,8 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
     const symbol = style ?? (kind === 'merge' ? 'MERGE' : kind === 'cherry-pick' ? 'CHERRY_PICK' : 'NORMAL')
     const generatedOperationLabel = kind !== 'commit' && !label && customId === undefined
-    const commit: Commit = { id, label: label || id, generatedOperationLabel, message, branch: current, parents, tags,
+    const visibleTags = kind === 'cherry-pick' ? tags.filter(Boolean) : tags
+    const commit: Commit = { id, label: label || id, generatedOperationLabel, message, branch: current, parents, tags: visibleTags,
       kind, type, symbol, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
     commits.push(commit)
     byId.set(id, commit)

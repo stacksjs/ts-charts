@@ -225,6 +225,27 @@ test('keeps whole-day exclusions between bars while advancing dependent tasks', 
   expect(bars[1].width).toBeCloseTo(bars[0].width * 3)
 })
 
+test('recovers missing Gantt references when requested and rejects cycles', () => {
+  const chart: GanttChartOptions = {
+    now: Date.UTC(2026, 2, 6, 15),
+    sections: [{ tasks: [
+      { name: 'Initial', id: 'initial', start: '2026-03-02', duration: '1d' },
+      { name: 'Review', after: ['unknown', 'initial'], duration: '1d' },
+      { name: 'Publish', id: 'publish', start: '2026-03-10', until: ['unknown'] },
+      { name: 'Follow-up', after: ['publish'], duration: '1d' },
+      { name: 'Planning', after: ['unknown'], duration: '1d' },
+    ] }],
+  }
+  const march = (day: number) => Date.UTC(2026, 2, day)
+  expect(scheduleGantt(chart)).toBeUndefined()
+  expect(scheduleGantt({ ...chart, missingDependencyFallback: 'today' })?.tasks.map(({ start, end }) => [start, end])).toEqual([
+    [march(2), march(3)], [march(3), march(4)], [march(10), march(10)], [march(10), march(11)], [march(6), march(7)],
+  ])
+  expect(scheduleGantt({ ...chart, missingDependencyFallback: 'today', sections: [{ tasks: [
+    { name: 'Cycle', id: 'cycle', after: ['missing', 'cycle'], duration: '1d' },
+  ] }] })).toBeUndefined()
+})
+
 test('parses calendar ordinals, fractions of a second, and partial Gantt dates in UTC', () => {
   const reference = Date.UTC(2026, 2, 6, 10, 15, 0, 50)
   const cases = [
@@ -318,6 +339,10 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   expect(svg).toContain('>v1.0</tspan>')
   expect(svg).toContain('data-commit-id="backport" data-parent-ids="draft" data-picked-id="release" data-picked-parent="draft"')
   expect(svg).toMatch(/class="diagram-git-edge diagram-git-pick-edge"[^>]*stroke-dasharray="5 3" data-from-commit="release" data-to-commit="backport"/)
+  const withoutEmptyTags: GitGraphOptions = { ...chart, operations: [...chart.operations.slice(0, -1),
+    { op: 'cherry-pick', commit: 'release', parent: 'draft', tags: ['', 'backport', ''] },
+  ] }
+  expect(buildGitHistory(withoutEmptyTags)?.commits.at(-1)?.tags).toEqual(['backport'])
   expect(buildGitHistory({ ...chart, operations: [...chart.operations.slice(0, -1),
     { op: 'cherry-pick', commit: 'release', parent: 'root' },
   ] })).toBeUndefined()

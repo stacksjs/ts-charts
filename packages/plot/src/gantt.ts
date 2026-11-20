@@ -59,6 +59,8 @@ export interface GanttChartOptions extends ChartLabels {
   exclusionMode?: 'working-time' | 'whole-days'
   /** Calendar mode rounds fractional days and weeks to whole days and uses whole months or years. */
   durationMode?: 'elapsed' | 'calendar'
+  /** Skip unknown IDs and use the reference day when none of the IDs exist. */
+  missingDependencyFallback?: 'today'
   weekend?: 'friday' | 'saturday'
   weekday?: GanttWeekday
   topAxis?: boolean
@@ -143,6 +145,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   const parseDate = ganttDateParser(dateFormat, now)
   const axisFormat = format || defaultGanttAxisFormat(dateFormat)
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
+  const today = dayOf(now)
   const isoDate = ganttDateParser('YYYY-MM-DD')
   const parseCalendarDate = (value: string) => isoDate(value) ?? parseDate(value)
   const excludedDates = new Set<number>()
@@ -217,22 +220,29 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
       return value
     }
   }
-  function dependency(references: readonly string[], endpoint: 'start' | 'end'): number | undefined {
-    const times = references.map((id) => {
+  function dependency(owner: TaskDefinition, references: readonly string[], endpoint: 'start' | 'end'): number | undefined {
+    let result: number | undefined
+    for (const id of references) {
       const task = byId.get(id)
-      return task ? resolve(task, endpoint) : undefined
-    })
-    if (times.some(time => time === undefined)) return
-    return endpoint === 'end' ? Math.max(...times as number[]) : Math.min(...times as number[])
+      if (!task && chart.missingDependencyFallback === 'today') continue
+      const time = task && resolve(task, endpoint)
+      if (time === undefined) return
+      result = result === undefined ? time : endpoint === 'end' ? Math.max(result, time) : Math.min(result, time)
+    }
+    if (result !== undefined || endpoint === 'end') return result ?? today
+    // When an unknown until target falls before the task, keep a zero-length
+    // interval so tasks depending on its end use the same value as the chart.
+    const start = resolve(owner, 'start')
+    return start === undefined ? undefined : Math.max(today, start)
   }
   function start(task: TaskDefinition): number | undefined {
-    if (task.input.after) return dependency(task.input.after, 'end')
+    if (task.input.after) return dependency(task, task.input.after, 'end')
     if (task.input.start !== undefined) return parseDate(task.input.start)
     const previous = definitions[task.index - 1]
-    return previous ? resolve(previous, 'end') : dayOf(now)
+    return previous ? resolve(previous, 'end') : today
   }
   function end(task: TaskDefinition): number | undefined {
-    if (task.input.until) return dependency(task.input.until, 'start')
+    if (task.input.until) return dependency(task, task.input.until, 'start')
     if (task.input.end !== undefined) {
       const explicit = parseDate(task.input.end)
       return explicit === undefined ? undefined : explicit + (inclusiveEndDates ? dayMs : 0)
