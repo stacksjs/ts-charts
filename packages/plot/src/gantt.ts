@@ -5,7 +5,7 @@ import { timeFormat, utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
 import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel } from './gantt-labels.ts'
-import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttDayOffset, ganttDayStart, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
+import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatIncludesTime, ganttDateFormatter, ganttDateParser, ganttDayOffset, ganttDaySampler, ganttDayStart, ganttIsoStart, ganttNextDayStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
 export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
@@ -173,6 +173,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   const parseFixedEnd = chart.fixedEndDateFormat === undefined ? undefined : ganttDateParser(chart.fixedEndDateFormat, now, timeZone)
   const dayOf = (time: number) => ganttDayStart(time, timeZone)
   const nextDay = (time: number) => ganttDayOffset(time, 1, timeZone)
+  const nextBoundary = (time: number) => ganttNextDayStart(time, timeZone)
   const today = dayOf(now)
   const isoDate = dateFormat === 'YYYY-MM-DD' ? parseDate : ganttDateParser('YYYY-MM-DD', now, timeZone)
   const formattedCalendar = chart.calendarMatch === 'formatted'
@@ -222,7 +223,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     let remaining = target - start
     let cursor = start
     for (let days = 0; days < 20_000; days++) {
-      const next = nextDay(dayOf(cursor))
+      const next = nextBoundary(cursor)
+      if (!(next > cursor)) return
       if (!isExcluded(cursor)) {
         const available = next - cursor
         if (remaining <= available) return cursor + remaining
@@ -235,14 +237,22 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   // Count excluded dates at the task's time of day. Keep trailing exclusions
   // out of the visible bar while advancing the dependency endpoint past them.
   function shiftByExcludedDays(start: number, target: number): { end: number, barEnd: number } | undefined {
+    const taskTime = ganttDaySampler(start, timeZone)
+    const targetTime = ganttDaySampler(target, timeZone)
+    let endDate = dayOf(target)
     let end = target
     let barEnd = target
     let previousExcluded = false
-    for (let date = nextDay(start), days = 0; date <= end; date = nextDay(date), days++) {
+    for (let date = nextBoundary(start), days = 0; date <= end; date = nextBoundary(date), days++) {
+      const time = taskTime(date)
+      if (time > end) break
       if (days >= 20_000) return
       if (!previousExcluded) barEnd = end
-      previousExcluded = isExcluded(date)
-      if (previousExcluded) end = nextDay(end)
+      previousExcluded = isExcluded(time)
+      if (previousExcluded) {
+        endDate = nextBoundary(endDate)
+        end = targetTime(endDate)
+      }
     }
     return { end, barEnd }
   }
@@ -492,12 +502,15 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     ? !(exclusionCutoff !== undefined && latest >= exclusionCutoff)
     : (end - start) / dayMs <= 180
   if (showExclusions && chart.excludes?.length) {
-    const first = chart.calendarMatch === 'formatted' ? start : dayOf(start)
+    const sampleAtTaskTime = chart.calendarMatch === 'formatted' && ganttDateFormatIncludesTime(chart.dateFormat ?? 'YYYY-MM-DD')
+    const sampleDay = sampleAtTaskTime ? ganttDaySampler(start, timeZone) : undefined
+    const nextBoundary = (date: number) => ganttNextDayStart(date, timeZone)
     const ranges: { start: number, end: number }[] = []
-    for (let date = first; combineExclusions ? date <= latest : dayOf(date) < end; date = nextDay(date)) {
+    for (let day = dayOf(start); combineExclusions ? day <= latest : day < end; day = nextBoundary(day)) {
+      const date = sampleDay?.(day) ?? day
+      if (combineExclusions && date > latest) break
       if (!isExcluded(date)) continue
-      const day = dayOf(date)
-      const dayEnd = nextDay(day)
+      const dayEnd = nextBoundary(day)
       const previous = ranges.at(-1)
       if (combineExclusions && previous?.end === day) previous.end = dayEnd
       else ranges.push({ start: day, end: dayEnd })

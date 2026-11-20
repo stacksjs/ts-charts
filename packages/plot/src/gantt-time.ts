@@ -12,6 +12,29 @@ export function ganttDayOffset(time: number, days: number, zone: GanttTimeZone):
   return zone === 'local' ? +timeDay.offset(time, days) : time + days * dayMs
 }
 
+export function ganttNextDayStart(time: number, zone: GanttTimeZone): number {
+  // Advance past the current date and floor again. A skipped midnight can put
+  // this date's first instant at 01:00 without changing tomorrow's midnight.
+  return zone === 'local' ? +timeDay.ceil(Math.floor(time) + 1) : ganttDayStart(time, zone) + dayMs
+}
+
+type GanttDaySample = (day: number) => number
+
+export function ganttDaySampler(reference: number, zone: GanttTimeZone): GanttDaySample {
+  const first = ganttDayStart(reference, zone)
+  if (zone === 'UTC') {
+    const offset = reference - first
+    return day => day + offset
+  }
+  const clock = new Date(reference)
+  const hour = clock.getHours()
+  const minute = clock.getMinutes()
+  const second = clock.getSeconds()
+  const millisecond = clock.getMilliseconds()
+  // Reapply the same wall time on each date so a clock gap affects one sample.
+  return day => day === first ? reference : new Date(day).setHours(hour, minute, second, millisecond)
+}
+
 // Represent local wall-clock fields in UTC so the same field calculations can
 // be used for both calendars without changing the actual task timestamps.
 function wallTime(date: Date): Date {
@@ -25,6 +48,10 @@ const dateFields: Readonly<Record<string, string>> = {
   Y: '[+-]?\\d{1,6}', YYYY: '\\d{4}', YY: '\\d{2}', Q: '[1-4]', MMMM: '[A-Za-z]+', MMM: '[A-Za-z]{3}',
   DDD: '\\d{1,3}', DDDD: '\\d{3}', Do: '\\d{1,2}(?:st|nd|rd|th)', S: '\\d', SS: '\\d{2}', SSS: '\\d{3}',
   A: 'AM|PM', a: 'am|pm', X: '-?\\d+(?:\\.\\d+)?', x: '-?\\d+', Z: 'Z|[+-]\\d{2}:?\\d{2}', ZZ: 'Z|[+-]\\d{4}',
+}
+
+export function ganttDateFormatIncludesTime(format: string): boolean {
+  return (format.match(inputTokens) ?? []).some(token => /^[HhmsSAaXxZ]+$/.test(token))
 }
 
 function regexLiteral(value: string): string {

@@ -53,6 +53,58 @@ test('uses the local Gantt calendar for durations, deadlines, exclusions, and ax
   expect(output.offset).toBe('2020-11-01T01:00:00.000Z')
 })
 
+test('uses exact local day boundaries for work hours and exclusion bands after a midnight gap', async () => {
+  const entry = new URL('../src/diagrams.ts', import.meta.url).pathname
+  const source = `
+    import { ganttChart, scheduleGantt } from ${JSON.stringify(entry)}
+    const chart = {
+      timeZone: 'local', exclusionBands: 'ranges', tickInterval: '1day',
+      axisFormat: '%Y-%m-%d %H:%M', excludes: ['sunday', 'monday'],
+      sections: [{ tasks: [{ name: 'Release', start: '2019-09-07', end: '2019-09-10' }] }],
+    }
+    const hourly = scheduleGantt({
+      ...chart, excludes: ['sunday'],
+      sections: [{ tasks: [{ name: 'Review', start: '2019-09-08', duration: '24h' }] }],
+    }).tasks[0]
+    const beforeGap = scheduleGantt({
+      ...chart, excludes: ['monday'], dateFormat: 'YYYY-MM-DD HH:mm',
+      sections: [{ tasks: [{ name: 'Draft', start: '2019-09-07 23:30', duration: '24h' }] }],
+    }).tasks[0]
+    const clockTokens = ganttChart({
+      ...chart, calendarMatch: 'formatted', dateFormat: 'YYYY-MM-DD[T]HH:mm',
+      excludes: ['sunday', '2019-09-09T00:00'], includes: ['2019-09-08T01:00'],
+      sections: [{ tasks: [{ name: 'Ship', start: '2019-09-07T00:00', end: '2019-09-10T00:00' }] }],
+    })
+    const adjusted = scheduleGantt({
+      ...chart, calendarMatch: 'formatted', dateFormat: 'YYYY-MM-DD[T]HH:mm', exclusionMode: 'whole-days',
+      excludes: ['2019-09-09T00:00'],
+      sections: [{ tasks: [{ name: 'Ship', start: '2019-09-07T00:00', duration: '2d' }] }],
+    }).tasks[0]
+    console.log(JSON.stringify({
+      start: new Date(hourly.start).toISOString(), end: new Date(hourly.end).toISOString(),
+      wallClockEnd: new Date(beforeGap.end).toISOString(), svg: ganttChart(chart), clockTokens,
+      adjusted: [adjusted.barEnd, adjusted.end].map(time => new Date(time).toISOString()),
+    }))
+  `
+  const child = Bun.spawn([process.execPath, '-e', source], {
+    env: { ...process.env, TZ: 'America/Santiago' }, stdout: 'pipe', stderr: 'pipe',
+  })
+  const [status, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+  if (status) throw new Error(stderr)
+  const result = JSON.parse(stdout)
+  expect(result.start).toBe('2019-09-08T04:00:00.000Z')
+  expect(result.end).toBe('2019-09-10T03:00:00.000Z')
+  expect(result.wallClockEnd).toBe('2019-09-10T03:30:00.000Z')
+  const bands = [...result.svg.matchAll(/class="diagram-gantt-excluded" data-excluded-start="([^"]+)" data-excluded-end="([^"]+)"[^>]* x="([^"]+)"[^>]* width="([^"]+)"/g)]
+  expect(bands).toHaveLength(1)
+  const [, from, to, x, width] = bands[0]
+  expect([from, to]).toEqual(['2019-09-08', '2019-09-10'])
+  expect(Number(x) + Number(width)).toBeCloseTo(Number(/<title>2019-09-10 00:00<\/title><line[^>]* x1="([^"]+)"/.exec(result.svg)?.[1]))
+  const tokenBands = [...result.clockTokens.matchAll(/data-excluded-start="([^"]+)" data-excluded-end="([^"]+)"/g)]
+  expect(tokenBands.map(([, start, end]) => [start, end])).toEqual([['2019-09-09', '2019-09-10']])
+  expect(result.adjusted).toEqual(['2019-09-09T03:00:00.000Z', '2019-09-10T03:00:00.000Z'])
+})
+
 test('renders a Gantt axis before any tasks have been declared', () => {
   const chart = { sections: [], now: Date.UTC(2026, 3, 6), topAxis: true, todayMarker: false }
   expect(scheduleGantt(chart)?.tasks).toEqual([])
