@@ -477,6 +477,23 @@ test('fits complete GitGraph branch, commit, and tag labels when truncation is d
   }
 })
 
+test('can lay out GitGraph tags individually and preserve joined labels by default', () => {
+  const chart: GitGraphOptions = {
+    operations: [{ op: 'commit', id: 'release', tags: ['candidate', 'signed<br>and tested', 'stable'] }],
+    tagLabel: { background: '#eeeeee', border: '#222222', fontSize: 16 },
+    truncateLabels: false,
+  }
+  expect(gitGraphChart(chart)!.match(/class="diagram-git-tag-box"/g)).toHaveLength(1)
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    const svg = gitGraphChart({ ...chart, direction, tagLayout: 'stacked' })!
+    expect(svg.match(/class="diagram-git-tag-box"/g)).toHaveLength(3)
+    const positions = [...svg.matchAll(/<text[^>]+ y="([\d.]+)" class="diagram-git-tag"[^>]*>(.*?)<\/text>/g)]
+    expect(positions.map(([, , text]) => text.replace(/<[^>]+>/g, ''))).toEqual(['stable', 'signedand tested', 'candidate'])
+    const offsets = positions.map(([, y]) => Number(y))
+    expect(offsets).toEqual([...offsets].sort((a, b) => direction === 'LR' ? b - a : a - b))
+  }
+})
+
 test('shows authored Git labels below horizontal commits and keeps generated operation metadata', () => {
   const chart: GitGraphOptions = { showGeneratedOperationLabels: false, operations: [
     { op: 'commit', id: 'root', tags: ['v1'] },
