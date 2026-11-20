@@ -420,6 +420,10 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   expect(history?.commits.at(-1)?.picked).toBe('release')
   expect(history?.commits.at(-1)?.message).toBe('cherry-picked merged branch review into main into review')
   expect(history?.commits.at(-1)?.parents.map(commit => commit.id)).toEqual(['draft'])
+  const parentsWithSource = buildGitHistory({ ...chart, cherryPickSourceParent: true })?.commits.at(-1)?.parents
+  expect(parentsWithSource?.map(commit => commit.id)).toEqual(['draft', 'release'])
+  const sourceEdge = /data-from-commit="release" data-to-commit="backport"/g
+  expect(gitGraphChart({ ...chart, cherryPickSourceParent: true })?.match(sourceEdge)).toHaveLength(1)
   const svg = gitGraphChart(chart)
   expect(svg).toContain('data-diagram-kind="gitgraph"')
   expect(svg).toContain('aria-label="Project history"')

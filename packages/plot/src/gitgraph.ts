@@ -46,6 +46,12 @@ export interface GitGraphOptions extends ChartLabels {
   showBranches?: boolean
   /** Warn on duplicate commit IDs and resolve later references to the latest commit with that ID. */
   duplicateCommitIds?: 'latest'
+  /** Include the copied commit as a second parent in the diagram history. */
+  cherryPickSourceParent?: boolean
+  /** Allow a merge from the original branch of an inherited head commit. */
+  allowMergeFromInheritedHead?: boolean
+  /** Route cross-branch connections around intermediate commit dots. */
+  edgeLayout?: 'orthogonal'
   rotateCommitLabel?: boolean
   /** Keep the complete branch, commit, and tag labels and fit the graph to them. */
   truncateLabels?: boolean
@@ -110,7 +116,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     while (byId.has(`c${index}`)) index++
     const id = customId ?? `c${index}`
     const parents = current.head ? [current.head] : []
-    if (kind === 'merge' && other) parents.push(other)
+    if (other && (kind === 'merge' || chart.cherryPickSourceParent)) parents.push(other)
     const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
     const symbol = style ?? (kind === 'merge' ? 'MERGE' : kind === 'cherry-pick' ? 'CHERRY_PICK' : 'NORMAL')
     const generatedOperationLabel = kind !== 'commit' && !label && customId === undefined
@@ -146,6 +152,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
       case 'merge': {
         const source = branches.get(operation.branch)
         if (!source?.head || source === current || !current.head || source.head === current.head) return
+        if (chart.allowMergeFromInheritedHead === false && current.head.branch === source) return
         const message = operation.message ?? `merged branch ${source.name} into ${current.name}`
         if (!add('merge', { ...operation, message }, source.head)) return
         break
@@ -216,6 +223,24 @@ function decorateTag(label: string, x: number, y: number, width: number, anchor:
   const hole = `<circle class="diagram-git-tag-hole" cx="${left + 6}" cy="${y}" r="1.5" fill="${appearance.holeColor ?? 'currentColor'}"/>`
   const textX = shoulder + 5 + (anchor === 'middle' ? width / 2 : 0)
   return shape + hole + svgText(label, textX, y, 'diagram-git-tag', anchor, appearance)
+}
+
+type EdgePoint = [time: number, lane: number]
+
+function roundedEdge(points: EdgePoint[], horizontal: boolean): string {
+  const coordinates = ([time, lane]: EdgePoint) => horizontal ? `${time} ${lane}` : `${lane} ${time}`
+  const distance = ([a, b]: EdgePoint, [c, d]: EdgePoint) => Math.abs(a - c) + Math.abs(b - d)
+  const toward = ([time, lane]: EdgePoint, [nextTime, nextLane]: EdgePoint, offset: number): EdgePoint =>
+    [time + Math.sign(nextTime - time) * offset, lane + Math.sign(nextLane - lane) * offset]
+  let path = `M${coordinates(points[0])}`
+  for (let index = 1; index < points.length - 1; index++) {
+    const previous = points[index - 1]
+    const corner = points[index]
+    const next = points[index + 1]
+    const radius = Math.min(10, distance(previous, corner) / 2, distance(corner, next) / 2)
+    path += `L${coordinates(toward(corner, previous, radius))}Q${coordinates(corner)} ${coordinates(toward(corner, next, radius))}`
+  }
+  return `${path}L${coordinates(points[points.length - 1])}`
 }
 
 export function gitGraphChart(chart: GitGraphOptions): string | undefined {
@@ -303,22 +328,47 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     return `<g class="diagram-git-branch" data-git-branch-index="${lanes.get(branch)}"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
   const ringColor = safeColor(chart.background) ?? 'currentColor'
+  const orthogonal = chart.edgeLayout === 'orthogonal'
+  const branchRanks = branches.map((): number[] => [])
+  if (orthogonal) {
+    for (const commit of commits) branchRanks[commit.branch.index].push(commit.rank)
+  }
+  function routedEdge(parent: Commit, commit: Commit, secondary: boolean): string {
+    const from: EdgePoint = [time(parent.rank), lane(parent.branch)]
+    const to: EdgePoint = [time(commit.rank), lane(commit.branch)]
+    if (parent.branch === commit.branch) return roundedEdge([from, to], horizontal)
+    const occupied = (branch: Branch) => branchRanks[branch.index].some(rank => rank > parent.rank && rank < commit.rank)
+    const sourceBusy = occupied(parent.branch)
+    const targetBusy = occupied(commit.branch)
+    // Cross branches in the space between ranks, where there are no commit dots.
+    const early = time(parent.rank + 0.5)
+    const late = time(commit.rank - 0.5)
+    if (sourceBusy && targetBusy) {
+      const between = from[1] + Math.sign(to[1] - from[1]) * laneWidth / 2
+      return roundedEdge([from, [early, from[1]], [early, between], [late, between], [late, to[1]], to], horizontal)
+    }
+    const crossing = sourceBusy || (!targetBusy && !secondary) ? early : late
+    return roundedEdge([from, [crossing, from[1]], [crossing, to[1]], to], horizontal)
+  }
   const edges = commits.map((commit) => {
     const to = point(commit)
-    function edge(parent: Commit, copy = false): string {
+    function edge(parent: Commit, secondary: boolean): string {
+      const copy = secondary && commit.kind === 'cherry-pick'
       const from = point(parent)
       const middleX = (from.x + to.x) / 2
       const middleY = (from.y + to.y) / 2
-      const curve = horizontal
+      const curve = orthogonal ? routedEdge(parent, commit, secondary) : horizontal
         ? `M${from.x} ${from.y}C${middleX} ${from.y} ${middleX} ${to.y} ${to.x} ${to.y}`
         : `M${from.x} ${from.y}C${from.x} ${middleY} ${to.x} ${middleY} ${to.x} ${to.y}`
-      const branch = copy || (commit.kind === 'merge' && parent !== commit.parents[0]) ? parent.branch : commit.branch
+      const branch = secondary ? parent.branch : commit.branch
       const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" stroke-width="2" d="${curve}" stroke="${color(branch)}" data-git-branch-index="${lanes.get(branch)}"`
-      if (!copy) return `${path}/>`
-      return `${path} stroke-dasharray="5 3" data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
+      const endpoints = `data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"`
+      if (!copy) return `${path} ${endpoints}/>`
+      return `${path} stroke-dasharray="5 3" ${endpoints}><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
     }
     const source = commit.pickedCommit
-    return commit.parents.map(parent => edge(parent)).join('') + (source ? edge(source, true) : '')
+    return commit.parents.map((parent, index) => edge(parent, index > 0)).join('')
+      + (source && !chart.cherryPickSourceParent ? edge(source, true) : '')
   }).join('')
   const nodes = commits.map((commit) => {
     const { x, y } = point(commit)
