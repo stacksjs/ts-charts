@@ -26,6 +26,11 @@ export interface GitLabelAppearance {
   fontSize?: number
 }
 
+export interface GitTagAppearance extends GitLabelAppearance {
+  shape?: 'tag'
+  holeColor?: string
+}
+
 export interface GitGraphOptions extends ChartLabels {
   operations: readonly GitGraphOperation[]
   direction?: GitGraphDirection
@@ -51,7 +56,7 @@ export interface GitGraphOptions extends ChartLabels {
   background?: string
   titleColor?: string
   commitLabel?: GitLabelAppearance
-  tagLabel?: GitLabelAppearance
+  tagLabel?: GitTagAppearance
   /** Give each tag its own label above or beside the commit. */
   tagLayout?: 'stacked'
 }
@@ -195,6 +200,24 @@ function decorateLabel(label: string, x: number, y: number, classes: string, anc
   return `<rect class="${classes}-box" x="${left}" y="${y - height / 2}" width="${width}" height="${height}" rx="3" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'none'}"/>${text}`
 }
 
+const tagTipWidth = 10
+
+function decorateTag(label: string, x: number, y: number, width: number, anchor: 'start' | 'middle', appearance: GitTagAppearance): string {
+  const halfHeight = labelHeight(label, appearance.fontSize) / 2
+  const boxWidth = width + tagTipWidth + 10
+  const left = anchor === 'middle' ? x - boxWidth / 2 : x - 5
+  const right = left + boxWidth
+  const shoulder = left + tagTipWidth
+  const points = [
+    [left, y - 2], [shoulder, y - halfHeight], [right, y - halfHeight],
+    [right, y + halfHeight], [shoulder, y + halfHeight], [left, y + 2],
+  ].map(point => point.join(',')).join(' ')
+  const shape = `<polygon class="diagram-git-tag-box" points="${points}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'currentColor'}"/>`
+  const hole = `<circle class="diagram-git-tag-hole" cx="${left + 6}" cy="${y}" r="1.5" fill="${appearance.holeColor ?? 'currentColor'}"/>`
+  const textX = shoulder + 5 + (anchor === 'middle' ? width / 2 : 0)
+  return shape + hole + svgText(label, textX, y, 'diagram-git-tag', anchor, appearance)
+}
+
 export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const history = buildGitHistory(chart)
   if (!history) return
@@ -208,7 +231,11 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const horizontal = direction === 'LR'
   const ranks = Math.max(0, ...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
-  const tagAppearance = normalizeAppearance(chart.tagLabel)
+  const tagAppearance = {
+    ...normalizeAppearance(chart.tagLabel),
+    holeColor: safeColor(chart.tagLabel?.holeColor),
+  }
+  const shapedTags = chart.tagLabel?.shape === 'tag'
   const abbreviated = (text: string, size: number) => chart.truncateLabels !== false && text.length > size ? `${text.slice(0, size - 1)}…` : text
   const branchLines = branches.map(branch => labelLines(branch.name.replace(/\r?\n|\\n/g, '<br>'))
     .map(line => abbreviated(line.trim(), horizontal ? 28 : 21)))
@@ -230,15 +257,18 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const tags = commits.map((commit) => {
     const values = chart.tagLayout === 'stacked' ? [...commit.tags].reverse() : [commit.tags.join(' · ')]
     let offset = tagOffset - singleTagHeight / 2
-    return values.filter(value => value.trim()).map((value) => {
+    let stackWidth = 0
+    const labels = values.filter(value => value.trim()).map((value) => {
       const text = abbreviated(value, tagLimit)
       const height = labelHeight(text, tagAppearance.fontSize)
       const center = offset + height / 2
-      longTag = Math.max(longTag, labelWidth(text, tagSize))
+      stackWidth = Math.max(stackWidth, labelWidth(text, tagSize))
       extraTagHeight = Math.max(extraTagHeight, offset + height - tagOffset - singleTagHeight / 2)
       offset += height + 4
       return { text, center }
     })
+    if (labels.length) longTag = Math.max(longTag, stackWidth + (shapedTags ? tagTipWidth : 0))
+    return { labels, width: stackWidth }
   })
   const commitOffset = Math.max(19, 11 + commitSize / 2)
   const gap = horizontal ? Math.max(84, longTag + 25, (rotateLabels ? rotatedExtent : longCommit) + 15) : Math.max(47, commitSize + tagSize + 20) + extraTagHeight
@@ -314,9 +344,14 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
         : decorateLabel(labelText(commit), x + 13, y - Math.max(9, commitSize / 2 + 2), 'diagram-git-label', 'start', commitAppearance)
     }
     const tag = commit.tags.join(' · ')
-    const tagLabels = tags[commit.index].map(({ text, center }) => horizontal
-      ? decorateLabel(text, x, y - center, 'diagram-git-tag', 'middle', tagAppearance)
-      : decorateLabel(text, x + 13, y + center, 'diagram-git-tag', 'start', tagAppearance)).join('')
+    const tagStack = tags[commit.index]
+    const tagAnchor = horizontal ? 'middle' : 'start'
+    const tagX = horizontal ? x : x + 13
+    const tagLabels = tagStack.labels.map(({ text, center }) => {
+      const tagY = horizontal ? y - center : y + center
+      return shapedTags ? decorateTag(text, tagX, tagY, tagStack.width, tagAnchor, tagAppearance)
+        : decorateLabel(text, tagX, tagY, 'diagram-git-tag', tagAnchor, tagAppearance)
+    }).join('')
     const detail = [commit.branch.name, commit.id, commit.message, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
     const message = commit.message ? ` data-commit-message="${escapeHtml(commit.message)}"` : ''
     const provenance = commit.picked ? ` data-picked-id="${escapeHtml(commit.picked)}"${commit.pickedParent ? ` data-picked-parent="${escapeHtml(commit.pickedParent)}"` : ''}` : ''

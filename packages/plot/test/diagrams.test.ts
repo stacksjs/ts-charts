@@ -494,6 +494,25 @@ test('can lay out GitGraph tags individually and preserve joined labels by defau
   }
 })
 
+test('renders opt-in GitGraph tag shapes with one hole per label', () => {
+  const chart: GitGraphOptions = {
+    operations: [{ op: 'commit', id: 'release', tags: ['candidate', 'signed<br>and tested', 'stable'] }],
+    tagLayout: 'stacked',
+  }
+  const plain = gitGraphChart(chart)!
+  expect(plain).not.toContain('diagram-git-tag-hole')
+
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    const svg = gitGraphChart({
+      ...chart,
+      direction,
+      tagLabel: { shape: 'tag', background: '#eeeeee', border: '#222222', holeColor: '#123456' },
+    })!
+    expect(svg.match(/<polygon class="diagram-git-tag-box"[^>]+fill="#eeeeee" stroke="#222222"/g)).toHaveLength(3)
+    expect(svg.match(/<circle class="diagram-git-tag-hole"[^>]+r="1.5" fill="#123456"/g)).toHaveLength(3)
+  }
+})
+
 test('shows authored Git labels below horizontal commits and keeps generated operation metadata', () => {
   const chart: GitGraphOptions = { showGeneratedOperationLabels: false, operations: [
     { op: 'commit', id: 'root', tags: ['v1'] },
