@@ -515,7 +515,13 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const stroke = color(commit.branch)
     let node = `<circle class="diagram-git-dot" cx="${x}" cy="${y}" r="${dotRadius}" fill="${stroke}"/>`
     if (commit.symbol === 'MERGE') node += `<circle class="diagram-git-ring" fill="${symbolDetail ?? 'none'}" stroke="${ringColor}" cx="${x}" cy="${y}" r="${mergeRadius}"/>`
-    if (commit.symbol === 'CHERRY_PICK') node += `<path class="diagram-git-ring" fill="none" stroke="${ringColor}" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
+    if (commit.symbol === 'CHERRY_PICK') {
+      const berryRadius = compact ? 2.5 : 2.75
+      node += `<path class="diagram-git-ring diagram-git-pick-stem" fill="none" stroke="${ringColor}" stroke-width="1.5" d="M${x - 3} ${y + 1}L${x} ${y - 5}L${x + 3} ${y + 1}"/>`
+      for (const offset of [-3, 3]) {
+        node += `<circle class="diagram-git-pick-berry" cx="${x + offset}" cy="${y + 2}" r="${berryRadius}" fill="${ringColor}"/>`
+      }
+    }
     if (commit.symbol === 'REVERSE') {
       const size = reverseRadius * 2
       node += `<path class="diagram-git-reverse-mark" fill="none" stroke="${ringColor}" stroke-width="${classic ? 3 : 2}" d="M${x - reverseRadius} ${y - reverseRadius}l${size} ${size}m-${size} 0l${size}-${size}"/>`

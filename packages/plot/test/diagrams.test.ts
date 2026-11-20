@@ -632,6 +632,8 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   expect(svg).toContain('>Prep work</tspan>')
   expect(svg).toContain('>v1.0</tspan>')
   expect(svg).toContain('data-commit-id="backport" data-parent-ids="draft" data-picked-id="release" data-picked-parent="draft"')
+  expect(svg?.match(/<circle class="diagram-git-pick-berry"/g)).toHaveLength(2)
+  expect(svg).toContain('<path class="diagram-git-ring diagram-git-pick-stem"')
   expect(svg).toMatch(/class="diagram-git-edge diagram-git-pick-edge"[^>]*stroke-dasharray="5 3" data-from-commit="release" data-to-commit="backport"/)
   expect(svg).toMatch(/class="diagram-git-branch" data-git-branch-index="1"><title>review<\/title>/)
   expect(svg).toMatch(/data-commit-id="release"[^>]*data-git-branch-index="0" data-git-symbol="merge"/)
