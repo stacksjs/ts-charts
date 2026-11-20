@@ -78,7 +78,7 @@ export interface GanttChartOptions extends ChartLabels {
   numberSectionStyles?: number
   sectionColors?: readonly (string | undefined)[]
   palette?: GanttPalette
-  /** UTC timestamp used by the today marker and by the first undated task. */
+  /** UTC timestamp used by the today marker, partial dates, and the first undated task. */
   now?: number
 }
 
@@ -136,7 +136,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     }
   }
   if (!definitions.length) return
-  const parseDate = ganttDateParser(dateFormat)
+  const parseDate = ganttDateParser(dateFormat, now)
   const axisFormat = format || (/[Hh]|^X|^x/.test(dateFormat) ? '%H:%M' : '%b %d')
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
   const isoDate = ganttDateParser('YYYY-MM-DD')

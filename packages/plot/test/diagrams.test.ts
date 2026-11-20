@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
-import { buildGitHistory, flowchartDiagram, ganttChart, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
+import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
 
 test('lays out a standalone SVG flowchart with decisions, branch labels, and loops', () => {
   const svg = flowchartDiagram({
@@ -207,6 +207,41 @@ test('keeps whole-day exclusions between bars while advancing dependent tasks', 
   expect(bars).toHaveLength(3)
   expect(bars[1].x - (bars[0].x + bars[0].width)).toBeCloseTo(bars[0].width * 2)
   expect(bars[1].width).toBeCloseTo(bars[0].width * 3)
+})
+
+test('parses calendar ordinals, fractions of a second, and partial Gantt dates in UTC', () => {
+  const reference = Date.UTC(2026, 2, 6, 10, 15, 0, 50)
+  const cases = [
+    ['YYYY-DDD HH:mm:ss.S', '2024-60 01:02:03.4', '2024-02-29T01:02:03.400Z'],
+    ['YYYY-DDDD HH:mm:ss.SS Z', '2024-366 23:59:59.05 -01:00', '2025-01-01T00:59:59.050Z'],
+    ['Do MMM YYYY[,] hh:mm A', '23rd Jan 2026, 12:00 AM', '2026-01-23T00:00:00.000Z'],
+    ['hh:mm A ZZ', '12:00 AM +0230', '2026-03-05T21:30:00.000Z'],
+    ['DD/MM', '09/07', '2026-07-09T00:00:00.000Z'],
+    ['Q', '4', '2026-10-01T00:00:00.000Z'],
+    ['Y', '2025', '2025-01-01T00:00:00.000Z'],
+    ['X', '1410715640.579', '2014-09-14T17:27:20.579Z'],
+  ]
+  for (const [format, input, expected] of cases) expect(ganttDateParser(format, reference)(input)).toBe(Date.parse(expected))
+  expect(ganttDateParser('YYYY-DDDD', reference)('2025-366')).toBeUndefined()
+  expect(ganttDateParser('YYYY-DDDD', reference)('2024-000')).toBeUndefined()
+  expect(ganttDateParser('Do MMM YYYY', reference)('11st Jan 2026')).toBeUndefined()
+  expect(ganttDateParser('hh:mm', reference)('13:25')).toBeUndefined()
+})
+
+test('anchors time-only tasks and the today marker to the same reference day', () => {
+  const now = Date.UTC(2026, 2, 6, 10, 15, 0, 50)
+  const chart: GanttChartOptions = {
+    now,
+    dateFormat: 'HH:mm:ss.SS',
+    axisFormat: '%S.%L',
+    tickInterval: '10millisecond',
+    sections: [{ tasks: [{ name: 'Measure', start: '10:15:00.01', duration: '80ms' }] }],
+  }
+  expect(scheduleGantt(chart)?.tasks.map(({ start, end }) => [start, end])).toEqual([[now - 40, now + 40]])
+  const svg = ganttChart(chart)
+  expect(svg).toContain('class="diagram-gantt-today"')
+  expect(svg).toContain('>00.010</tspan>')
+  expect(svg).toContain('>00.090</tspan>')
 })
 
 test('replays structured Git history with merge ordering, orientation, and cherry-pick validation', () => {

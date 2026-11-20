@@ -2,27 +2,29 @@ export const dayMs: number = 86_400_000
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 export const weekdays: readonly string[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-const inputTokens = /YYYY|MMMM|MMM|DDDD|DDD|Do|SSS|YY|MM|DD|HH|hh|mm|ss|ZZ|[YQMDHhmsAaXxZ]|\[[^\]]*\]|./g
+const inputTokens = /YYYY|MMMM|MMM|DDDD|DDD|Do|SSS|SS|YY|MM|DD|HH|hh|mm|ss|ZZ|[YQMDHhmsSAaXxZ]|\[[^\]]*\]|./g
+const dateFields: Readonly<Record<string, string>> = {
+  Y: '[+-]?\\d{1,6}', YYYY: '\\d{4}', YY: '\\d{2}', Q: '[1-4]', MMMM: '[A-Za-z]+', MMM: '[A-Za-z]{3}',
+  DDD: '\\d{1,3}', DDDD: '\\d{3}', Do: '\\d{1,2}(?:st|nd|rd|th)', S: '\\d', SS: '\\d{2}', SSS: '\\d{3}',
+  A: 'AM|PM', a: 'am|pm', X: '-?\\d+(?:\\.\\d+)?', x: '-?\\d+', Z: 'Z|[+-]\\d{2}:?\\d{2}', ZZ: 'Z|[+-]\\d{4}',
+}
 
 function regexLiteral(value: string): string {
   return value.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&')
 }
 
-export function ganttDateParser(format: string): (value: string) => number | undefined {
+/** Build a UTC date parser. Partial dates use the supplied reference date. */
+export function ganttDateParser(format: string, referenceTime: number = Date.now()): (value: string) => number | undefined {
   const tokens = format.match(inputTokens) ?? []
   const fields: string[] = []
   const pattern = tokens.map((token) => {
-    const lookup: Record<string, string> = {
-      YYYY: '\\d{4}', YY: '\\d{2}', Q: '[1-4]', MMMM: '[A-Za-z]+', MMM: '[A-Za-z]{3}',
-      DDD: '\\d{1,3}', DDDD: '\\d{3}', Do: '\\d{1,2}(?:st|nd|rd|th)', SSS: '\\d{3}',
-      A: 'AM|PM', a: 'am|pm', X: '-?\\d+(?:\\.\\d+)?', x: '-?\\d+', Z: 'Z|[+-]\\d{2}:?\\d{2}', ZZ: 'Z|[+-]\\d{4}',
-    }
-    const field = lookup[token] ?? (/^[MDHhms]{1,2}$/.test(token) ? (token.length === 2 ? '\\d{2}' : '\\d{1,2}') : '')
-    if (!field) return regexLiteral(token.replace(/^\[|\]$/g, ''))
+    const field = dateFields[token] ?? (/^[MDHhms]{1,2}$/.test(token) ? (token.length === 2 ? '\\d{2}' : '\\d{1,2}') : '')
+    if (!field) return regexLiteral(token.length > 1 && token.startsWith('[') ? token.slice(1, -1) : token)
     fields.push(token)
     return `(${field})`
   }).join('')
   const matcher = new RegExp(`^${pattern}$`, 'i')
+  const reference = new Date(referenceTime)
   return (value) => {
     const captures = matcher.exec(value.trim())
     if (!captures || !fields.length) return
@@ -35,27 +37,38 @@ export function ganttDateParser(format: string): (value: string) => number | und
       const stamp = parts.has('X') ? Number(parts.get('X')) * 1000 : Number(parts.get('x'))
       return Number.isFinite(new Date(stamp).valueOf()) ? stamp : undefined
     }
-    const shortYear = get(['YY'], 0)
-    const year = get(['YYYY'], shortYear + (shortYear > 68 ? 1900 : 2000))
+    const hasYear = parts.has('Y') || parts.has('YYYY') || parts.has('YY')
+    const shortYear = get(['YY'], NaN)
+    const defaultYear = Number.isNaN(shortYear) ? reference.getUTCFullYear() : shortYear + (shortYear > 68 ? 1900 : 2000)
+    const year = get(['YYYY', 'Y'], defaultYear)
     const monthName = parts.get('MMMM') ?? parts.get('MMM')
-    const ordinal = get(['DDD', 'DDDD'], 0)
+    const ordinalToken = parts.get('DDD') ?? parts.get('DDDD')
+    const ordinal = ordinalToken === undefined ? undefined : Number(ordinalToken)
+    if (ordinal === 0) return
+    const hasMonth = monthName !== undefined || parts.has('M') || parts.has('MM') || parts.has('Q')
+    const firstMonth = hasYear ? 1 : reference.getUTCMonth() + 1
+    const defaultMonth = parts.has('Q') ? (get(['Q'], 1) - 1) * 3 + 1 : firstMonth
     const month = monthName
       ? months.findIndex(name => (parts.has('MMM') ? name.slice(0, 3) : name).toLowerCase() === monthName.toLowerCase()) + 1
-      : get(['M', 'MM'], (get(['Q'], 1) - 1) * 3 + 1)
-    const date = get(['D', 'DD', 'Do'], 1)
+      : get(['M', 'MM'], defaultMonth)
+    const date = get(['D', 'DD', 'Do'], hasYear || hasMonth || ordinal !== undefined ? 1 : reference.getUTCDate())
+    const dayLabel = parts.get('Do')
+    if (dayLabel) {
+      const suffix = date >= 11 && date <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][date % 10] ?? 'th'
+      if (dayLabel.toLowerCase() !== `${date}${suffix}`) return
+    }
     let hour = get(['H', 'HH', 'h', 'hh'], 0)
     const meridiem = parts.get('a') ?? parts.get('A')
-    if (meridiem) {
-      if (hour < 1 || hour > 12) return
-      hour = hour % 12 + (meridiem.toLowerCase() === 'pm' ? 12 : 0)
-    }
+    if ((meridiem || parts.has('h') || parts.has('hh')) && (hour < 1 || hour > 12)) return
+    if (meridiem) hour = hour % 12 + (meridiem.toLowerCase() === 'pm' ? 12 : 0)
     const minute = get(['m', 'mm'], 0)
     const second = get(['s', 'ss'], 0)
+    const fraction = parts.get('SSS') ?? parts.get('SS') ?? parts.get('S') ?? ''
     if (month < 1 || month > 12 || date < 1 || date > 31 || hour > 23 || minute > 59 || second > 59) return
     const time = new Date(0)
-    time.setUTCFullYear(year, ordinal ? 0 : month - 1, ordinal || date)
-    time.setUTCHours(hour, minute, second, get(['SSS'], 0))
-    if (time.getUTCFullYear() !== year || (!ordinal && (time.getUTCMonth() !== month - 1 || time.getUTCDate() !== date))) return
+    time.setUTCFullYear(year, ordinal === undefined ? month - 1 : 0, ordinal ?? date)
+    time.setUTCHours(hour, minute, second, Number(fraction.padEnd(3, '0')))
+    if (time.getUTCFullYear() !== year || (ordinal === undefined && (time.getUTCMonth() !== month - 1 || time.getUTCDate() !== date))) return
     const zone = /([+-])(\d{2}):?(\d{2})/.exec(parts.get('Z') ?? parts.get('ZZ') ?? '')
     if (zone && (Number(zone[2]) > 23 || Number(zone[3]) > 59)) return
     const offset = zone ? (zone[1] === '-' ? -1 : 1) * (Number(zone[2]) * 60 + Number(zone[3])) * 60000 : 0
