@@ -70,7 +70,8 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
     }
     if (parts.has('X') || parts.has('x')) {
       const stamp = parts.has('X') ? Number(parts.get('X')) * 1000 : Number(parts.get('x'))
-      return Number.isFinite(new Date(stamp).valueOf()) ? stamp : undefined
+      const time = new Date(stamp).getTime()
+      return Number.isFinite(time) ? time : undefined
     }
     const hasYear = parts.has('Y') || parts.has('YYYY') || parts.has('YY')
     const shortYear = get(['YY'], NaN)
@@ -206,7 +207,10 @@ export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'cale
   const units: Record<string, number> = { ms: 1, s: 1000, m: 60000, h: 3600000, d: dayMs, w: 7 * dayMs }
   if (mode === 'calendar' && (unit === 'd' || unit === 'w'))
     return ganttDayOffset(start, Math.round(amount * (unit === 'w' ? 7 : 1)), timeZone)
-  if (unit !== 'M' && unit !== 'y') return start + amount * units[unit]
+  if (unit !== 'M' && unit !== 'y') {
+    const end = start + amount * units[unit]
+    return mode === 'calendar' ? new Date(end).getTime() : end
+  }
   const instant = new Date(start)
   const date = timeZone === 'local' ? wallTime(instant) : instant
   const day = date.getUTCDate()
@@ -233,24 +237,42 @@ const localIntervals = {
 const utcWeeks = [utcSunday, utcMonday, utcTuesday, utcWednesday, utcThursday, utcFriday, utcSaturday]
 const localWeeks = [timeSunday, timeMonday, timeTuesday, timeWednesday, timeThursday, timeFriday, timeSaturday]
 
+function collectGanttTicks(first: number, end: number, limit: number, next: (tick: number) => number): number[] | undefined {
+  const ticks: number[] = []
+  let tick = first
+  while (tick <= end && ticks.length < limit) {
+    ticks.push(tick)
+    const following = next(tick)
+    if (!(following > tick)) return ticks
+    tick = following
+  }
+  // A dense interval uses automatic ticks instead of truncating the axis.
+  if (!(tick <= end)) return ticks
+}
+
 export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday', timeZone: GanttTimeZone = 'UTC', maxExplicitTicks = 60): number[] {
   const tickLimit = Number.isFinite(maxExplicitTicks) ? Math.max(1, Math.min(10_000, Math.floor(maxExplicitTicks))) : 60
-  const [, amount, unit, weekStart] = /^([1-9]\d{0,2})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
+  const [, amount, unit, weekStart] = /^([1-9]\d*)(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
+  const stride = Number(amount)
   const local = timeZone === 'local'
-  const tickIntervals = local ? localIntervals : utcIntervals
-  const weekIntervals = local ? localWeeks : utcWeeks
-  const interval = unit === 'week' ? weekIntervals[Math.max(0, weekdays.indexOf(weekStart ?? defaultWeekStart))]
-    : tickIntervals[unit as keyof typeof tickIntervals]
-  const step = interval?.every?.(Number(amount))
-  if (step) {
-    const ticks: number[] = []
-    // Fall back to automatic ticks for crowded axes instead of truncating the grid.
-    let tick = +step.ceil(Math.ceil(start))
-    while (ticks.length < tickLimit && tick <= end) {
-      ticks.push(tick)
-      tick = +step.offset(tick)
+  if (Number.isSafeInteger(stride) && stride > 0) {
+    let authored: number[] | undefined
+    if (unit === 'week') {
+      const weeks = local ? localWeeks : utcWeeks
+      const week = weeks[Math.max(0, weekdays.indexOf(weekStart ?? defaultWeekStart))]
+      const boundary = week.ceil(Math.ceil(start))
+      // Match the epoch-based phase of every() without scanning intervening weeks.
+      const remainder = week.count!(0, boundary) % stride
+      const skip = remainder < 0 ? -remainder : (stride - remainder) % stride
+      const first = +week.floor(week.offset(boundary, skip))
+      authored = collectGanttTicks(first, end, tickLimit, tick => +week.floor(week.offset(tick, stride)))
     }
-    if (!(tick <= end)) return ticks.length ? ticks : [start]
+    else {
+      const intervals = local ? localIntervals : utcIntervals
+      const step = intervals[unit as keyof typeof intervals]?.every?.(stride)
+      if (step) authored = collectGanttTicks(+step.ceil(Math.ceil(start)), end, tickLimit, tick => +step.floor(step.offset(tick)))
+    }
+    if (authored) return authored.length ? authored : [start]
   }
   const ticks = (local ? timeTicks : utcTicks)(Math.ceil(start), Math.floor(end), 10).map(Number)
   return ticks.length ? ticks : [start]

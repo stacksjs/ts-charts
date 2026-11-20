@@ -79,6 +79,43 @@ test('anchors Gantt ticks to the calendar field and keeps crowded axes bounded',
   expect(wide.at(-1)).toBeGreaterThan(Date.UTC(2025, 11, 31))
 })
 
+test('honors large millisecond and weekday tick intervals across the epoch', () => {
+  expect(ganttTicks(-3100, 3100, '1500millisecond')).toEqual([-3000, -1500, 0, 1500, 3000])
+  expect(ganttTicks(Date.UTC(1960, 0, 1), Date.UTC(2060, 0, 1), '2000week monday')).toEqual([
+    Date.UTC(1969, 11, 29), Date.UTC(2008, 3, 28), Date.UTC(2046, 7, 27),
+  ])
+  expect(ganttTicks(Date.UTC(1960, 0, 1), Date.UTC(2060, 0, 1), '1000000000week monday'))
+    .toEqual([Date.UTC(1969, 11, 29)])
+})
+
+test('normalizes local weekly Gantt ticks after a midnight clock change', async () => {
+  const entry = new URL('../src/gantt-time.ts', import.meta.url).pathname
+  const child = Bun.spawn([process.execPath, '-e', `
+    import { ganttTicks } from ${JSON.stringify(entry)}
+    const start = +new Date(2019, 8, 1)
+    const end = +new Date(2019, 8, 15)
+    console.log(JSON.stringify(ganttTicks(start, end, '1week', 'sunday', 'local').map(time => new Date(time).toISOString())))
+  `], { env: { ...process.env, TZ: 'America/Santiago' }, stdout: 'pipe', stderr: 'pipe' })
+  const [status, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+  if (status) throw new Error(stderr)
+  expect(JSON.parse(stdout)).toEqual(['2019-09-01T04:00:00.000Z', '2019-09-08T04:00:00.000Z', '2019-09-15T03:00:00.000Z'])
+})
+
+test('uses integer millisecond endpoints for calendar durations and parsed timestamps', () => {
+  const options: GanttChartOptions = {
+    dateFormat: 'X', durationMode: 'calendar',
+    sections: [{ tasks: [
+      { id: 'first', name: 'First', start: '1.0006', duration: '0.6ms' },
+      { id: 'next', name: 'Next', after: ['first'], duration: '0.6ms' },
+      { id: 'last', name: 'Last', after: ['next'], duration: '2.9ms' },
+    ] }],
+  }
+  expect(scheduleGantt(options)?.tasks.map(task => [task.start, task.end])).toEqual([
+    [1000, 1000], [1000, 1000], [1000, 1002],
+  ])
+  expect(scheduleGantt({ ...options, durationMode: 'elapsed' })?.tasks[2].end).toBeCloseTo(1004.1)
+})
+
 test('preserves dense explicit Gantt ticks up to the configured limit', () => {
   const start = Date.UTC(2026, 0, 1)
   const end = start + 9999

@@ -81,7 +81,7 @@ export interface GanttChartOptions extends ChartLabels {
   exclusionMode?: 'working-time' | 'whole-days'
   /** When set, only end dates matching this format stay fixed through exclusions. Other explicit dates and until targets can move. */
   fixedEndDateFormat?: string
-  /** Calendar mode rounds fractional days and weeks to whole days and uses whole months or years. */
+  /** Calendar mode uses Date precision and rounds fractional calendar units. */
   durationMode?: 'elapsed' | 'calendar'
   /** Skip unknown IDs and use the reference day when none of the IDs exist. */
   missingDependencyFallback?: 'today'
