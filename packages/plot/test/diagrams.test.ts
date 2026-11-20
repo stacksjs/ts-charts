@@ -274,6 +274,29 @@ test('adjusts custom end dates and until targets when a fixed date format is sup
   ])
 })
 
+test('matches complete Gantt calendar tokens without expanding them into full-day exclusions', () => {
+  const chart: GanttChartOptions = {
+    dateFormat: 'YYYY-MM-DD[T]HH:mm',
+    exclusionMode: 'whole-days',
+    excludes: ['unknown', '2026-03-07T10:00'],
+    sections: [{ tasks: [
+      { name: 'Early', start: '2026-03-06T08:00', duration: '1d' },
+      { name: 'Late', start: '2026-03-06T10:00', duration: '1d' },
+    ] }],
+  }
+  expect(scheduleGantt(chart)).toBeUndefined()
+  const ends = (options: GanttChartOptions) => scheduleGantt(options)?.tasks.map(({ end }) => new Date(end).toISOString())
+  expect(ends({ ...chart, excludes: ['2026-03-07T10:00'] })).toEqual([
+    '2026-03-08T08:00:00.000Z', '2026-03-08T10:00:00.000Z',
+  ])
+  expect(ends({ ...chart, calendarMatch: 'formatted' })).toEqual([
+    '2026-03-07T08:00:00.000Z', '2026-03-08T10:00:00.000Z',
+  ])
+  expect(ends({ ...chart, calendarMatch: 'formatted', excludes: ['weekends'], includes: ['2026-03-07T10:00'] })).toEqual([
+    '2026-03-09T08:00:00.000Z', '2026-03-07T10:00:00.000Z',
+  ])
+})
+
 test('recovers missing Gantt references when requested and rejects cycles', () => {
   const chart: GanttChartOptions = {
     now: Date.UTC(2026, 2, 6, 15),

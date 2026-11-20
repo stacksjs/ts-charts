@@ -3,7 +3,7 @@ import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
 import { layoutTaskLabel } from './gantt-labels.ts'
-import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
+import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
 export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
@@ -53,10 +53,14 @@ export interface GanttPalette {
 export interface GanttChartOptions extends ChartLabels {
   sections: readonly GanttSection[]
   dateFormat?: string
+  /** Accept valid ISO dates and timestamps when a task start does not match dateFormat. */
+  startDateFallback?: 'iso'
   axisFormat?: string
   tickInterval?: string
   excludes?: readonly string[]
   includes?: readonly string[]
+  /** Match custom inclusion and exclusion entries against the full formatted timestamp. */
+  calendarMatch?: 'formatted'
   /** Shift adjustable endpoints by whole excluded dates, preserving gaps between tasks. */
   exclusionMode?: 'working-time' | 'whole-days'
   /** When set, only end dates matching this format stay fixed through exclusions. Other explicit dates and until targets can move. */
@@ -154,10 +158,23 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   const axisFormat = format || defaultGanttAxisFormat(dateFormat)
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
   const today = dayOf(now)
-  const isoDate = ganttDateParser('YYYY-MM-DD')
-  const parseCalendarDate = (value: string) => isoDate(value) ?? parseDate(value)
-  const excludedDates = new Set<number>()
-  const includedDates = new Set<number>()
+  const isoDate = dateFormat === 'YYYY-MM-DD' ? parseDate : ganttDateParser('YYYY-MM-DD', now)
+  const formattedCalendar = chart.calendarMatch === 'formatted'
+  const calendarFormatter = formattedCalendar && dateFormat !== 'YYYY-MM-DD' ? ganttDateFormatter(dateFormat) : undefined
+  let hasFormattedDates = false
+  function calendarKey(value: string): number | string | undefined {
+    const iso = isoDate(value)
+    if (iso !== undefined) return iso
+    if (formattedCalendar) {
+      if (!calendarFormatter?.matches(value)) return
+      hasFormattedDates = true
+      return value.toLowerCase()
+    }
+    const date = parseDate(value)
+    if (date !== undefined) return dayOf(date)
+  }
+  const excludedDates = new Set<number | string>()
+  const includedDates = new Set<number | string>()
   const excludedWeekdays = new Set<number>()
   for (const item of excludes) {
     const name = item.toLowerCase()
@@ -167,21 +184,22 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     }
     else if (weekdays.includes(name)) excludedWeekdays.add(weekdays.indexOf(name))
     else {
-      const date = parseCalendarDate(item)
-      if (date === undefined) return
-      excludedDates.add(dayOf(date))
+      const key = calendarKey(item)
+      if (key !== undefined) excludedDates.add(key)
+      else if (!formattedCalendar) return
     }
   }
   for (const item of includes) {
-    const date = parseCalendarDate(item)
-    if (date === undefined) return
-    includedDates.add(dayOf(date))
+    const key = calendarKey(item)
+    if (key !== undefined) includedDates.add(key)
+    else if (!formattedCalendar) return
   }
   const isExcluded = (value: number) => {
     const day = dayOf(value)
-    if (includedDates.has(day)) return false
+    const formatted = hasFormattedDates && calendarFormatter ? calendarFormatter.format(value).toLowerCase() : ''
+    if (includedDates.has(day) || includedDates.has(formatted)) return false
     const weekday = ((day / dayMs + 4) % 7 + 7) % 7
-    return excludedDates.has(day) || excludedWeekdays.has(weekday)
+    return excludedDates.has(day) || excludedDates.has(formatted) || excludedWeekdays.has(weekday)
   }
   const hasExclusions = excludedDates.size > 0 || excludedWeekdays.size > 0
   function applyDuration(start: number, target: number): number | undefined {
@@ -245,7 +263,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   }
   function start(task: TaskDefinition): number | undefined {
     if (task.input.after) return dependency(task, task.input.after, 'end')
-    if (task.input.start !== undefined) return parseDate(task.input.start)
+    if (task.input.start !== undefined)
+      return parseDate(task.input.start) ?? (chart.startDateFallback === 'iso' ? ganttIsoStart(task.input.start.trim()) : undefined)
     const previous = definitions[task.index - 1]
     return previous ? resolve(previous, 'end') : today
   }
@@ -432,8 +451,10 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const excludedStyle = excludedColor ? ` style="fill:${excludedColor}"` : ''
   // At extremely broad date ranges individual exclusion days are too narrow to show.
   if ((end - start) / dayMs <= 180) {
-    for (let day = Math.floor(start / dayMs) * dayMs; day < end; day += dayMs) {
-      if (!isExcluded(day)) continue
+    const firstDay = Math.floor(start / dayMs) * dayMs
+    const timeOfDay = chart.calendarMatch === 'formatted' ? start - firstDay : 0
+    for (let day = firstDay; day < end; day += dayMs) {
+      if (!isExcluded(day + timeOfDay)) continue
       const left = xAt(Math.max(start, day))
       const right = xAt(Math.min(end, day + dayMs))
       bands.push(`<rect class="diagram-gantt-excluded" fill="#869eb6" fill-opacity="0.15"${excludedStyle} x="${left}" y="${gridStart}" width="${right - left}" height="${bottom - gridStart}"/>`)

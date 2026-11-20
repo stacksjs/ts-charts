@@ -15,8 +15,16 @@ function regexLiteral(value: string): string {
   return value.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&')
 }
 
-/** Build a UTC date parser. Partial dates use the supplied reference date. */
-export function ganttDateParser(format: string, referenceTime: number = Date.now()): (value: string) => number | undefined {
+function tokenLiteral(token: string): string {
+  return token.length > 1 && token.startsWith('[') ? token.slice(1, -1) : token
+}
+
+function ordinalDay(day: number): string {
+  const suffix = day >= 11 && day <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][day % 10] ?? 'th'
+  return `${day}${suffix}`
+}
+
+function compileDateFormat(format: string) {
   const tokens = format.match(inputTokens) ?? []
   const fields: string[] = []
   const pattern = tokens.map((token) => {
@@ -24,11 +32,16 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
     const field = dateFields[token] ?? (/^[MDHhms]{1,2}$/.test(token)
       ? (token.length === 2 && !standaloneClock ? '\\d{2}' : '\\d{1,2}')
       : '')
-    if (!field) return regexLiteral(token.length > 1 && token.startsWith('[') ? token.slice(1, -1) : token)
+    if (!field) return regexLiteral(tokenLiteral(token))
     fields.push(token)
     return `(${field})`
   }).join('')
-  const matcher = new RegExp(`^${pattern}$`, 'i')
+  return { tokens, fields, matcher: new RegExp(`^${pattern}$`, 'i') }
+}
+
+/** Build a UTC date parser. Partial dates use the supplied reference date. */
+export function ganttDateParser(format: string, referenceTime: number = Date.now()): (value: string) => number | undefined {
+  const { fields, matcher } = compileDateFormat(format)
   const reference = new Date(referenceTime)
   return (value) => {
     const captures = matcher.exec(value.trim())
@@ -58,10 +71,7 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
       : get(['M', 'MM'], defaultMonth)
     const date = get(['D', 'DD', 'Do'], hasYear || hasMonth || ordinal !== undefined ? 1 : reference.getUTCDate())
     const dayLabel = parts.get('Do')
-    if (dayLabel) {
-      const suffix = date >= 11 && date <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][date % 10] ?? 'th'
-      if (dayLabel.toLowerCase() !== `${date}${suffix}`) return
-    }
+    if (dayLabel && dayLabel.toLowerCase() !== ordinalDay(date)) return
     let hour = get(['H', 'HH', 'h', 'hh'], 0)
     const meridiem = parts.get('a') ?? parts.get('A')
     if ((meridiem || parts.has('h') || parts.has('hh')) && (hour < 1 || hour > 12)) return
@@ -79,6 +89,59 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
     const offset = zone ? (zone[1] === '-' ? -1 : 1) * (Number(zone[2]) * 60 + Number(zone[3])) * 60000 : 0
     return time.valueOf() - offset
   }
+}
+
+function dayOfYear(date: Date): number {
+  const start = new Date(0)
+  start.setUTCFullYear(date.getUTCFullYear())
+  return Math.floor((+date - +start) / dayMs) + 1
+}
+
+const padDate = (value: number, length = 2) => String(value).padStart(length, '0')
+const hour12 = (date: Date) => date.getUTCHours() % 12 || 12
+const yearDigits = (year: number, length: number) => year < 0 ? `-${padDate(-year, length)}` : padDate(year, length)
+const dateValues: Record<string, string | ((date: Date) => string | number)> = {
+  Y: date => date.getUTCFullYear(),
+  YYYY: date => yearDigits(date.getUTCFullYear(), 4),
+  YY: date => padDate((date.getUTCFullYear() % 100 + 100) % 100),
+  Q: date => Math.floor(date.getUTCMonth() / 3) + 1,
+  M: date => date.getUTCMonth() + 1, MM: date => padDate(date.getUTCMonth() + 1),
+  MMMM: date => months[date.getUTCMonth()], MMM: date => months[date.getUTCMonth()].slice(0, 3),
+  D: date => date.getUTCDate(), DD: date => padDate(date.getUTCDate()), Do: date => ordinalDay(date.getUTCDate()),
+  DDD: dayOfYear, DDDD: date => padDate(dayOfYear(date), 3),
+  H: date => date.getUTCHours(), HH: date => padDate(date.getUTCHours()),
+  h: hour12, hh: date => padDate(hour12(date)),
+  m: date => date.getUTCMinutes(), mm: date => padDate(date.getUTCMinutes()),
+  s: date => date.getUTCSeconds(), ss: date => padDate(date.getUTCSeconds()),
+  a: date => date.getUTCHours() < 12 ? 'am' : 'pm',
+  A: date => date.getUTCHours() < 12 ? 'AM' : 'PM',
+  S: date => Math.floor(date.getUTCMilliseconds() / 100),
+  SS: date => padDate(Math.floor(date.getUTCMilliseconds() / 10)),
+  SSS: date => padDate(date.getUTCMilliseconds(), 3),
+  X: date => Math.floor(+date / 1000), x: date => +date, Z: '+00:00', ZZ: '+0000',
+}
+
+export function ganttDateFormatter(format: string): { matches: (value: string) => boolean, format: (time: number) => string } {
+  const { tokens, fields, matcher } = compileDateFormat(format)
+  const parts = tokens.map(token => Object.hasOwn(dateValues, token) ? dateValues[token] : tokenLiteral(token))
+  return {
+    matches: (value: string) => fields.length > 0 && matcher.test(value),
+    format(time: number): string {
+      const date = new Date(time)
+      let output = ''
+      for (const part of parts) output += typeof part === 'string' ? part : part(date)
+      return output
+    },
+  }
+}
+
+const parseIsoTime = ganttDateParser('YYYY-MM-DD[T]HH:mm:ss.SSSZ', 0)
+
+export function ganttIsoStart(value: string): number | undefined {
+  const match = /^(\d{3,4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})?)?$/i.exec(value)
+  if (!match) return
+  const [, year, month, day, hour = '00', minute = '00', second = '00', fraction = '', zone = 'Z'] = match
+  return parseIsoTime(`${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}.${fraction.padEnd(3, '0')}${zone}`)
 }
 
 export function defaultGanttAxisFormat(format: string): string {
