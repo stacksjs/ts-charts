@@ -3,8 +3,9 @@ import { labelLines } from './diagram-svg.ts'
 const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 
 function glyphWidth(glyph: string, size: number): number {
-  if (/^[ilI.,:!|' ]$/.test(glyph)) return size * 0.4
+  if (/^[-ilI.,:!|' ]$/.test(glyph)) return size * 0.4
   if (/^[MWmw@%]$/.test(glyph)) return size
+  if (/^\d$/.test(glyph)) return size * 0.65
   return /^[\x00-\xff]$/.test(glyph) ? size * 0.75 : size * 1.2
 }
 
