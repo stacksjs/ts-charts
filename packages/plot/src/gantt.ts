@@ -1,6 +1,5 @@
 import type { ChartLabels } from './chronology.ts'
 import type { GanttTimeZone } from './gantt-time.ts'
-import { color } from '../../color/src/color.ts'
 import { timeFormat, utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
@@ -339,7 +338,7 @@ function validReferences(values: readonly string[]): boolean {
 function todayStyle(style: GanttMarkerStyle | undefined): string {
   if (!style) return ''
   const { stroke: paint, strokeDasharray, strokeLinecap } = style
-  const stroke = safeColor(paint) ?? (typeof paint === 'string' && paint.length <= 120 ? color(paint)?.formatRgb() : undefined)
+  const stroke = safeColor(paint)
   const thickness = boundedNumber(style.strokeWidth, 0, 64)
   const opacity = boundedNumber(style.opacity, 0, 1)
   const strokeOpacity = boundedNumber(style.strokeOpacity, 0, 1)

@@ -1,3 +1,4 @@
+import { color } from '../../color/src/color.ts'
 import { diagramSvg, escapeHtml, labelLines, svgTextLines } from './diagram-svg.ts'
 
 export interface ChartLabels {
@@ -13,7 +14,10 @@ const colors = ['#8dbcf2', '#fed194', '#9ad9c0', '#c6adeb', '#f5a9b2', '#8cdae0'
 export const chronologyInk = '#122434'
 
 export function safeColor(value: unknown): string | undefined {
-  return typeof value === 'string' && /^(?:#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})|[a-z]{1,24})$/i.test(value) ? value : undefined
+  if (typeof value !== 'string' || value.length > 120) return
+  const paint = value.trim()
+  if (/^(?:#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})|[a-z]{1,24})$/i.test(paint)) return paint
+  return color(paint)?.formatRgb()
 }
 
 export function boundedNumber(value: unknown, minimum: number, maximum: number): number | undefined {

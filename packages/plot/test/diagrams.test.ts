@@ -1036,6 +1036,27 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
 })
 
+test('renders functional SVG colors in native Gantt and GitGraph palettes', () => {
+  const color = 'hsl(210, 50%, 40%)'
+  const translucent = 'rgba(15, 30, 45, 0.5)'
+  const unsafe = 'rgb(1, 2, 3);fill:url(#outside)'
+  const gantt = ganttChart({
+    sections: [{ name: 'Release', tasks: [{ name: 'Ship', start: '2026-01-01', duration: '1d' }] }],
+    sectionColors: [translucent],
+    palette: { background: unsafe, task: { fill: color } },
+  })!
+  expect(gantt).toContain('style="fill:rgba(15, 30, 45, 0.5);opacity:0.2"')
+  expect(gantt).toMatch(/class="diagram-gantt-bar"[^>]*style="fill:rgb\(51, 102, 153\)"/)
+  expect(gantt).not.toContain('url(#outside)')
+  const graph = gitGraphChart({
+    operations: [{ op: 'commit', id: 'root', tags: ['release'] }], background: translucent,
+    colors: [color], tagLabel: { color: unsafe },
+  })!
+  expect(graph).toContain('style="--diagram-background:rgba(15, 30, 45, 0.5)"')
+  expect(graph).toMatch(/class="diagram-git-dot"[^>]*fill="rgb\(51, 102, 153\)"/)
+  expect(graph).not.toContain('url(#outside)')
+})
+
 test('reserves room above GitGraph commits for every title line', () => {
   const options: GitGraphOptions = { operations: [{ op: 'commit', id: 'root' }], titleTopMargin: 0 }
   const short = gitGraphChart({ ...options, title: 'Release' })!
