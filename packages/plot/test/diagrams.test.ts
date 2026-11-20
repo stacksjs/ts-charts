@@ -713,7 +713,7 @@ test('renders Gantt geometry, typography, and alternating section colors', () =>
   const svg = ganttChart(chart)!
   expect(svg).toContain('viewBox="0 0 480 ')
   expect(svg).toMatch(/y="30" class="diagram-title"/)
-  expect(svg).toMatch(/class="diagram-gantt-grid"[^>]*d="M[\d.]+ 19V/)
+  expect(svg).toMatch(/<line class="diagram-gantt-grid"[^>]*y1="19"/)
   expect(svg).toMatch(/class="diagram-gantt-section-label"[^>]*style="font-size:24px;"/)
   expect(svg).toMatch(/class="diagram-gantt-label"[^>]*style="font-size:16px;"/)
   expect(svg.match(/style="fill:#123456;opacity:0.2"/g)).toHaveLength(2)
@@ -721,6 +721,29 @@ test('renders Gantt geometry, typography, and alternating section colors', () =>
   expect(svg).toContain('>000 1 1767225600 +0000</tspan>')
   const heightOf = (html: string) => Number(/viewBox="0 0 \d+ ([\d.]+)"/.exec(html)?.[1])
   expect(heightOf(svg) - heightOf(ganttChart({ ...chart, bottomMarginAdj: 0 })!)).toBe(12)
+})
+
+test('keeps dense Gantt grid intervals and shows matching non-overlapping labels on both axes', () => {
+  const chart: GanttChartOptions = {
+    width: 330, todayMarker: false, topAxis: true, tickInterval: '1day',
+    sections: [{ tasks: [{ name: 'Release', start: '2025-12-26', end: '2026-01-05' }] }],
+  }
+  expect(scheduleGantt(chart)?.axisFormat).toBe('%Y-%m-%d')
+  const svg = ganttChart(chart)!
+  const axes = [...svg.matchAll(/<g class="diagram-gantt-axis" data-axis="(\w+)"[^>]*>(.*?)<\/g>(?=<g class="diagram-gantt-axis"|<g class="diagram-gantt-task")/gs)]
+  expect(axes.map(axis => axis[1])).toEqual(['bottom', 'top'])
+  for (const [, , axis] of axes) {
+    expect(axis.match(/<line class="diagram-gantt-grid"/g)).toHaveLength(11)
+    expect(axis.match(/class="diagram-gantt-tick"/g)!.length).toBeLessThan(11)
+    expect(axis).toContain('<title>2026-01-01</title>')
+    expect(axis).toMatch(/class="diagram-gantt-tick"[^>]*><tspan[^>]*>2025-12-26<\/tspan>/)
+    expect(axis).toMatch(/class="diagram-gantt-tick"[^>]*><tspan[^>]*>2026-01-05<\/tspan>/)
+  }
+  const overnight = scheduleGantt({
+    dateFormat: 'YYYY-MM-DD HH:mm',
+    sections: [{ tasks: [{ name: 'Build', start: '2025-12-31 21:00', duration: '5h' }] }],
+  })
+  expect(overnight?.axisFormat).toBe('%Y-%m-%d %H:%M')
 })
 
 test('fits Gantt labels inside bars or puts them on the available side of the task', () => {

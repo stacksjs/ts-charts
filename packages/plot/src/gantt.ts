@@ -3,7 +3,7 @@ import { color } from '../../color/src/color.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
-import { layoutTaskLabel } from './gantt-labels.ts'
+import { layoutAxisLabels, layoutTaskLabel } from './gantt-labels.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
@@ -166,7 +166,6 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   if (!definitions.length) return
   const parseDate = ganttDateParser(dateFormat, now)
   const parseFixedEnd = chart.fixedEndDateFormat === undefined ? undefined : ganttDateParser(chart.fixedEndDateFormat, now)
-  const axisFormat = format || defaultGanttAxisFormat(dateFormat)
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
   const today = dayOf(now)
   const isoDate = dateFormat === 'YYYY-MM-DD' ? parseDate : ganttDateParser('YYYY-MM-DD', now)
@@ -311,6 +310,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     if (start === undefined || end === undefined || end < start) return
     tasks.push({ ...task, start, end, ...(barEnd === undefined ? {} : { barEnd }) })
   }
+  const crossesDay = dayOf(Math.min(...tasks.map(task => task.start))) !== dayOf(Math.max(...tasks.map(task => task.end)))
+  const axisFormat = format || defaultGanttAxisFormat(dateFormat, crossesDay)
   return { tasks, sections, title, axisFormat, ticks, topAxis, todayMarker, isExcluded }
 }
 
@@ -469,7 +470,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     y += 6
   }
   const bottom = Math.max(top + 33, y)
-  const gridStart = boundedNumber(chart.gridLineStartPadding, 0, bottom - 1) ?? top
+  const topAxisLine = top + 19
+  const gridStart = boundedNumber(chart.gridLineStartPadding, 0, bottom - 1) ?? (schedule.topAxis ? topAxisLine : top)
   const bands: string[] = []
   const excludedColor = safeColor(palette?.excluded)
   const excludedStyle = excludedColor ? ` style="fill:${excludedColor}"` : ''
@@ -500,11 +502,22 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const gridColor = safeColor(palette?.grid)
   const gridStyle = gridColor ? ` style="stroke:${gridColor}"` : ''
   const axisStyle = { color: safeColor(palette?.axisText) }
+  const axisFontSize = 12
   const formatTick = utcFormat(axisFormat)
-  const grid = ganttTicks(start, end, ticks, chart.weekday).map((time) => {
-    const x = xAt(time)
-    const label = formatTick(time)
-    return `<path class="diagram-gantt-grid" stroke="currentColor" stroke-opacity="0.25" fill="none"${gridStyle} d="M${x} ${gridStart}V${bottom}"/>${svgText(label, x, bottom + 13, 'diagram-gantt-tick', 'middle', axisStyle)}${schedule.topAxis ? svgText(label, x, top + 8, 'diagram-gantt-tick', 'middle', axisStyle) : ''}`
+  const axisTicks = ganttTicks(start, end, ticks, chart.weekday).map(time => ({ x: xAt(time), text: formatTick(time) }))
+  const axisLabels = layoutAxisLabels(axisTicks, width, axisFontSize)
+  const axes = (schedule.topAxis ? ['bottom', 'top'] as const : ['bottom'] as const).map((position) => {
+    const above = position === 'top'
+    const y = above ? topAxisLine : bottom
+    const y2 = above ? y - 4 : gridStart
+    const domain = `<path class="diagram-gantt-axis-line" d="M${xAt(start)} ${y}H${xAt(end)}" stroke="currentColor" stroke-opacity="0.25" fill="none"${gridStyle}/>`
+    const ticks = axisTicks.map(({ x, text }, index) => {
+      const label = axisLabels.get(index)
+      const caption = label ? svgTextLines([label.text], label.x, above ? top + 8 : bottom + 13, 'diagram-gantt-tick', 'middle', 'currentColor', axisStyle) : ''
+      const line = `<line class="diagram-gantt-grid" x1="${x}" x2="${x}" y1="${y2}" y2="${y}" stroke="currentColor" stroke-opacity="0.25"${gridStyle}/>`
+      return `<g class="diagram-gantt-tick-group"><title>${escapeHtml(text)}</title>${line}${caption}</g>`
+    }).join('')
+    return `<g class="diagram-gantt-axis" data-axis="${position}" font-size="${axisFontSize}">${domain}${ticks}</g>`
   })
   let interactive = false
   function withInteraction(task: ScheduledGanttTask, content: string): string {
@@ -611,7 +624,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const content = `<g class="diagram-gantt-task${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"${barEndpoint} data-gantt-style-index="${sectionSlot(task.section)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(barEnd)})</title>${shape}${label}</g>`
     return withInteraction(task, content)
   })
-  const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
+  const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${axes.join('')}${markers.join('')}${bars.join('')}</g>`
   const height = bottom + 31 + referenceLanes.length * referenceLineHeight + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
   const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY,
     { titleColor: palette?.title, background: palette?.background })

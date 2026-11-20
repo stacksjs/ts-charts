@@ -16,6 +16,34 @@ function measureLine(text: string, size: number): Line {
   return { glyphs, widths, width: widths.reduce((total, width) => total + width, 0) }
 }
 
+/** Label a subset of the grid ticks when their text would overlap. */
+export function layoutAxisLabels(ticks: readonly { x: number, text: string }[], width: number, fontSize: number): Map<number, { x: number, text: string }> {
+  const margin = 4
+  const available = width - 2 * margin
+  const labels = ticks.map(({ x, text }) => {
+    const measured = measureLine(text, fontSize)
+    const fitted = measured.width <= available ? text
+      : wrapLine(measured, available - glyphWidth('…', fontSize))[0] + '…'
+    const half = Math.min(available, measured.width) / 2
+    const center = Math.max(margin + half, Math.min(width - margin - half, x))
+    return { x: center, text: fitted, left: center - half, right: center + half }
+  })
+  const visible = new Map<number, { x: number, text: string }>()
+  const first = labels[0]
+  if (!first) return visible
+  visible.set(0, first)
+  let edge = first.right + margin
+  const last = labels.at(-1)!
+  const ceiling = last.left >= edge ? last.left - margin : Infinity
+  for (let index = 1; index < labels.length; index++) {
+    const label = labels[index]
+    if (label.left < edge || (index !== labels.length - 1 && label.right > ceiling)) continue
+    visible.set(index, label)
+    edge = label.right + margin
+  }
+  return visible
+}
+
 function wrapLine({ glyphs, widths }: Line, limit: number): string[] {
   if (!glyphs.length) return ['']
   const lines: string[] = []

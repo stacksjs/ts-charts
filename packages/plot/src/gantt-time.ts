@@ -144,14 +144,16 @@ export function ganttIsoStart(value: string): number | undefined {
   return parseIsoTime(`${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}.${fraction.padEnd(3, '0')}${zone}`)
 }
 
-export function defaultGanttAxisFormat(format: string): string {
+export function defaultGanttAxisFormat(format: string, crossesDay: boolean): string {
   const tokens = format.match(inputTokens) ?? []
   const hours = tokens.some(token => /^[Hh]{1,2}$/.test(token) || token === 'X' || token === 'x')
   const minutes = hours || tokens.some(token => /^m{1,2}$/.test(token))
   const seconds = tokens.some(token => /^s{1,2}$/.test(token))
   const fractions = tokens.some(token => /^S{1,3}$/.test(token))
   const leading = [hours && '%H', minutes && '%M', seconds && '%S'].filter(Boolean).join(':')
-  return fractions ? (leading ? `${leading}.%L` : '%L') : leading || '%b %d'
+  const clock = fractions ? (leading ? `${leading}.%L` : '%L') : leading
+  if (!clock) return '%Y-%m-%d'
+  return crossesDay ? `%Y-%m-%d ${clock}` : clock
 }
 
 export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'calendar' = 'elapsed'): number | undefined {
