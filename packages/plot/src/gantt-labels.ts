@@ -64,6 +64,38 @@ function wrapLine({ glyphs, widths }: Line, limit: number): string[] {
   return lines
 }
 
+export function layoutReferenceLabels(references: readonly { x: number, name: string }[], width: number, fontSize: number): {
+  labels: { x: number, y: number, lines: string[] }[]
+  height: number
+} {
+  const margin = 8
+  const gap = 5
+  const rows: { right: number, height: number, top: number }[] = []
+  const plans = references.map(({ x, name }) => {
+    const lines = labelLines(name).flatMap(line => wrapLine(measureLine(line, fontSize), width - 2 * margin))
+    const half = Math.max(...lines.map(line => measureLine(line, fontSize).width)) / 2
+    const center = Math.max(margin + half, Math.min(width - margin - half, x))
+    let row = rows.find(candidate => candidate.right + gap <= center - half)
+    if (!row) {
+      row = { right: 0, height: 0, top: 0 }
+      rows.push(row)
+    }
+    const height = lines.length * fontSize * 1.15
+    row.right = center + half
+    row.height = Math.max(row.height, height)
+    return { x: center, row, height, lines }
+  })
+  let height = 0
+  for (const row of rows) {
+    row.top = height
+    height += row.height + gap
+  }
+  return {
+    labels: plans.map(plan => ({ x: plan.x, y: plan.row.top + plan.height / 2, lines: plan.lines })),
+    height: Math.max(0, height - gap),
+  }
+}
+
 export interface GanttTaskLabel {
   lines: string[]
   x: number

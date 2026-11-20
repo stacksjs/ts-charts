@@ -186,6 +186,25 @@ test('paints critical task borders independently of status and labels vertical r
   expect(Number(captions[1][1])).toBeGreaterThan(Number(captions[0][1]))
 })
 
+test('keeps full Gantt marker labels in separate rows below the axis', () => {
+  const name = 'Release readiness review for customer documentation<br>Approval from all reviewers'
+  const svg = ganttChart({
+    width: 225, leftPadding: 30, rightPadding: 0, fontSize: 16, todayMarker: false,
+    sections: [{ tasks: [
+      { name: 'Build', start: '2026-03-06', duration: '3d' },
+      { name, id: 'review', start: '2026-03-06', duration: '0d', tags: ['vert'] },
+      { name: 'Publish', id: 'publish', start: '2026-03-06', duration: '0d', tags: ['vert'] },
+    ] }],
+  })!
+  const labels = [...svg.matchAll(/ y="([\d.]+)" class="diagram-gantt-reference-label"[^>]*>(.*?)<\/text>/g)]
+  const lines = [...labels[0][2].matchAll(/<tspan[^>]*>([^<]+)<\/tspan>/g)].map(match => match[1])
+  expect(lines.length).toBeGreaterThan(2)
+  expect(lines.join(' ')).toBe(name.replace('<br>', ' '))
+  expect(Number(labels[1][1]) - Number(labels[0][1])).toBeGreaterThan(lines.length * 16 * 1.15 / 2)
+  const height = Number(/viewBox="0 0 225 ([\d.]+)"/.exec(svg)?.[1])
+  expect(height).toBeGreaterThan(Number(labels[1][1]) + 8)
+})
+
 test('schedules structured tasks across exclusions and resolves multiple dependency endpoints', () => {
   const chart: GanttChartOptions = {
     idPrefix: 'delivery', accessibleTitle: 'Delivery window', now: Date.UTC(2026, 2, 6), todayMarker: false,

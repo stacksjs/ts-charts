@@ -3,7 +3,7 @@ import { color } from '../../color/src/color.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
-import { layoutAxisLabels, layoutTaskLabel } from './gantt-labels.ts'
+import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel } from './gantt-labels.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
@@ -532,29 +532,22 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   }
   const reference = safeColor(palette?.reference)
   const referenceStyle = reference ? ` style="stroke:${reference}"` : ''
-  const referenceLanes: number[] = []
   const referenceFont = Math.min(fontSize ?? 14, 24)
-  const referenceLineHeight = referenceFont + 5
+  const referenceTop = bottom + 24
   const referenceKeys = new Set<string>()
   const taskClasses = (task: ScheduledGanttTask) => task.tags.map(tag => ` diagram-gantt-${tag}`).join('')
-  const markers = tasks.filter(task => {
+  const references = tasks.filter(task => {
     if (!task.tags.includes('vert')) return false
     if (!task.id) return true
     const key = JSON.stringify([task.id, task.start, task.name])
     if (referenceKeys.has(key)) return false
     referenceKeys.add(key)
     return true
-  }).sort((a, b) => a.start - b.start).map(task => {
-    const x = xAt(task.start)
-    const label = Array.from(task.name.replace(/<br\s*\/?>/gi, ' '))
-    const limit = Math.floor((width - 20) / (referenceFont * 0.6))
-    const text = label.length > limit ? label.slice(0, limit - 1).join('') + '…' : label.join('')
-    const halfWidth = Math.min(width / 2 - 10, (Math.min(limit, label.length) * referenceFont * 0.6 + 10) / 2)
-    const center = Math.min(width - halfWidth - 5, Math.max(halfWidth + 5, x))
-    let lane = referenceLanes.findIndex(edge => edge <= center - halfWidth)
-    if (lane === -1) lane = referenceLanes.length
-    referenceLanes[lane] = center + halfWidth
-    const caption = svgText(text, center, bottom + 31 + lane * referenceLineHeight, 'diagram-gantt-reference-label', 'middle', { fontSize: referenceFont, color: reference })
+  }).sort((a, b) => a.start - b.start).map(task => ({ task, x: xAt(task.start), name: task.name }))
+  const referenceLabels = layoutReferenceLabels(references, width, referenceFont)
+  const markers = references.map(({ task, x }, index) => {
+    const label = referenceLabels.labels[index]
+    const caption = svgTextLines(label.lines, label.x, referenceTop + label.y, 'diagram-gantt-reference-label', 'middle', 'currentColor', { fontSize: referenceFont, color: reference })
     return withInteraction(task, `<g class="diagram-gantt-marker${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${new Date(task.start).toISOString()}" data-gantt-style-index="${sectionSlot(task.section)}"><path class="diagram-gantt-reference" stroke="#548ba9" fill="none"${referenceStyle} d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>${caption}</g>`)
   })
   if (schedule.todayMarker && now >= start && now <= end) {
@@ -625,7 +618,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${axes.join('')}${markers.join('')}${bars.join('')}</g>`
-  const height = bottom + 31 + referenceLanes.length * referenceLineHeight + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
+  const height = referenceTop + 7 + referenceLabels.height + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
   const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY,
     { titleColor: palette?.title, background: palette?.background })
   return interactive ? svg.replace('role="img"', 'role="group"') : svg
