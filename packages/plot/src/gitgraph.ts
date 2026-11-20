@@ -202,8 +202,11 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = normalizeAppearance(chart.tagLabel)
   const abbreviated = (text: string, size: number) => text.length > size ? `${text.slice(0, size - 1)}…` : text
-  const branchText = (branch: Branch) => abbreviated(branch.name, horizontal ? 28 : 21)
+  const branchLines = branches.map(branch => labelLines(branch.name.replace(/\r?\n|\\n/g, '<br>'))
+    .map(line => abbreviated(line.trim(), horizontal ? 28 : 21)))
+  const branchText = (branch: Branch) => branchLines[lanes.get(branch)!].join('<br>')
   const branchLabelWidth = Math.max(80, Math.max(...branches.map(branch => labelWidth(branchText(branch), 14))) + 30)
+  const extraBranchHeight = showBranches ? (Math.max(...branchLines.map(lines => lines.length)) - 1) * 16 : 0
   const commitSize = commitAppearance.fontSize ?? 14
   const tagSize = tagAppearance.fontSize ?? 14
   const labelLimit = rotateLabels ? 34 : horizontal ? 17 : 18
@@ -216,16 +219,16 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const tagOffset = Math.max(19, 11 + tagSize / 2)
   const commitOffset = Math.max(19, 11 + commitSize / 2)
   const gap = horizontal ? Math.max(84, longTag + 25, (rotateLabels ? rotatedExtent : longCommit) + 15) : Math.max(47, commitSize + tagSize + 20)
-  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42, 26 + commitSize + tagSize) : Math.max(146, branchLabelWidth, 2 * Math.max(longTag, rotateLabels ? rotatedExtent : longCommit) + 44)
+  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42, 26 + commitSize + tagSize, extraBranchHeight + 24) : Math.max(146, branchLabelWidth, 2 * Math.max(longTag, rotateLabels ? rotatedExtent : longCommit) + 44)
   const titleY = titlePosition(chart.titleTopMargin)
   const pad = (title ? Math.max(54, titleY + 26) : 23) + Math.max(0, commitSize - 20, tagSize - 20)
   const leftLabelSpace = Math.ceil(Math.max(longTag, rotateLabels ? 0 : longCommit) / 2) + 9
-  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace) : pad + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
+  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace) : pad + extraBranchHeight + Math.max(showBranches ? 32 : 8, rotatedExtent + 14)
   const time = (rank: number) => start + 25 + (direction === 'BT' ? ranks - 1 - rank : rank) * gap
-  const lane = (branch: Branch) => horizontal ? pad + 26 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
+  const lane = (branch: Branch) => horizontal ? pad + 26 + extraBranchHeight / 2 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
   const width = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
-  const height = horizontal ? pad + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
+  const height = horizontal ? pad + extraBranchHeight / 2 + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
   const colorIndex = (branch: Branch) => lanes.get(branch)! % branchColors.length
   const color = (branch: Branch) => safeColor(chart.colors?.[colorIndex(branch)]) ?? branchColors[colorIndex(branch)]
   const rails = showBranches ? branches.map((branch) => {
@@ -239,7 +242,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       background: safeColor(chart.branchLabelBackgrounds?.[colorIndex(branch)]),
     }
     const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance)
-      : decorateLabel(branchText(branch), axis, pad + 8, 'diagram-git-branch-label', 'middle', appearance)
+      : decorateLabel(branchText(branch), axis, pad + 8 + extraBranchHeight / 2, 'diagram-git-branch-label', 'middle', appearance)
     return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
   const ringColor = safeColor(chart.background) ?? 'currentColor'

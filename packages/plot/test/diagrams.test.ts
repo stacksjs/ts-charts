@@ -634,3 +634,23 @@ test('includes GitGraph padding in the title position and view box for every dir
     expect(padded).toMatch(/y="52" class="diagram-title"/)
   }
 })
+
+test('fits multiline GitGraph branch labels and their boxes in each direction', () => {
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    const name = 'Feature A\n  (ongoing)\\nReview next<br>Ready'
+    const graph: GitGraphOptions = {
+      direction, title: 'Release history', branchLabelBackgrounds: ['#eeeeee', '#aaccff'],
+      operations: [
+        { op: 'commit', id: 'start' }, { op: 'branch', name }, { op: 'commit', id: 'review' },
+        { op: 'checkout', name: 'main' }, { op: 'merge', branch: name },
+      ],
+    }
+    const svg = gitGraphChart(graph)!
+    const box = /class="diagram-git-branch-label-box" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"[^>]*fill="#aaccff"/.exec(svg)!
+    const label = /<text[^>]*class="diagram-git-branch-label"[^>]*>((?:<tspan[^>]*>[^<]*<\/tspan>){4})<\/text>/.exec(svg)!
+    expect(Array.from(label[1].matchAll(/<tspan[^>]*>([^<]*)/g), match => match[1])).toEqual(['Feature A', '(ongoing)', 'Review next', 'Ready'])
+    expect(Number(box[4])).toBe(68)
+    expect(Number(box[2])).toBeGreaterThan(20)
+    expect(svg).toContain('data-parent-ids="start, review"')
+  }
+})
