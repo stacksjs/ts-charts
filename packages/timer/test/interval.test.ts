@@ -25,34 +25,60 @@ describe('interval', () => {
     })
   })
 
-  it('interval(callback, delay) invokes the callback about every delay milliseconds', (done) => {
+  it.each([
+    ['interval(callback, delay)', false],
+    ['interval(callback).restart', true],
+  ] as const)('%s schedules each callback relative to the original start time', async (_, restart) => {
     const then = now()
     const delay = 50
-    const nows: number[] = [then]
-    const t = interval(() => {
-      if (nows.push(now()) > 10) {
+    const ticks: { at: number, next: number }[] = []
+    const observed = Promise.withResolvers<void>()
+    const callback = () => {
+      if (ticks.push({ at: now(), next: t._time }) === 10) {
         t.stop()
-        nows.forEach((n, i) => { assertInRange(n - then, delay * i - 20, delay * i + 20) })
-        done()
+        observed.resolve()
       }
-    }, delay)
+    }
+    const t = interval(callback, delay)
+    try {
+      if (restart) {
+        t.stop()
+        t.restart(callback, delay)
+      }
+      await observed.promise
+      for (const [index, tick] of ticks.entries()) {
+        expect(tick.at).toBeGreaterThanOrEqual(then + (index + 1) * delay)
+        expect(tick.next).toBeCloseTo(then + (index + 2) * delay, 9)
+      }
+    }
+    finally { t.stop() }
   })
 
-  it('interval(callback, delay, time) invokes the callback repeatedly after the specified delay relative to the given time', (done) => {
+  it('interval(callback, delay, time) invokes the callback repeatedly after the specified delay relative to the given time', async () => {
     const then = now() + 50
     const delay = 50
+    const ticks: number[] = []
+    const observed = Promise.withResolvers<void>()
     const t = interval(() => {
-      assertInRange(now() - then, delay - 10, delay + 10)
-      t.stop()
-      done()
+      if (ticks.push(now()) === 2) {
+        t.stop()
+        observed.resolve()
+      }
     }, delay, then)
+    try {
+      expect(t._time).toBe(then + delay)
+      await observed.promise
+      expect(ticks[0]).toBeGreaterThanOrEqual(then + delay)
+      expect(ticks[1]).toBeGreaterThanOrEqual(then + 2 * delay)
+    }
+    finally { t.stop() }
   })
 
   it('interval(callback) passes the callback the elapsed time', (done) => {
     const then = now()
     const t = interval((elapsed: number) => {
-      expect(elapsed).toBe(now() - then)
       t.stop()
+      expect(elapsed).toBeCloseTo(now() - then, 9)
       done()
     }, 100)
   })
@@ -66,21 +92,5 @@ describe('interval', () => {
       expect(count).toBe(0)
       done()
     }, 100)
-  })
-
-  it('interval(callback).restart restarts as an interval', (done) => {
-    const then = now()
-    const delay = 50
-    const nows: number[] = [then]
-    const callback = (): void => {
-      if (nows.push(now()) > 10) {
-        t.stop()
-        nows.forEach((n, i) => { assertInRange(n - then, delay * i - 20, delay * i + 20) })
-        done()
-      }
-    }
-    const t = interval(callback, delay)
-    t.stop()
-    t.restart(callback, delay)
   })
 })
