@@ -64,6 +64,10 @@ function wrapLine({ glyphs, widths }: Line, limit: number): string[] {
   return lines
 }
 
+export function wrapGanttLabel(label: string, available: number, fontSize: number): string[] {
+  return labelLines(label).flatMap(line => wrapLine(measureLine(line, fontSize), available))
+}
+
 export function layoutReferenceLabels(references: readonly { x: number, name: string }[], width: number, fontSize: number): {
   labels: { x: number, y: number, lines: string[] }[]
   height: number
@@ -72,7 +76,7 @@ export function layoutReferenceLabels(references: readonly { x: number, name: st
   const gap = 5
   const rows: { right: number, height: number, top: number }[] = []
   const plans = references.map(({ x, name }) => {
-    const lines = labelLines(name).flatMap(line => wrapLine(measureLine(line, fontSize), width - 2 * margin))
+    const lines = wrapGanttLabel(name, width - 2 * margin, fontSize)
     const half = Math.max(...lines.map(line => measureLine(line, fontSize).width)) / 2
     const center = Math.max(margin + half, Math.min(width - margin - half, x))
     let row = rows.find(candidate => candidate.right + gap <= center - half)

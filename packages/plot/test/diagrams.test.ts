@@ -929,6 +929,28 @@ test('renders Gantt geometry, typography, and alternating section colors', () =>
   expect(heightOf(svg) - heightOf(ganttChart({ ...chart, bottomMarginAdj: 0 })!)).toBe(12)
 })
 
+test('reserves height for wrapped Gantt titles and section headings at the configured width', () => {
+  const title = 'Release validation before the final production handover'
+  const section = 'Prepare the integration environment and review the deployment checklist'
+  const chart: GanttChartOptions = {
+    title, titleTopMargin: 0, topPadding: 0, topAxis: true, width: 230, leftPadding: 32, rightPadding: 10, sectionFontSize: 22,
+    sections: [{ name: section, tasks: [{ name: 'Ship', start: '2026-11-01', duration: '1d' }] }],
+  }
+  const svg = ganttChart(chart)!
+  expect(svg).toContain('viewBox="0 0 230 ')
+  const lines = (className: string) => {
+    const text = new RegExp(`class="${className}"[^>]*>(.*?)</text>`).exec(svg)?.[1] ?? ''
+    return [...text.matchAll(/<tspan[^>]+>([^<]*)<\/tspan>/g)].map(match => match[1])
+  }
+  expect(lines('diagram-title').join(' ')).toBe(title)
+  expect(lines('diagram-title').length).toBeGreaterThan(1)
+  expect(lines('diagram-gantt-section-label').join(' ')).toBe(section)
+  expect(lines('diagram-gantt-section-label').length).toBeGreaterThan(1)
+  const barY = (markup: string) => Number(/class="diagram-gantt-bar"[^>]* y="([\d.]+)"/.exec(markup)?.[1])
+  const short = ganttChart({ ...chart, title: 'Release', sections: [{ ...chart.sections[0], name: 'Prepare' }] })!
+  expect(barY(svg)).toBeGreaterThan(barY(short) + 32)
+})
+
 test('keeps dense Gantt grid intervals and shows matching non-overlapping labels on both axes', () => {
   const chart: GanttChartOptions = {
     width: 330, todayMarker: false, topAxis: true, tickInterval: '1day',

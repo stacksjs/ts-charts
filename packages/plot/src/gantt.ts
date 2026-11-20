@@ -4,7 +4,7 @@ import { color } from '../../color/src/color.ts'
 import { timeFormat, utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
-import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel } from './gantt-labels.ts'
+import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel, wrapGanttLabel } from './gantt-labels.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatIncludesTime, ganttDateFormatter, ganttDateParser, ganttDayOffset, ganttDaySampler, ganttDayStart, ganttIsoStart, ganttNextDayStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
@@ -410,8 +410,10 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const rightPadding = boundedNumber(chart.rightPadding, 0, 2000) ?? 30
   const width = Math.max(x0 + rightPadding + 48, boundedNumber(chart.width, 1, 10000) ?? x0 + 710 + rightPadding)
   const plotWidth = width - x0 - rightPadding
-  const titleY = titlePosition(chart.titleTopMargin)
-  const top = Math.max(title ? titleY + 14 : 0, boundedNumber(chart.topPadding, 0, 2000) ?? (title ? 55 : 23))
+  const titleLines = wrapGanttLabel(title, width - 28, 14)
+  const extraTitleHeight = (titleLines.length - 1) * 16
+  const titleY = Math.max(10, titlePosition(chart.titleTopMargin)) + extraTitleHeight / 2
+  const top = Math.max(title ? titleY + extraTitleHeight / 2 + 14 : 0, boundedNumber(chart.topPadding, 0, 2000) ?? (title ? 55 : 23))
   const barHeight = boundedNumber(chart.barHeight, 1, 200) ?? 16
   const rowHeight = Math.max((fontSize ?? 0) + 4, barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18))
   const sectionLineHeight = sectionFontSize === undefined ? 16 : sectionFontSize * 1.15
@@ -455,7 +457,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const children = tasksBySection[index]
     if (!children.length) continue
     const sectionTop = y
-    const sectionHeight = (sectionFontSize ?? 14) + 14 + (labelLines(section).length - 1) * sectionLineHeight
+    const sectionLines = wrapGanttLabel(section, width - 40, sectionFontSize ?? 14)
+    const sectionHeight = (sectionFontSize ?? 14) + 14 + (sectionLines.length - 1) * sectionLineHeight
     if (section) y += sectionHeight
     // A milestone occupies both sides of its date even if its duration is zero.
     const lanes: { task: ScheduledGanttTask, point: boolean, tasks: ScheduledGanttTask[], above: number, below: number }[] = []
@@ -486,7 +489,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const slot = sectionSlot(index)
     const sectionColor = safeColor(chart.sectionColors?.[slot]) ?? (sectionStyles > 1 ? chronologyColor(slot) : undefined)
     const styledFill = sectionColor ? ` style="fill:${sectionColor};opacity:0.2"` : ''
-    const heading = section ? svgText(section, 20, sectionTop + sectionHeight / 2, 'diagram-gantt-section-label', 'start', { fontSize: sectionFontSize, color: safeColor(palette?.sectionText) }) : ''
+    const heading = section ? svgTextLines(sectionLines, 20, sectionTop + sectionHeight / 2, 'diagram-gantt-section-label', 'start', 'currentColor', { fontSize: sectionFontSize, color: safeColor(palette?.sectionText) }) : ''
     groups.push(`<g class="diagram-gantt-section" data-gantt-style-index="${slot}"><rect class="diagram-gantt-band" fill="#869eb6" fill-opacity="${sectionColor ? 1 : 0.1}"${styledFill} x="9" y="${sectionTop}" width="${width - 18}" height="${y - sectionTop}" rx="4"/>${heading}</g>`)
     y += 6
   }
@@ -647,6 +650,6 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${axes.join('')}${markers.join('')}${bars.join('')}</g>`
   const height = referenceTop + 7 + referenceLabels.height + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
   const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY,
-    { titleColor: palette?.title, background: palette?.background })
+    { titleColor: palette?.title, titleLines, background: palette?.background })
   return interactive ? svg.replace('role="img"', 'role="group"') : svg
 }
