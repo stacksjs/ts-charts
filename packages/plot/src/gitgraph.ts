@@ -211,7 +211,7 @@ function normalizeAppearance(value?: GitLabelAppearance): GitLabelAppearance {
 function labelWidth(label: string, size: number): number {
   return Math.ceil(Math.max(...labelLines(label).map((line) => {
     let width = 0
-    for (const char of line) width += /[^\x00-\xffMW@%]/.test(char) ? 1 : /[ilI.,:!'| ]/.test(char) ? 0.4 : 0.72
+    for (const char of line) width += /[MW@%]|[^\x00-\xff]/.test(char) ? 1 : /[ilI.,:!'| ]/.test(char) ? 0.4 : 0.72
     return width
   })) * size)
 }
@@ -220,23 +220,56 @@ function labelHeight(label: string, size?: number): number {
   return labelLines(label).length * (size === undefined ? 16 : size * 1.15) + 4
 }
 
-function decorateLabel(label: string, x: number, y: number, classes: string, anchor: 'start' | 'middle', appearance: GitLabelAppearance, compact = false, boxAttributes = ''): string {
+type LabelAnchor = 'start' | 'middle' | 'end'
+const labelInset = 5
+
+function decorateLabel(label: string, x: number, y: number, classes: string, anchor: LabelAnchor, appearance: GitLabelAppearance, compact = false, boxAttributes = ''): string {
   const text = svgText(label, x, y, classes, anchor, appearance)
   if (!appearance.background && !appearance.border) return text
   const fontSize = appearance.fontSize ?? 14
-  const inset = compact ? 12 : 5
+  const inset = compact ? 12 : labelInset
   const width = labelWidth(label, fontSize) + inset * 2
   const height = labelHeight(label, appearance.fontSize) + (compact ? 12 : 0)
-  const left = anchor === 'start' ? x - inset : x - width / 2
+  const left = anchor === 'start' ? x - inset : anchor === 'end' ? x - width + inset : x - width / 2
   return `<rect class="${classes}-box" x="${left}" y="${y - height / 2}" width="${width}" height="${height}" rx="${compact ? 0 : 3}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'none'}"${boxAttributes}/>${text}`
 }
 
 const tagTipWidth = 10
 
+interface CommitLabelLayout {
+  text: string
+  anchor: LabelAnchor
+  angle: number
+  x: number
+  y: number
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+function commitLabelLayout(text: string, appearance: GitLabelAppearance, horizontal: boolean, rotate: boolean, clearance: number): CommitLabelLayout {
+  const halfWidth = labelWidth(text, appearance.fontSize ?? 14) / 2
+  const halfHeight = labelHeight(text, appearance.fontSize) / 2
+  const anchor = horizontal ? rotate ? 'start' : 'middle' : 'end'
+  const angle = rotate ? horizontal ? 45 : -45 : 0
+  // Project the label box around its anchor using the same rotation as the SVG.
+  const center = anchor === 'middle' ? 0 : (horizontal ? halfWidth : -halfWidth)
+  const centerX = rotate ? center / Math.SQRT2 : center
+  const centerY = rotate ? Math.abs(centerX) : 0
+  const radius = halfWidth + labelInset
+  const halfX = rotate ? (radius + halfHeight) / Math.SQRT2 : radius
+  const halfY = rotate ? halfX : halfHeight
+  const x = horizontal ? (rotate ? 4 : 0) : -clearance - centerX - halfX
+  const y = horizontal ? clearance - centerY + halfY : 0
+  return { text, anchor, angle, x, y, left: x + centerX - halfX, right: x + centerX + halfX,
+    top: y + centerY - halfY, bottom: y + centerY + halfY }
+}
+
 function decorateTag(label: string, x: number, y: number, width: number, anchor: 'start' | 'middle', appearance: GitTagAppearance, boxAttributes: string): string {
   const halfHeight = labelHeight(label, appearance.fontSize) / 2
-  const boxWidth = width + tagTipWidth + 10
-  const left = anchor === 'middle' ? x - boxWidth / 2 : x - 5
+  const boxWidth = width + tagTipWidth + labelInset * 2
+  const left = anchor === 'middle' ? x - boxWidth / 2 : x - labelInset
   const right = left + boxWidth
   const shoulder = left + tagTipWidth
   const points = [
@@ -245,7 +278,7 @@ function decorateTag(label: string, x: number, y: number, width: number, anchor:
   ].map(point => point.join(',')).join(' ')
   const shape = `<polygon class="diagram-git-tag-box" points="${points}" fill="${appearance.background ?? 'none'}" stroke="${appearance.border ?? 'currentColor'}"${boxAttributes}/>`
   const hole = `<circle class="diagram-git-tag-hole" cx="${left + 6}" cy="${y}" r="1.5" fill="${appearance.holeColor ?? 'currentColor'}"/>`
-  const textX = shoulder + 5 + (anchor === 'middle' ? width / 2 : 0)
+  const textX = shoulder + labelInset + (anchor === 'middle' ? width / 2 : 0)
   return shape + hole + svgText(label, textX, y, 'diagram-git-tag', anchor, appearance)
 }
 
@@ -283,6 +316,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
   const horizontal = direction === 'LR'
   const reverse = direction === 'BT'
+  const dotRadius = compact ? 7 : classic ? 10 : 8
+  const clearance = dotRadius + 4
   const ranks = Math.max(0, ...commits.map(commit => commit.rank)) + 1
   const commitAppearance = normalizeAppearance(chart.commitLabel)
   const tagAppearance = {
@@ -317,58 +352,73 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     + (gradientId ? ` stroke-width="${gradientWidth}"` : '') : ''
   const shapedTags = chart.tagLabel?.shape === 'tag'
   const abbreviated = (text: string, size: number) => chart.truncateLabels !== false && text.length > size ? `${text.slice(0, size - 1)}…` : text
-  const branchLines = branches.map(branch => labelLines(branch.name.replace(/\r?\n|\\n/g, '<br>'))
+  const multiline = (text: string) => text.replace(/\r?\n|\\n/g, '<br>')
+  const branchLines = branches.map(branch => labelLines(multiline(branch.name))
     .map(line => abbreviated(line.trim(), horizontal ? 28 : 21)))
   const branchText = (branch: Branch) => branchLines[lanes.get(branch)!].join('<br>')
   const branchLabelWidth = !showBranches && chart.truncateLabels === false
     ? 80 : Math.max(80, Math.max(...branches.map(branch => labelWidth(branchText(branch), 14))) + 30)
   const extraBranchHeight = showBranches ? (Math.max(...branchLines.map(lines => lines.length)) - 1) * 16 + (compact ? 12 : 0) : 0
-  const commitSize = commitAppearance.fontSize ?? 14
   const tagSize = tagAppearance.fontSize ?? 14
   const labelLimit = rotateLabels ? 34 : horizontal ? 17 : 18
   const tagLimit = horizontal ? 27 : 20
-  const labelText = (commit: Commit) => abbreviated(commit.label, labelLimit)
-  const longCommit = Math.max(0, ...labelledCommits.map(commit => labelWidth(labelText(commit), commitSize)))
-  const rotatedExtent = rotateLabels ? Math.ceil((longCommit + commitSize) / Math.SQRT2) : 0
-  const tagOffset = horizontal ? Math.max(19, 11 + tagSize / 2) : Math.max(11, tagSize / 2 + 4)
-  const singleTagHeight = labelHeight('', tagAppearance.fontSize)
-  let longTag = 0
-  let extraTagHeight = 0
+  const labels = new Map(labelledCommits.map(commit => [commit, commitLabelLayout(
+    labelLines(multiline(commit.label)).map(line => abbreviated(line, labelLimit)).join('<br>'), commitAppearance, horizontal, rotateLabels, clearance,
+  )]))
+  const extent = { left: -dotRadius, right: dotRadius, top: -dotRadius, bottom: dotRadius }
+  for (const label of labels.values()) {
+    extent.left = Math.min(extent.left, label.left)
+    extent.right = Math.max(extent.right, label.right)
+    extent.top = Math.min(extent.top, label.top)
+    extent.bottom = Math.max(extent.bottom, label.bottom)
+  }
   const tags = commits.map((commit) => {
     const values = chart.tagLayout === 'stacked' ? [...commit.tags].reverse() : [commit.tags.join(' · ')]
-    let offset = tagOffset - singleTagHeight / 2
+    let offset = horizontal ? clearance : 0
     let stackWidth = 0
     const labels = values.filter(value => value.trim()).map((value) => {
-      const text = abbreviated(value, tagLimit)
+      const text = labelLines(multiline(value)).map(line => abbreviated(line, tagLimit)).join('<br>')
       const height = labelHeight(text, tagAppearance.fontSize)
       const center = offset + height / 2
       stackWidth = Math.max(stackWidth, labelWidth(text, tagSize))
-      extraTagHeight = Math.max(extraTagHeight, offset + height - tagOffset - singleTagHeight / 2)
       offset += height + 4
       return { text, center }
     })
-    if (labels.length) longTag = Math.max(longTag, stackWidth + (shapedTags ? tagTipWidth : 0))
+    if (labels.length) {
+      const boxWidth = stackWidth + labelInset * 2 + (shapedTags ? tagTipWidth : 0)
+      if (horizontal) {
+        extent.left = Math.min(extent.left, -boxWidth / 2)
+        extent.right = Math.max(extent.right, boxWidth / 2)
+        extent.top = Math.min(extent.top, 4 - offset)
+      }
+      else {
+        extent.right = Math.max(extent.right, clearance + boxWidth)
+        extent.bottom = Math.max(extent.bottom, offset - 4)
+      }
+    }
     return { labels, width: stackWidth }
   })
   const tagBoxStyle = tags.some(tag => tag.labels.length) ? shadowAttribute(chart.tagLabelShadow) : ''
-  const commitOffset = Math.max(19, 11 + commitSize / 2)
-  const gap = horizontal ? Math.max(84, longTag + 25, (rotateLabels ? rotatedExtent : longCommit) + 15) : Math.max(47, commitSize + tagSize + 20) + extraTagHeight
-  const laneWidth = horizontal ? Math.max(71, rotatedExtent + 42, 26 + commitSize + tagSize, extraBranchHeight + 24) + extraTagHeight
-    : Math.max(146, branchLabelWidth, 2 * Math.max(longTag, rotateLabels ? rotatedExtent : longCommit) + 44)
+  const timelineSpan = horizontal ? extent.right - extent.left : extent.bottom - extent.top
+  const gap = Math.max(horizontal ? 84 : 47, Math.ceil(timelineSpan) + 18)
+  // The center of a vertical lane leaves independent space for labels on the
+  // left and tag stacks on the right.
+  const laneBefore = horizontal ? Math.max(-extent.top, extraBranchHeight / 2 + 12) : Math.max(-extent.left, branchLabelWidth / 2)
+  const laneAfter = horizontal ? Math.max(extent.bottom, extraBranchHeight / 2 + 12) : Math.max(extent.right, branchLabelWidth / 2)
+  const laneWidth = Math.max(horizontal ? 71 : 146, Math.ceil(laneBefore + laneAfter) + 20)
   const titleY = titlePosition(chart.titleTopMargin)
-  const pad = (title ? Math.max(54, titleY + 26) : 23) + Math.max(0, commitSize - 20, tagSize - 20)
-    + (horizontal ? extraTagHeight : 0)
-  const leftLabelSpace = Math.ceil(Math.max(longTag, rotateLabels ? 0 : longCommit) / 2) + 9
+  const pad = title ? Math.max(54, titleY + 26) : 23
   const topBranchHeight = direction === 'TB' ? extraBranchHeight : 0
-  const start = horizontal ? Math.max(showBranches ? branchLabelWidth : 22, leftLabelSpace)
-    : pad + topBranchHeight + Math.max(showBranches && direction === 'TB' ? 32 : 8, rotatedExtent + 14)
-  const time = (rank: number) => start + 25 + (reverse ? ranks - 1 - rank : rank) * gap
-  const lane = (branch: Branch) => horizontal ? pad + 26 + extraBranchHeight / 2 + lanes.get(branch)! * laneWidth : laneWidth / 2 + lanes.get(branch)! * laneWidth
+  const start = horizontal ? (showBranches ? branchLabelWidth : 0) - extent.left + 20
+    : pad + topBranchHeight - extent.top + (showBranches && direction === 'TB' ? 33 : 20)
+  const time = (rank: number) => start + (reverse ? ranks - 1 - rank : rank) * gap
+  const firstLane = (horizontal ? pad : 0) + laneBefore + (laneWidth - laneBefore - laneAfter) / 2
+  const lane = (branch: Branch) => firstLane + lanes.get(branch)! * laneWidth
   const point = (commit: Commit) => horizontal ? { x: time(commit.rank), y: lane(commit.branch) } : { x: lane(commit.branch), y: time(commit.rank) }
   const titleWidth = chart.truncateLabels === false && title ? labelWidth(title, 14) + 24 : 0
-  const diagramWidth = horizontal ? start + Math.max(110, ranks * gap) + 24 : Math.max(210, branches.length * laneWidth + 44)
-  const width = Math.max(diagramWidth, titleWidth)
-  const height = horizontal ? pad + extraBranchHeight / 2 + Math.max(92, branches.length * laneWidth + 15) : start + ranks * gap + 20
+  const diagramWidth = horizontal ? Math.max(210, start + (ranks - 1) * gap + Math.max(extent.right, 18) + 24) : Math.max(210, branches.length * laneWidth + 24)
+  const width = Math.ceil(Math.max(diagramWidth, titleWidth))
+  const height = Math.ceil(horizontal ? pad + branches.length * laneWidth + 20 : start + (ranks - 1) * gap + Math.max(extent.bottom, 18) + 20)
   const bottomBranchSpace = reverse && showBranches ? extraBranchHeight + 36 : 0
   const verticalLabelY = reverse ? height + bottomBranchSpace / 2 : pad + 8 + extraBranchHeight / 2
   const colorIndex = (branch: Branch) => lanes.get(branch)! % branchColors.length
@@ -441,7 +491,6 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     return commit.parents.map((parent, index) => edge(parent, index > 0)).join('')
       + (source && !chart.cherryPickSourceParent ? edge(source, true) : '')
   }).join('')
-  const dotRadius = compact ? 7 : classic ? 10 : 8
   const mergeRadius = compact ? 5 : classic ? 6 : 4.2
   const highlightRadius = compact ? 4 : classic ? 6 : 5
   const reverseRadius = classic ? 5 : 4
@@ -460,21 +509,17 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       node = `<rect class="diagram-git-dot" x="${x - dotRadius}" y="${y - dotRadius}" width="${dotRadius * 2}" height="${dotRadius * 2}" rx="${fullRails ? 0 : 2}" fill="${highlight}"/><rect class="diagram-git-highlight-inner" x="${x - highlightRadius}" y="${y - highlightRadius}" width="${highlightRadius * 2}" height="${highlightRadius * 2}" rx="${fullRails ? 0 : 1}" fill="${symbolDetail ?? stroke}"/>`
     }
     let label = ''
-    if (rotateLabels && canShowLabel(commit)) {
-      const angle = horizontal ? 45 : -45
-      const labelX = horizontal ? x + 4 : x + 14 + Math.max(0, commitSize - 14) / 2
-      const labelY = horizontal ? y + 15 + Math.max(0, commitSize - 14) / 2 : y - 8
-      const text = decorateLabel(labelText(commit), labelX, labelY, 'diagram-git-label', 'start', commitAppearance)
-      label = `<g transform="rotate(${angle} ${labelX} ${labelY})">${text}</g>`
-    }
-    else if (showLabels && canShowLabel(commit)) {
-      label = horizontal ? decorateLabel(labelText(commit), x, y + commitOffset, 'diagram-git-label', 'middle', commitAppearance)
-        : decorateLabel(labelText(commit), x + 13, y - Math.max(9, commitSize / 2 + 2), 'diagram-git-label', 'start', commitAppearance)
+    const placement = labels.get(commit)
+    if (placement) {
+      const labelX = x + placement.x
+      const labelY = y + placement.y
+      const text = decorateLabel(placement.text, labelX, labelY, 'diagram-git-label', placement.anchor, commitAppearance)
+      label = placement.angle ? `<g transform="rotate(${placement.angle} ${labelX} ${labelY})">${text}</g>` : text
     }
     const tag = commit.tags.join(' · ')
     const tagStack = tags[commit.index]
     const tagAnchor = horizontal ? 'middle' : 'start'
-    const tagX = horizontal ? x : x + 13
+    const tagX = horizontal ? x : x + clearance + labelInset
     const tagLabels = tagStack.labels.map(({ text, center }) => {
       const tagY = horizontal ? y - center : y + center
       return shapedTags ? decorateTag(text, tagX, tagY, tagStack.width, tagAnchor, tagAppearance, tagBoxStyle)

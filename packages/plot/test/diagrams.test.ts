@@ -1099,3 +1099,22 @@ test('fits multiline GitGraph branch labels and their boxes in each direction', 
     expect(svg).toContain('data-parent-ids="start, review"')
   }
 })
+
+test('keeps vertical GitGraph labels and tag stacks on separate sides of their commits', () => {
+  const operations: GitGraphOptions['operations'] = [{
+    op: 'commit', id: 'release', label: 'Prepare\nReview\\nPublish', tags: ['signed\nby release team', 'ready'],
+  }]
+  for (const direction of ['TB', 'BT'] as const) {
+    const svg = gitGraphChart({ operations, direction, tagLayout: 'stacked', truncateLabels: false,
+      commitLabel: { background: '#eeeeee' }, tagLabel: { shape: 'tag' },
+    })!
+    const [, center, radius] = /class="diagram-git-dot" cx="([\d.]+)" cy="[\d.]+" r="([\d.]+)"/.exec(svg)!.map(Number)
+    const [, left, width] = /class="diagram-git-label-box" x="([\d.]+)" y="[\d.]+" width="([\d.]+)"/.exec(svg)!.map(Number)
+    const tags = [...svg.matchAll(/class="diagram-git-tag-box" points="([\d.]+),/g)].map(match => Number(match[1]))
+    expect(left + width).toBeLessThan(center - radius)
+    expect(tags).toHaveLength(2)
+    expect(tags.every(x => x > center + radius)).toBe(true)
+    expect(svg).toMatch(/class="diagram-git-label" text-anchor="end"[^>]*><tspan[^>]*>Prepare<\/tspan><tspan[^>]*>Review<\/tspan><tspan[^>]*>Publish<\/tspan>/)
+    expect(svg).toMatch(/>signed<\/tspan><tspan[^>]*>by release team<\/tspan>/)
+  }
+})
