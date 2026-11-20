@@ -2,6 +2,7 @@ import type { ChartLabels } from './chronology.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
+import { layoutTaskLabel } from './gantt-labels.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
@@ -73,6 +74,8 @@ export interface GanttChartOptions extends ChartLabels {
   displayMode?: 'compact'
   /** Position labels inside or beside their bars in the standard layout. */
   taskLabelPlacement?: 'bar' | 'gutter'
+  /** Wrap full task labels and reserve room for them in compact rows. */
+  wrapTaskLabels?: boolean
   barHeight?: number
   barGap?: number
   width?: number
@@ -356,6 +359,29 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : start + dayMs
   if (!Number.isFinite(new Date(end).valueOf())) return
   const xAt = (time: number) => x0 + 12 + (time - start) / (end - start) * (plotWidth - 24)
+  const spans = new Map(chart.wrapTaskLabels ? visibleTasks.map((task) => {
+    const start = xAt(task.start)
+    const end = xAt(task.barEnd ?? task.end)
+    const milestone = task.tags.includes('milestone')
+    const middle = (start + end) / 2
+    const left = milestone ? middle - barHeight / 2 : start
+    const right = milestone ? middle + barHeight / 2 : Math.max(start + 2, end)
+    return [task, { left, right, milestone }] as const
+  }) : [])
+  const labelPlans = new Map([...spans].map(([task, span]) => {
+    const { left, right } = span
+    const neighbors = { left: 0, right: width }
+    if (compact) {
+      for (const other of tasksBySection[task.section]) {
+        if (other === task) continue
+        const otherSpan = spans.get(other)!
+        if (otherSpan.right <= left) neighbors.left = Math.max(neighbors.left, otherSpan.right)
+        if (otherSpan.left >= right) neighbors.right = Math.min(neighbors.right, otherSpan.left)
+      }
+    }
+    const label = layoutTaskLabel(task.name, span, { width, barHeight, fontSize }, neighbors)
+    return [task, { label, left: Math.min(left, label.left), right: Math.max(right, label.right) }] as const
+  }))
   const taskY = new Map<ScheduledGanttTask, number>()
   const nextInLane = new Map<ScheduledGanttTask, number>()
   const groups: string[] = []
@@ -367,20 +393,31 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const sectionHeight = (sectionFontSize ?? 14) + 14 + (labelLines(section).length - 1) * sectionLineHeight
     if (section) y += sectionHeight
     // A milestone occupies both sides of its date even if its duration is zero.
-    const lanes: { task: ScheduledGanttTask, point: boolean }[] = []
-    const ordered = compact ? [...children].sort((a, b) => a.start - b.start) : children
+    const lanes: { task: ScheduledGanttTask, point: boolean, tasks: ScheduledGanttTask[], above: number, below: number }[] = []
+    const ordered = compact ? [...children].sort((a, b) => (labelPlans.get(a)?.left ?? a.start) - (labelPlans.get(b)?.left ?? b.start)) : children
     for (const [row, task] of ordered.entries()) {
       const point = task.start === task.end || task.tags.includes('milestone')
+      const plan = labelPlans.get(task)
       let lane = compact ? lanes.findIndex(({ task: prior, point: priorPoint }) => {
+        if (plan) return labelPlans.get(prior)!.right <= plan.left
         const priorEnd = prior.barEnd ?? prior.end
         return priorEnd < task.start || (priorEnd === task.start && !priorPoint && !point)
       }) : row
       if (lane === -1) lane = lanes.length
-      if (lanes[lane]) nextInLane.set(lanes[lane].task, task.start)
-      lanes[lane] = { task, point }
-      taskY.set(task, y + (lane + 0.5) * rowHeight)
+      const previous = lanes[lane]
+      if (previous && !plan) nextInLane.set(previous.task, task.start)
+      const labelHalf = plan ? plan.label.height / 2 + 2 : 0
+      const offset = plan?.label.offset ?? 0
+      const above = Math.max(previous?.above ?? 0, rowHeight / 2, labelHalf - offset)
+      const below = Math.max(previous?.below ?? 0, rowHeight / 2, labelHalf + offset)
+      const laneTasks = previous?.tasks ?? []
+      laneTasks.push(task)
+      lanes[lane] = { task, point, tasks: laneTasks, above, below }
     }
-    y += lanes.length * rowHeight
+    for (const lane of lanes) {
+      for (const task of lane.tasks) taskY.set(task, y + lane.above)
+      y += lane.above + lane.below
+    }
     const slot = sectionSlot(index)
     const sectionColor = safeColor(chart.sectionColors?.[slot]) ?? (sectionStyles > 1 ? chronologyColor(slot) : undefined)
     const styledFill = sectionColor ? ` style="fill:${sectionColor};opacity:0.2"` : ''
@@ -482,7 +519,16 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const capacity = Math.max(compact ? 0 : 1, Math.floor(available / letterWidth))
     const clickableColor = task.input.href || task.input.callback ? safeColor(palette?.clickableText) : undefined
     let label = ''
-    if (barLabels) {
+    const plan = labelPlans.get(task)?.label
+    if (plan) {
+      const inside = plan.anchor === 'middle' && plan.offset === 0
+      const insideText = active || done ? palette?.statusText ?? palette?.insideText : palette?.insideText
+      const color = inside ? safeColor(insideText) ?? chronologyInk : safeColor(palette?.outsideText)
+      label = svgTextLines(plan.lines, plan.x, center + plan.offset, 'diagram-gantt-label', plan.anchor, 'currentColor', {
+        fontSize, color: clickableColor ?? color,
+      })
+    }
+    else if (barLabels) {
       const lines = labelLines(task.name).map(line => Array.from(line))
       const glyphWidth = (fontSize ?? 14) * 0.6
       const longest = Math.max(...lines.map(line => line.length))

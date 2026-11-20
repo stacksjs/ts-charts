@@ -660,6 +660,20 @@ test('fits Gantt labels inside bars or puts them on the available side of the ta
   expect(ganttChart({ ...chart, taskLabelPlacement: 'gutter' })).toMatch(/<text[^>]*x="20"[^>]*class="diagram-gantt-label" text-anchor="start"/)
 })
 
+test('wraps complete Gantt labels and retains the width of a narrow fixed chart', () => {
+  const name = 'Prepare and review the specification with the delivery team'
+  const svg = ganttChart({
+    width: 220, leftPadding: 20, rightPadding: 0, wrapTaskLabels: true,
+    sections: [{ tasks: [{ name, start: '2026-03-05', duration: '2d' }] }],
+  })!
+  expect(svg).toContain('viewBox="0 0 220 ')
+  const label = /class="diagram-gantt-label"[^>]*>(.*?)<\/text>/.exec(svg)?.[1] ?? ''
+  expect(label).not.toContain('…')
+  const lines = [...label.matchAll(/<tspan[^>]*>(.*?)<\/tspan>/g)].map(([, line]) => line)
+  expect(lines.length).toBeGreaterThan(1)
+  expect(lines.join(' ')).toBe(name)
+})
+
 test('applies independent GitGraph palettes, label typography, and tag borders', () => {
   const graph: GitGraphOptions = {
     title: 'History', titleTopMargin: 35, rotateCommitLabel: true,
