@@ -884,6 +884,9 @@ test('scopes GitGraph gradients and deduplicates label shadow filters', () => {
 })
 
 test('renders branch-only histories and snapshots duplicate commit IDs for cherry-picks', () => {
+  const initial = { operations: [], title: 'Release history', mainBranchName: 'stable' }
+  expect(buildGitHistory(initial)).toMatchObject({ commits: [], currentBranch: 'stable' })
+  expect(gitGraphChart(initial)).toContain('>stable</tspan>')
   const empty = { operations: [{ op: 'branch', name: 'draft' }, { op: 'checkout', name: 'draft' }] } as const
   expect(buildGitHistory(empty)?.commits).toEqual([])
   expect(buildGitHistory(empty)?.currentBranch).toBe('draft')
@@ -909,6 +912,27 @@ test('renders branch-only histories and snapshots duplicate commit IDs for cherr
     expect(buildGitHistory({ duplicateCommitIds: 'latest', operations: [...chart.operations, { op: 'merge', branch: 'work', id: 'revision' }] })).toBeUndefined()
   }
   finally { warn.mockRestore() }
+})
+
+test('reserves explicit GitGraph IDs before numbering commits, merges, and cherry-picks', () => {
+  const chart: GitGraphOptions = { operations: [
+    { op: 'commit' },
+    { op: 'branch', name: 'review' },
+    { op: 'commit', id: 'c2' },
+    { op: 'checkout', name: 'main' },
+    { op: 'merge', branch: 'review', id: 'c1' },
+    { op: 'commit' },
+    { op: 'branch', name: 'maintenance' },
+    { op: 'commit' },
+    { op: 'checkout', name: 'main' },
+    { op: 'cherry-pick', commit: 'c5' },
+  ] }
+  expect(buildGitHistory(chart)?.commits.map(commit => [commit.id, commit.parents.map(parent => parent.id)])).toEqual([
+    ['c3', []], ['c2', ['c3']], ['c1', ['c3', 'c2']], ['c4', ['c1']], ['c5', ['c4']], ['c6', ['c4']],
+  ])
+  const svg = gitGraphChart(chart)
+  expect(svg).toContain('data-commit-id="c1" data-parent-ids="c3, c2"')
+  expect(svg).toContain('data-commit-id="c6" data-parent-ids="c4" data-picked-id="c5"')
 })
 
 test('includes GitGraph padding in the title position and view box for every direction', () => {

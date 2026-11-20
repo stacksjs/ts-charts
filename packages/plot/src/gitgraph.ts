@@ -112,13 +112,21 @@ export interface GitHistory {
 
 export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined {
   const { operations, direction = 'LR', title = '', mainBranchName, mainBranchOrder, parallelCommits } = chart
-  if (!operations.length || operations.length > 450 || !['LR', 'TB', 'BT'].includes(direction)) return
+  if (operations.length > 450 || !['LR', 'TB', 'BT'].includes(direction)) return
   const main = mainBranchName || 'main'
   const head: Branch = { name: main, order: Number.isFinite(mainBranchOrder) ? mainBranchOrder! : 0, index: 0 }
   let current = head
   const branches = new Map([[main, head]])
   const commits: Commit[] = []
   const byId = new Map<string, Commit>()
+  const reservedIds = new Set(operations.flatMap(operation => 'id' in operation && operation.id ? [operation.id] : []))
+  let nextGeneratedId = 1
+
+  function generatedId(): string {
+    nextGeneratedId = Math.max(nextGeneratedId, commits.length + 1)
+    while (reservedIds.has(`c${nextGeneratedId}`)) nextGeneratedId++
+    return `c${nextGeneratedId++}`
+  }
 
   function add(kind: Commit['kind'], properties: GitCommitOptions, other?: Commit, pickedParent?: string): boolean {
     const { id: customId, label, message, style, tags = [] } = properties
@@ -129,9 +137,7 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     if (!['NORMAL', 'REVERSE', 'HIGHLIGHT'].includes(type)) return false
     if (message !== undefined && typeof message !== 'string') return false
     if (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string')) return false
-    let index = commits.length + 1
-    while (byId.has(`c${index}`)) index++
-    const id = customId ?? `c${index}`
+    const id = customId ?? generatedId()
     const parents = current.head ? [current.head] : []
     if (other && (kind === 'merge' || chart.cherryPickSourceParent)) parents.push(other)
     const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
