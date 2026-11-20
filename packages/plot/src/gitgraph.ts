@@ -7,6 +7,7 @@ export type GitGraphDirection = 'LR' | 'TB' | 'BT'
 interface GitCommitOptions {
   id?: string
   label?: string
+  message?: string
   style?: GitCommitStyle
   tags?: readonly string[]
 }
@@ -49,10 +50,12 @@ interface Branch { name: string, head?: Commit, fork?: Commit, order: number, in
 interface Commit {
   id: string
   label: string
+  message?: string
   branch: Branch
   parents: Commit[]
   tags: readonly string[]
   type: GitCommitStyle
+  symbol: GitCommitStyle | 'MERGE' | 'CHERRY_PICK'
   kind: 'commit' | 'merge' | 'cherry-pick'
   rank: number
   index: number
@@ -77,9 +80,11 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
   const byId = new Map<string, Commit>()
 
   function add(kind: Commit['kind'], properties: GitCommitOptions, other?: Commit, pickedParent?: string): boolean {
-    const { id: customId, label, style: type = 'NORMAL', tags = [] } = properties
+    const { id: customId, label, message, style, tags = [] } = properties
+    const type = style ?? 'NORMAL'
     if (customId !== undefined && (typeof customId !== 'string' || !customId || byId.has(customId))) return false
     if (!['NORMAL', 'REVERSE', 'HIGHLIGHT'].includes(type)) return false
+    if (message !== undefined && typeof message !== 'string') return false
     if (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string')) return false
     let index = commits.length + 1
     while (byId.has(`c${index}`)) index++
@@ -87,8 +92,9 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     const parents = current.head ? [current.head] : []
     if (kind === 'merge' && other) parents.push(other)
     const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
-    const commit: Commit = { id, label: label || id, branch: current, parents, tags,
-      kind, type, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
+    const symbol = style ?? (kind === 'merge' ? 'MERGE' : kind === 'cherry-pick' ? 'CHERRY_PICK' : 'NORMAL')
+    const commit: Commit = { id, label: label || id, message, branch: current, parents, tags,
+      kind, type, symbol, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
     commits.push(commit)
     byId.set(id, commit)
     current.head = commit
@@ -239,12 +245,12 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const { x, y } = point(commit)
     const stroke = color(commit.branch)
     let node = `<circle class="diagram-git-dot" cx="${x}" cy="${y}" r="8" fill="${stroke}"/>`
-    if (commit.kind === 'merge') node += `<circle class="diagram-git-ring" fill="none" stroke="${ringColor}" cx="${x}" cy="${y}" r="4.2"/>`
-    if (commit.kind === 'cherry-pick') node += `<path class="diagram-git-ring" fill="none" stroke="${ringColor}" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
-    if (commit.type === 'REVERSE') node = `<path class="diagram-git-edge" fill="none" stroke-width="2" d="M${x - 7} ${y - 7}l14 14m-14 0l14-14" stroke="${stroke}"/>`
-    if (commit.type === 'HIGHLIGHT') {
-      const highlight = safeColor(chart.highlightColors?.[colorIndex(commit.branch)]) ?? stroke
-      node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${highlight}"/>`
+    if (commit.symbol === 'MERGE') node += `<circle class="diagram-git-ring" fill="none" stroke="${ringColor}" cx="${x}" cy="${y}" r="4.2"/>`
+    if (commit.symbol === 'CHERRY_PICK') node += `<path class="diagram-git-ring" fill="none" stroke="${ringColor}" d="M${x - 3} ${y}q3 1 3-4 0 5 3 4M${x - 5} ${y + 1}h2m3 0h2"/>`
+    if (commit.symbol === 'REVERSE') node += `<path class="diagram-git-reverse-mark" fill="none" stroke="${ringColor}" stroke-width="2" d="M${x - 4} ${y - 4}l8 8m-8 0l8-8"/>`
+    if (commit.symbol === 'HIGHLIGHT') {
+      const highlight = safeColor(chart.highlightColors?.[colorIndex(commit.branch)]) ?? ringColor
+      node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${highlight}"/><rect class="diagram-git-highlight-inner" x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1" fill="${stroke}"/>`
     }
     let label = ''
     if (rotateLabels) {
@@ -261,9 +267,10 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const tag = commit.tags.join(' · ')
     const tagLabel = tag ? (horizontal ? decorateLabel(tagText(commit), x, y + (rotateLabels ? -tagOffset : tagOffset), 'diagram-git-tag', 'middle', tagAppearance)
       : decorateLabel(tagText(commit), x + 13, y + Math.max(11, tagSize / 2 + 4), 'diagram-git-tag', 'start', tagAppearance)) : ''
-    const detail = [commit.branch.name, commit.id, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
+    const detail = [commit.branch.name, commit.id, commit.message, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
+    const message = commit.message ? ` data-commit-message="${escapeHtml(commit.message)}"` : ''
     const provenance = commit.picked ? ` data-picked-id="${escapeHtml(commit.picked)}"${commit.pickedParent ? ` data-picked-parent="${escapeHtml(commit.pickedParent)}"` : ''}` : ''
-    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
+    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}${message}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
   const body = `<g data-diagram-kind="gitgraph">${rails}${edges}${nodes}</g>`
   return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY, chart)

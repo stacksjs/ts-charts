@@ -243,6 +243,36 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   ] })).toBeUndefined()
 })
 
+test('keeps styled merges connected and preserves commit messages alongside IDs', () => {
+  const chart: GitGraphOptions = {
+    background: '#eeeeee',
+    colors: ['#225566', '#775599'],
+    highlightColors: ['#ddccbb'],
+    operations: [
+      { op: 'commit', id: 'base', message: 'Set up <draft>' },
+      { op: 'branch', name: 'review' },
+      { op: 'commit', id: 'fix', style: 'REVERSE' },
+      { op: 'checkout', name: 'main' },
+      { op: 'merge', id: 'signed', branch: 'review', style: 'NORMAL' },
+      { op: 'checkout', name: 'review' },
+      { op: 'commit', id: 'draft' },
+      { op: 'checkout', name: 'main' },
+      { op: 'merge', id: 'release', branch: 'review', style: 'HIGHLIGHT' },
+    ],
+  }
+  const history = buildGitHistory(chart)!
+  expect(history.commits.map(({ id, symbol }) => [id, symbol])).toEqual([
+    ['base', 'NORMAL'], ['fix', 'REVERSE'], ['signed', 'NORMAL'], ['draft', 'NORMAL'], ['release', 'HIGHLIGHT'],
+  ])
+  expect(history.commits.at(-1)?.parents.map(parent => parent.id)).toEqual(['signed', 'draft'])
+  const svg = gitGraphChart(chart)!
+  expect(svg).toContain('data-commit-message="Set up &lt;draft&gt;"')
+  expect(svg).toContain('<title>main / base / Set up &lt;draft&gt;</title>')
+  expect(svg).toMatch(/data-commit-id="fix"[^>]*><title>[^<]*<\/title><circle[^>]+fill="#775599"\/><path class="diagram-git-reverse-mark"[^>]+stroke="#eeeeee"/)
+  expect(svg).toMatch(/data-commit-id="signed" data-parent-ids="base, fix"[^>]*><title>[^<]*<\/title><circle[^>]*\/><text/)
+  expect(svg).toMatch(/data-commit-id="release"[^>]*><title>[^<]*<\/title><rect[^>]+fill="#ddccbb"\/><rect class="diagram-git-highlight-inner"[^>]+fill="#225566"/)
+})
+
 test('accepts ISO holidays with custom task dates and packs touching bars around milestones', () => {
   const calendar = scheduleGantt({
     dateFormat: 'DD/MM/YYYY', excludes: ['2026-03-06', '07/03/2026'], includes: ['2026-03-07'],
