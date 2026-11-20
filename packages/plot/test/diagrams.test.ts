@@ -1,6 +1,66 @@
 import { expect, spyOn, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
 import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
+
+test('uses the local Gantt calendar for durations, deadlines, exclusions, and axis labels', async () => {
+  const entry = new URL('../src/diagrams.ts', import.meta.url).pathname
+  const source = `
+    import { ganttChart, ganttDateParser, scheduleGantt } from ${JSON.stringify(entry)}
+    const chart = {
+      timeZone: 'local', inclusiveEndDates: true, tickInterval: '1day', axisFormat: '%m/%d %H:%M',
+      sections: [{ tasks: [
+        { name: 'Fall overlap', start: '2020-11-01', duration: '1d' },
+        { name: 'Fixed deadline', start: '2020-11-01', end: '2020-11-01' },
+        { name: 'Spring gap', start: '2020-03-08', duration: '1d' },
+      ] }],
+    }
+    const weekend = {
+      ...chart, excludes: ['weekends'], exclusionMode: 'whole-days', exclusionBands: 'ranges',
+      sections: [{ tasks: [
+        { name: 'Draft', id: 'draft', start: '2020-10-30', duration: '1d' },
+        { name: 'Review', after: ['draft'], duration: '1d' },
+      ] }],
+    }
+    const dates = options => scheduleGantt(options).tasks.map(({ start, end, barEnd }) =>
+      [start, end, barEnd].map(value => value === undefined ? null : new Date(value).toISOString()))
+    const parse = ganttDateParser('YYYY-MM-DD HH:mm', 0, 'local')
+    const withOffset = ganttDateParser('YYYY-MM-DD HH:mmZ', 0, 'local')
+    console.log(JSON.stringify({
+      local: dates(chart), weekend: dates(weekend), svg: ganttChart(weekend),
+      gap: parse('2020-03-08 02:30') ?? null,
+      offset: new Date(withOffset('2020-11-01 10:00+09:00')).toISOString(),
+    }))
+  `
+  const child = Bun.spawn([process.execPath, '-e', source], {
+    env: { ...process.env, TZ: 'America/Los_Angeles' }, stdout: 'pipe', stderr: 'pipe',
+  })
+  const [status, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+  if (status) throw new Error(stderr)
+  const output = JSON.parse(stdout)
+  expect(output.local).toEqual([
+    ['2020-11-01T07:00:00.000Z', '2020-11-02T08:00:00.000Z', null],
+    ['2020-11-01T07:00:00.000Z', '2020-11-02T08:00:00.000Z', null],
+    ['2020-03-08T08:00:00.000Z', '2020-03-09T07:00:00.000Z', null],
+  ])
+  expect(output.weekend).toEqual([
+    ['2020-10-30T07:00:00.000Z', '2020-11-02T08:00:00.000Z', '2020-10-31T07:00:00.000Z'],
+    ['2020-11-02T08:00:00.000Z', '2020-11-03T08:00:00.000Z', null],
+  ])
+  expect(output.svg).toContain('data-excluded-start="2020-10-31" data-excluded-end="2020-11-02"')
+  expect(output.svg).toContain('<title>11/02 00:00</title>')
+  expect(output.svg).not.toContain('11/02 08:00')
+  expect(output.gap).toBeNull()
+  expect(output.offset).toBe('2020-11-01T01:00:00.000Z')
+})
+
+test('renders a Gantt axis before any tasks have been declared', () => {
+  const chart = { sections: [], now: Date.UTC(2026, 3, 6), topAxis: true, todayMarker: false }
+  expect(scheduleGantt(chart)?.tasks).toEqual([])
+  const svg = ganttChart(chart)
+  expect(svg).toContain('data-axis="top"')
+  expect(svg).toContain('>2026-04-06</tspan>')
+  expect(svg).not.toMatch(/data-task-id=|Infinity|NaN/)
+})
 import { ganttTicks } from '../src/gantt-time.ts'
 import { quadrantChart } from '../src/quadrant.ts'
 

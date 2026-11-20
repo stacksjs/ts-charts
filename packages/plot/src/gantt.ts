@@ -1,10 +1,11 @@
 import type { ChartLabels } from './chronology.ts'
+import type { GanttTimeZone } from './gantt-time.ts'
 import { color } from '../../color/src/color.ts'
-import { utcFormat } from '../../time-format/src/defaultLocale.ts'
+import { timeFormat, utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
 import { layoutAxisLabels, layoutReferenceLabels, layoutTaskLabel } from './gantt-labels.ts'
-import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
+import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateFormatter, ganttDateParser, ganttDayOffset, ganttDayStart, ganttIsoStart, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
 export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
@@ -62,6 +63,8 @@ export interface GanttPalette {
 export interface GanttChartOptions extends ChartLabels {
   sections: readonly GanttSection[]
   dateFormat?: string
+  /** Interpret unzoned dates, calendar days, and axis labels in the host time zone. Defaults to UTC. */
+  timeZone?: GanttTimeZone
   /** Accept valid ISO dates and timestamps when a task start does not match dateFormat. */
   startDateFallback?: 'iso'
   axisFormat?: string
@@ -105,7 +108,7 @@ export interface GanttChartOptions extends ChartLabels {
   numberSectionStyles?: number
   sectionColors?: readonly (string | undefined)[]
   palette?: GanttPalette
-  /** UTC timestamp used by the today marker, partial dates, and the first undated task. */
+  /** Timestamp used by the today marker, partial dates, and the first undated task. */
   now?: number
 }
 
@@ -142,7 +145,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   const {
     sections: groups, title = '', dateFormat = 'YYYY-MM-DD', axisFormat: format,
     tickInterval: ticks = '', topAxis = false, todayMarker = true,
-    inclusiveEndDates = false, excludes = [], includes = [], now = Date.now(),
+    inclusiveEndDates = false, excludes = [], includes = [], now = Date.now(), timeZone = 'UTC',
   } = chart
   if (!dateFormat || dateFormat.length > 72 || !Number.isFinite(now)) return
   if (chart.weekend && chart.weekend !== 'friday' && chart.weekend !== 'saturday') return
@@ -163,14 +166,15 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
       definitions.push(definition)
     }
   }
-  if (!definitions.length) return
-  const parseDate = ganttDateParser(dateFormat, now)
-  const parseFixedEnd = chart.fixedEndDateFormat === undefined ? undefined : ganttDateParser(chart.fixedEndDateFormat, now)
-  const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
+  const parseDate = ganttDateParser(dateFormat, now, timeZone)
+  const durationMode = chart.durationMode ?? (timeZone === 'local' ? 'calendar' : 'elapsed')
+  const parseFixedEnd = chart.fixedEndDateFormat === undefined ? undefined : ganttDateParser(chart.fixedEndDateFormat, now, timeZone)
+  const dayOf = (time: number) => ganttDayStart(time, timeZone)
+  const nextDay = (time: number) => ganttDayOffset(time, 1, timeZone)
   const today = dayOf(now)
-  const isoDate = dateFormat === 'YYYY-MM-DD' ? parseDate : ganttDateParser('YYYY-MM-DD', now)
+  const isoDate = dateFormat === 'YYYY-MM-DD' ? parseDate : ganttDateParser('YYYY-MM-DD', now, timeZone)
   const formattedCalendar = chart.calendarMatch === 'formatted'
-  const calendarFormatter = formattedCalendar && dateFormat !== 'YYYY-MM-DD' ? ganttDateFormatter(dateFormat) : undefined
+  const calendarFormatter = formattedCalendar && dateFormat !== 'YYYY-MM-DD' ? ganttDateFormatter(dateFormat, timeZone) : undefined
   let hasFormattedDates = false
   function calendarKey(value: string): number | string | undefined {
     const iso = isoDate(value)
@@ -208,7 +212,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     const day = dayOf(value)
     const formatted = hasFormattedDates && calendarFormatter ? calendarFormatter.format(value).toLowerCase() : ''
     if (includedDates.has(day) || includedDates.has(formatted)) return false
-    const weekday = ((day / dayMs + 4) % 7 + 7) % 7
+    const weekday = timeZone === 'local' ? new Date(day).getDay() : ((day / dayMs + 4) % 7 + 7) % 7
     return excludedDates.has(day) || excludedDates.has(formatted) || excludedWeekdays.has(weekday)
   }
   const hasExclusions = excludedDates.size > 0 || excludedWeekdays.size > 0
@@ -216,7 +220,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     let remaining = target - start
     let cursor = start
     for (let days = 0; days < 20_000; days++) {
-      const next = dayOf(cursor) + dayMs
+      const next = nextDay(dayOf(cursor))
       if (!isExcluded(cursor)) {
         const available = next - cursor
         if (remaining <= available) return cursor + remaining
@@ -232,11 +236,11 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     let end = target
     let barEnd = target
     let previousExcluded = false
-    for (let date = start + dayMs, days = 0; date <= end; date += dayMs, days++) {
+    for (let date = nextDay(start), days = 0; date <= end; date = nextDay(date), days++) {
       if (days >= 20_000) return
       if (!previousExcluded) barEnd = end
       previousExcluded = isExcluded(date)
-      if (previousExcluded) end += dayMs
+      if (previousExcluded) end = nextDay(end)
     }
     return { end, barEnd }
   }
@@ -274,7 +278,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   function start(task: TaskDefinition): number | undefined {
     if (task.input.after) return dependency(task, task.input.after, 'end')
     if (task.input.start !== undefined)
-      return parseDate(task.input.start) ?? (chart.startDateFallback === 'iso' ? ganttIsoStart(task.input.start.trim()) : undefined)
+      return parseDate(task.input.start) ?? (chart.startDateFallback === 'iso' ? ganttIsoStart(task.input.start.trim(), timeZone) : undefined)
     const previous = definitions[task.index - 1]
     return previous ? resolve(previous, 'end') : today
   }
@@ -282,9 +286,9 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     if (task.input.until) return dependency(task, task.input.until, 'start')
     if (task.input.end !== undefined) {
       const explicit = parseDate(task.input.end)
-      return explicit === undefined ? undefined : explicit + (inclusiveEndDates ? dayMs : 0)
+      return explicit !== undefined && inclusiveEndDates ? nextDay(explicit) : explicit
     }
-    if (task.input.duration !== undefined) return durationEnd(start, task.input.duration, chart.durationMode)
+    if (task.input.duration !== undefined) return durationEnd(start, task.input.duration, durationMode, timeZone)
   }
   function end(task: TaskDefinition): number | undefined {
     const start = resolve(task, 'start')
@@ -310,7 +314,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     if (start === undefined || end === undefined || end < start) return
     tasks.push({ ...task, start, end, ...(barEnd === undefined ? {} : { barEnd }) })
   }
-  const crossesDay = dayOf(Math.min(...tasks.map(task => task.start))) !== dayOf(Math.max(...tasks.map(task => task.end)))
+  const crossesDay = tasks.length > 0
+    && dayOf(Math.min(...tasks.map(task => task.start))) !== dayOf(Math.max(...tasks.map(task => task.end)))
   const axisFormat = format || defaultGanttAxisFormat(dateFormat, crossesDay)
   return { tasks, sections, title, axisFormat, ticks, topAxis, todayMarker, isExcluded }
 }
@@ -372,6 +377,10 @@ function barLabel(left: number, right: number, width: number, textWidth: number,
 
 export function ganttChart(chart: GanttChartOptions): string | undefined {
   const now = chart.now ?? Date.now()
+  const timeZone = chart.timeZone ?? 'UTC'
+  const dayOf = (time: number) => ganttDayStart(time, timeZone)
+  const nextDay = (time: number) => ganttDayOffset(time, 1, timeZone)
+  const formatDate = timeZone === 'local' ? timeFormat : utcFormat
   const schedule = scheduleGantt({ ...chart, now })
   if (!schedule) return
   const { tasks, sections, title, axisFormat, ticks, isExcluded } = schedule
@@ -398,9 +407,9 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const sectionSlots = new Map([...new Set(visibleTasks.map(task => sections[task.section]))]
     .map((name, index) => [name, index % sectionStyles]))
   const sectionSlot = (section: number) => sectionSlots.get(sections[section]) ?? 0
-  const start = Math.min(...tasks.map(task => task.start))
-  const latest = Math.max(...tasks.map(task => task.end))
-  const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : start + dayMs
+  const start = tasks.length ? Math.min(...tasks.map(task => task.start)) : dayOf(now)
+  const latest = tasks.length ? Math.max(...tasks.map(task => task.end)) : start
+  const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : nextDay(start)
   if (!Number.isFinite(new Date(end).valueOf())) return
   const xAt = (time: number) => x0 + 12 + (time - start) / (end - start) * (plotWidth - 24)
   const spans = new Map(chart.wrapTaskLabels ? visibleTasks.map((task) => {
@@ -476,25 +485,27 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const excludedColor = safeColor(palette?.excluded)
   const excludedStyle = excludedColor ? ` style="fill:${excludedColor}"` : ''
   const combineExclusions = chart.exclusionBands === 'ranges'
-  const exclusionCutoff = combineExclusions ? durationEnd(start, '6y', 'calendar') : undefined
+  const exclusionCutoff = combineExclusions ? durationEnd(start, '6y', 'calendar', timeZone) : undefined
   const showExclusions = combineExclusions
     ? !(exclusionCutoff !== undefined && latest >= exclusionCutoff)
     : (end - start) / dayMs <= 180
   if (showExclusions && chart.excludes?.length) {
-    const firstDay = Math.floor(start / dayMs) * dayMs
-    const timeOfDay = chart.calendarMatch === 'formatted' ? start - firstDay : 0
+    const first = chart.calendarMatch === 'formatted' ? start : dayOf(start)
     const ranges: { start: number, end: number }[] = []
-    for (let day = firstDay; combineExclusions ? day + timeOfDay <= latest : day < end; day += dayMs) {
-      if (!isExcluded(day + timeOfDay)) continue
+    for (let date = first; combineExclusions ? date <= latest : dayOf(date) < end; date = nextDay(date)) {
+      if (!isExcluded(date)) continue
+      const day = dayOf(date)
+      const dayEnd = nextDay(day)
       const previous = ranges.at(-1)
-      if (combineExclusions && previous?.end === day) previous.end += dayMs
-      else ranges.push({ start: day, end: day + dayMs })
+      if (combineExclusions && previous?.end === day) previous.end = dayEnd
+      else ranges.push({ start: day, end: dayEnd })
     }
+    const formatDay = formatDate('%Y-%m-%d')
     for (const range of ranges) {
       const left = xAt(Math.max(start, range.start))
       const right = xAt(Math.min(end, range.end))
       const dates = combineExclusions
-        ? ` data-excluded-start="${new Date(range.start).toISOString().split('T')[0]}" data-excluded-end="${new Date(range.end).toISOString().split('T')[0]}"`
+        ? ` data-excluded-start="${formatDay(range.start)}" data-excluded-end="${formatDay(range.end)}"`
         : ''
       bands.push(`<rect class="diagram-gantt-excluded"${dates} fill="#869eb6" fill-opacity="0.15"${excludedStyle} x="${left}" y="${gridStart}" width="${right - left}" height="${bottom - gridStart}"/>`)
     }
@@ -503,8 +514,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const gridStyle = gridColor ? ` style="stroke:${gridColor}"` : ''
   const axisStyle = { color: safeColor(palette?.axisText) }
   const axisFontSize = 12
-  const formatTick = utcFormat(axisFormat)
-  const axisTicks = ganttTicks(start, end, ticks, chart.weekday).map(time => ({ x: xAt(time), text: formatTick(time) }))
+  const formatTick = formatDate(axisFormat)
+  const axisTicks = ganttTicks(start, end, ticks, chart.weekday, timeZone).map(time => ({ x: xAt(time), text: formatTick(time) }))
   const axisLabels = layoutAxisLabels(axisTicks, width, axisFontSize)
   const axes = (schedule.topAxis ? ['bottom', 'top'] as const : ['bottom'] as const).map((position) => {
     const above = position === 'top'

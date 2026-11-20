@@ -1,6 +1,22 @@
-import { utcDay, utcFriday, utcHour, utcMillisecond, utcMinute, utcMonday, utcMonth, utcSaturday, utcSecond, utcSunday, utcThursday, utcTicks, utcTuesday, utcWednesday, utcYear } from '../../time/src/index.ts'
+import { timeDay, timeFriday, timeHour, timeMinute, timeMonday, timeMonth, timeSaturday, timeSunday, timeThursday, timeTicks, timeTuesday, timeWednesday, timeYear, utcDay, utcFriday, utcHour, utcMillisecond, utcMinute, utcMonday, utcMonth, utcSaturday, utcSecond, utcSunday, utcThursday, utcTicks, utcTuesday, utcWednesday, utcYear } from '../../time/src/index.ts'
+
+export type GanttTimeZone = 'UTC' | 'local'
 
 export const dayMs: number = 86_400_000
+
+export function ganttDayStart(time: number, zone: GanttTimeZone): number {
+  return zone === 'local' ? +timeDay.floor(time) : Math.floor(time / dayMs) * dayMs
+}
+
+export function ganttDayOffset(time: number, days: number, zone: GanttTimeZone): number {
+  return zone === 'local' ? +timeDay.offset(time, days) : time + days * dayMs
+}
+
+// Represent local wall-clock fields in UTC so the same field calculations can
+// be used for both calendars without changing the actual task timestamps.
+function wallTime(date: Date): Date {
+  return new Date(+date - date.getTimezoneOffset() * 60000)
+}
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 export const weekdays: readonly string[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -39,10 +55,11 @@ function compileDateFormat(format: string) {
   return { tokens, fields, matcher: new RegExp(`^${pattern}$`, 'i') }
 }
 
-/** Build a UTC date parser. Partial dates use the supplied reference date. */
-export function ganttDateParser(format: string, referenceTime: number = Date.now()): (value: string) => number | undefined {
+/** Partial dates use the supplied reference date in the selected calendar. */
+export function ganttDateParser(format: string, referenceTime: number = Date.now(), timeZone: GanttTimeZone = 'UTC'): (value: string) => number | undefined {
   const { fields, matcher } = compileDateFormat(format)
-  const reference = new Date(referenceTime)
+  const referenceDate = new Date(referenceTime)
+  const reference = timeZone === 'local' ? wallTime(referenceDate) : referenceDate
   return (value) => {
     const captures = matcher.exec(value.trim())
     if (!captures || !fields.length) return
@@ -80,8 +97,21 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
     const second = get(['s', 'ss'], 0)
     const fraction = parts.get('SSS') ?? parts.get('SS') ?? parts.get('S') ?? ''
     if (month < 1 || month > 12 || date < 1 || date > 31 || hour > 23 || minute > 59 || second > 59) return
+    const useLocal = timeZone === 'local' && !parts.has('Z') && !parts.has('ZZ')
     const time = new Date(0)
-    time.setUTCFullYear(year, ordinal === undefined ? month - 1 : 0, ordinal ?? date)
+    const monthIndex = ordinal === undefined ? month - 1 : 0
+    const day = ordinal ?? date
+    if (useLocal) {
+      time.setHours(0, 0, 0, 0)
+      time.setFullYear(year, monthIndex, day)
+      time.setHours(hour, minute, second, Number(fraction.padEnd(3, '0')))
+      const hasHour = parts.has('H') || parts.has('HH') || parts.has('h') || parts.has('hh')
+      if (time.getFullYear() !== year || (ordinal === undefined && (time.getMonth() !== monthIndex || time.getDate() !== day))
+        || (ordinal !== undefined && dayOfYear(wallTime(time)) !== ordinal)
+        || (hasHour && time.getHours() !== hour) || ((parts.has('m') || parts.has('mm')) && time.getMinutes() !== minute)) return
+      return +time
+    }
+    time.setUTCFullYear(year, monthIndex, day)
     time.setUTCHours(hour, minute, second, Number(fraction.padEnd(3, '0')))
     if (time.getUTCFullYear() !== year || (ordinal === undefined && (time.getUTCMonth() !== month - 1 || time.getUTCDate() !== date))) return
     const zone = /([+-])(\d{2}):?(\d{2})/.exec(parts.get('Z') ?? parts.get('ZZ') ?? '')
@@ -121,27 +151,39 @@ const dateValues: Record<string, string | ((date: Date) => string | number)> = {
   X: date => Math.floor(+date / 1000), x: date => +date, Z: '+00:00', ZZ: '+0000',
 }
 
-export function ganttDateFormatter(format: string): { matches: (value: string) => boolean, format: (time: number) => string } {
+export function ganttDateFormatter(format: string, timeZone: GanttTimeZone = 'UTC'): { matches: (value: string) => boolean, format: (time: number) => string } {
   const { tokens, fields, matcher } = compileDateFormat(format)
   const parts = tokens.map(token => Object.hasOwn(dateValues, token) ? dateValues[token] : tokenLiteral(token))
   return {
     matches: (value: string) => fields.length > 0 && matcher.test(value),
     format(time: number): string {
-      const date = new Date(time)
+      const instant = new Date(time)
+      const date = timeZone === 'local' ? wallTime(instant) : instant
       let output = ''
-      for (const part of parts) output += typeof part === 'string' ? part : part(date)
+      for (const [index, part] of parts.entries()) {
+        const token = tokens[index]
+        if (token === 'X' || token === 'x') output += token === 'X' ? Math.floor(+instant / 1000) : +instant
+        else if (timeZone === 'local' && (token === 'Z' || token === 'ZZ')) {
+          const offset = -instant.getTimezoneOffset()
+          const absolute = Math.abs(offset)
+          output += (offset < 0 ? '-' : '+') + padDate(Math.floor(absolute / 60)) + (token === 'Z' ? ':' : '') + padDate(absolute % 60)
+        }
+        else output += typeof part === 'string' ? part : part(date)
+      }
       return output
     },
   }
 }
 
 const parseIsoTime = ganttDateParser('YYYY-MM-DD[T]HH:mm:ss.SSSZ', 0)
+const parseLocalIsoTime = ganttDateParser('YYYY-MM-DD[T]HH:mm:ss.SSS', 0, 'local')
 
-export function ganttIsoStart(value: string): number | undefined {
+export function ganttIsoStart(value: string, timeZone: GanttTimeZone = 'UTC'): number | undefined {
   const match = /^(\d{3,4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})?)?$/i.exec(value)
   if (!match) return
-  const [, year, month, day, hour = '00', minute = '00', second = '00', fraction = '', zone = 'Z'] = match
-  return parseIsoTime(`${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}.${fraction.padEnd(3, '0')}${zone}`)
+  const [, year, month, day, hour = '00', minute = '00', second = '00', fraction = '', zone] = match
+  const stamp = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}.${fraction.padEnd(3, '0')}`
+  return timeZone === 'local' && !zone ? parseLocalIsoTime(stamp) : parseIsoTime(stamp + (zone ?? 'Z'))
 }
 
 export function defaultGanttAxisFormat(format: string, crossesDay: boolean): string {
@@ -156,16 +198,17 @@ export function defaultGanttAxisFormat(format: string, crossesDay: boolean): str
   return crossesDay ? `%Y-%m-%d ${clock}` : clock
 }
 
-export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'calendar' = 'elapsed'): number | undefined {
+export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'calendar' = 'elapsed', timeZone: GanttTimeZone = 'UTC'): number | undefined {
   const [, digits, unit] = /^(\d+(?:\.\d+)?)(ms|[smhdwMy])$/.exec(spec) ?? []
   if (!digits) return
   const amount = Number(digits)
   if (!Number.isFinite(amount)) return
   const units: Record<string, number> = { ms: 1, s: 1000, m: 60000, h: 3600000, d: dayMs, w: 7 * dayMs }
   if (mode === 'calendar' && (unit === 'd' || unit === 'w'))
-    return start + Math.round(amount * (unit === 'w' ? 7 : 1)) * dayMs
+    return ganttDayOffset(start, Math.round(amount * (unit === 'w' ? 7 : 1)), timeZone)
   if (unit !== 'M' && unit !== 'y') return start + amount * units[unit]
-  const date = new Date(start)
+  const instant = new Date(start)
+  const date = timeZone === 'local' ? wallTime(instant) : instant
   const day = date.getUTCDate()
   date.setUTCDate(1)
   const months = unit === 'y' ? amount * 12 : amount
@@ -174,17 +217,27 @@ export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'cale
   const last = new Date(date)
   last.setUTCMonth(last.getUTCMonth() + 1, 0)
   date.setUTCDate(Math.min(day, last.getUTCDate()))
-  return Number(date) + (mode === 'calendar' ? 0 : (months % 1) * 30 * dayMs)
+  if (timeZone === 'local')
+    instant.setFullYear(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  return +instant + (mode === 'calendar' ? 0 : (months % 1) * 30 * dayMs)
 }
 
-const tickIntervals = {
+const utcIntervals = {
   millisecond: utcMillisecond, second: utcSecond, minute: utcMinute, hour: utcHour,
   day: utcDay, month: utcMonth, year: utcYear,
 } as const
-const weekIntervals = [utcSunday, utcMonday, utcTuesday, utcWednesday, utcThursday, utcFriday, utcSaturday]
+const localIntervals = {
+  millisecond: utcMillisecond, second: utcSecond, minute: timeMinute, hour: timeHour,
+  day: timeDay, month: timeMonth, year: timeYear,
+} as const
+const utcWeeks = [utcSunday, utcMonday, utcTuesday, utcWednesday, utcThursday, utcFriday, utcSaturday]
+const localWeeks = [timeSunday, timeMonday, timeTuesday, timeWednesday, timeThursday, timeFriday, timeSaturday]
 
-export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday'): number[] {
+export function ganttTicks(start: number, end: number, spec: string, defaultWeekStart = 'sunday', timeZone: GanttTimeZone = 'UTC'): number[] {
   const [, amount, unit, weekStart] = /^([1-9]\d{0,2})(millisecond|second|minute|hour|day|week|month|year)(?:s)?(?:\s+([a-z]+))?$/.exec(spec) ?? []
+  const local = timeZone === 'local'
+  const tickIntervals = local ? localIntervals : utcIntervals
+  const weekIntervals = local ? localWeeks : utcWeeks
   const interval = unit === 'week' ? weekIntervals[Math.max(0, weekdays.indexOf(weekStart ?? defaultWeekStart))]
     : tickIntervals[unit as keyof typeof tickIntervals]
   const step = interval?.every?.(Number(amount))
@@ -198,6 +251,6 @@ export function ganttTicks(start: number, end: number, spec: string, defaultWeek
     }
     if (!(tick <= end)) return ticks.length ? ticks : [start]
   }
-  const ticks = utcTicks(Math.ceil(start), Math.floor(end), 10).map(Number)
+  const ticks = (local ? timeTicks : utcTicks)(Math.ceil(start), Math.floor(end), 10).map(Number)
   return ticks.length ? ticks : [start]
 }
