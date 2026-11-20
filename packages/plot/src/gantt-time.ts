@@ -20,7 +20,10 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
   const tokens = format.match(inputTokens) ?? []
   const fields: string[] = []
   const pattern = tokens.map((token) => {
-    const field = dateFields[token] ?? (/^[MDHhms]{1,2}$/.test(token) ? (token.length === 2 ? '\\d{2}' : '\\d{1,2}') : '')
+    const standaloneClock = tokens.length === 1 && /^[Hhms]+$/.test(token)
+    const field = dateFields[token] ?? (/^[MDHhms]{1,2}$/.test(token)
+      ? (token.length === 2 && !standaloneClock ? '\\d{2}' : '\\d{1,2}')
+      : '')
     if (!field) return regexLiteral(token.length > 1 && token.startsWith('[') ? token.slice(1, -1) : token)
     fields.push(token)
     return `(${field})`
@@ -78,22 +81,35 @@ export function ganttDateParser(format: string, referenceTime: number = Date.now
   }
 }
 
-export function durationEnd(start: number, spec: string): number | undefined {
+export function defaultGanttAxisFormat(format: string): string {
+  const tokens = format.match(inputTokens) ?? []
+  const hours = tokens.some(token => /^[Hh]{1,2}$/.test(token) || token === 'X' || token === 'x')
+  const minutes = hours || tokens.some(token => /^m{1,2}$/.test(token))
+  const seconds = tokens.some(token => /^s{1,2}$/.test(token))
+  const fractions = tokens.some(token => /^S{1,3}$/.test(token))
+  const leading = [hours && '%H', minutes && '%M', seconds && '%S'].filter(Boolean).join(':')
+  return fractions ? (leading ? `${leading}.%L` : '%L') : leading || '%b %d'
+}
+
+export function durationEnd(start: number, spec: string, mode: 'elapsed' | 'calendar' = 'elapsed'): number | undefined {
   const [, digits, unit] = /^(\d+(?:\.\d+)?)(ms|[smhdwMy])$/.exec(spec) ?? []
   if (!digits) return
   const amount = Number(digits)
   if (!Number.isFinite(amount)) return
   const units: Record<string, number> = { ms: 1, s: 1000, m: 60000, h: 3600000, d: dayMs, w: 7 * dayMs }
+  if (mode === 'calendar' && (unit === 'd' || unit === 'w'))
+    return start + Math.round(amount * (unit === 'w' ? 7 : 1)) * dayMs
   if (unit !== 'M' && unit !== 'y') return start + amount * units[unit]
-  const months = unit === 'y' ? amount * 12 : amount
   const date = new Date(start)
   const day = date.getUTCDate()
   date.setUTCDate(1)
-  date.setUTCMonth(date.getUTCMonth() + Math.floor(months))
+  const months = unit === 'y' ? amount * 12 : amount
+  if (mode === 'calendar' && unit === 'y') date.setUTCFullYear(Math.trunc(date.getUTCFullYear() + amount))
+  else date.setUTCMonth(date.getUTCMonth() + Math.floor(months))
   const last = new Date(date)
   last.setUTCMonth(last.getUTCMonth() + 1, 0)
   date.setUTCDate(Math.min(day, last.getUTCDate()))
-  return Number(date) + (months % 1) * 30 * dayMs
+  return Number(date) + (mode === 'calendar' ? 0 : (months % 1) * 30 * dayMs)
 }
 
 const tickIntervals = {

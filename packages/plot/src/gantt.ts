@@ -2,7 +2,7 @@ import type { ChartLabels } from './chronology.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, svgText } from './diagram-svg.ts'
-import { dayMs, durationEnd, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
+import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
 export type GanttWeekday = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
@@ -57,6 +57,8 @@ export interface GanttChartOptions extends ChartLabels {
   includes?: readonly string[]
   /** Shift duration endpoints by whole excluded dates, preserving gaps between tasks. */
   exclusionMode?: 'working-time' | 'whole-days'
+  /** Calendar mode rounds fractional days and weeks to whole days and uses whole months or years. */
+  durationMode?: 'elapsed' | 'calendar'
   weekend?: 'friday' | 'saturday'
   weekday?: GanttWeekday
   topAxis?: boolean
@@ -137,7 +139,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   }
   if (!definitions.length) return
   const parseDate = ganttDateParser(dateFormat, now)
-  const axisFormat = format || (/[Hh]|^X|^x/.test(dateFormat) ? '%H:%M' : '%b %d')
+  const axisFormat = format || defaultGanttAxisFormat(dateFormat)
   const dayOf = (time: number) => Math.floor(time / dayMs) * dayMs
   const isoDate = ganttDateParser('YYYY-MM-DD')
   const parseCalendarDate = (value: string) => isoDate(value) ?? parseDate(value)
@@ -235,7 +237,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     }
     const start = resolve(task, 'start')
     if (start === undefined || task.input.duration === undefined) return
-    const target = durationEnd(start, task.input.duration)
+    const target = durationEnd(start, task.input.duration, chart.durationMode)
     if (target === undefined || !hasExclusions || target === start) return target
     if (chart.exclusionMode !== 'whole-days') return applyDuration(start, target)
     const adjusted = shiftByExcludedDays(start, target)

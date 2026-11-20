@@ -34,6 +34,8 @@ export interface GitGraphOptions extends ChartLabels {
   titleTopMargin?: number
   parallelCommits?: boolean
   showCommitLabel?: boolean
+  /** Include generated IDs as visible labels for merges and cherry-picks. */
+  showGeneratedOperationLabels?: boolean
   showBranches?: boolean
   rotateCommitLabel?: boolean
   colors?: readonly (string | undefined)[]
@@ -50,6 +52,7 @@ interface Branch { name: string, head?: Commit, fork?: Commit, order: number, in
 interface Commit {
   id: string
   label: string
+  generatedOperationLabel: boolean
   message?: string
   branch: Branch
   parents: Commit[]
@@ -93,7 +96,8 @@ export function buildGitHistory(chart: GitGraphOptions): GitHistory | undefined 
     if (kind === 'merge' && other) parents.push(other)
     const rank = parallelCommits ? Math.max(other?.rank ?? -1, ...parents.map(commit => commit.rank)) + 1 : commits.length
     const symbol = style ?? (kind === 'merge' ? 'MERGE' : kind === 'cherry-pick' ? 'CHERRY_PICK' : 'NORMAL')
-    const commit: Commit = { id, label: label || id, message, branch: current, parents, tags,
+    const generatedOperationLabel = kind !== 'commit' && !label && customId === undefined
+    const commit: Commit = { id, label: label || id, generatedOperationLabel, message, branch: current, parents, tags,
       kind, type, symbol, rank, index: commits.length, picked: kind === 'cherry-pick' ? other?.id : undefined, pickedParent }
     commits.push(commit)
     byId.set(id, commit)
@@ -177,7 +181,9 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const history = buildGitHistory(chart)
   if (!history) return
   const { commits, branches, direction, title } = history
-  const showLabels = chart.showCommitLabel !== false
+  const canShowLabel = (commit: Commit) => !commit.generatedOperationLabel || chart.showGeneratedOperationLabels !== false
+  const labelledCommits = chart.showCommitLabel !== false ? commits.filter(canShowLabel) : []
+  const showLabels = labelledCommits.length > 0
   const showBranches = chart.showBranches !== false
   const rotateLabels = showLabels && chart.rotateCommitLabel === true
   const lanes = new Map(branches.map((branch, index) => [branch, index]))
@@ -194,7 +200,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const tagLimit = horizontal ? 27 : 20
   const labelText = (commit: Commit) => abbreviated(commit.label, labelLimit)
   const tagText = (commit: Commit) => abbreviated(commit.tags.join(' · '), tagLimit)
-  const longCommit = showLabels ? Math.max(...commits.map(commit => labelWidth(labelText(commit), commitSize))) : 0
+  const longCommit = Math.max(0, ...labelledCommits.map(commit => labelWidth(labelText(commit), commitSize)))
   const longTag = Math.max(...commits.map(commit => labelWidth(tagText(commit), tagSize)))
   const rotatedExtent = rotateLabels ? Math.ceil((longCommit + commitSize) / Math.SQRT2) : 0
   const tagOffset = Math.max(19, 11 + tagSize / 2)
@@ -256,19 +262,19 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       node = `<rect class="diagram-git-dot" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" fill="${highlight}"/><rect class="diagram-git-highlight-inner" x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1" fill="${stroke}"/>`
     }
     let label = ''
-    if (rotateLabels) {
+    if (rotateLabels && canShowLabel(commit)) {
       const angle = horizontal ? 45 : -45
       const labelX = horizontal ? x + 4 : x + 14 + Math.max(0, commitSize - 14) / 2
       const labelY = horizontal ? y + 15 + Math.max(0, commitSize - 14) / 2 : y - 8
       const text = decorateLabel(labelText(commit), labelX, labelY, 'diagram-git-label', 'start', commitAppearance)
       label = `<g transform="rotate(${angle} ${labelX} ${labelY})">${text}</g>`
     }
-    else if (showLabels) {
-      label = horizontal ? decorateLabel(labelText(commit), x, y - commitOffset, 'diagram-git-label', 'middle', commitAppearance)
+    else if (showLabels && canShowLabel(commit)) {
+      label = horizontal ? decorateLabel(labelText(commit), x, y + commitOffset, 'diagram-git-label', 'middle', commitAppearance)
         : decorateLabel(labelText(commit), x + 13, y - Math.max(9, commitSize / 2 + 2), 'diagram-git-label', 'start', commitAppearance)
     }
     const tag = commit.tags.join(' · ')
-    const tagLabel = tag ? (horizontal ? decorateLabel(tagText(commit), x, y + (rotateLabels ? -tagOffset : tagOffset), 'diagram-git-tag', 'middle', tagAppearance)
+    const tagLabel = tag ? (horizontal ? decorateLabel(tagText(commit), x, y - tagOffset, 'diagram-git-tag', 'middle', tagAppearance)
       : decorateLabel(tagText(commit), x + 13, y + Math.max(11, tagSize / 2 + 4), 'diagram-git-tag', 'start', tagAppearance)) : ''
     const detail = [commit.branch.name, commit.id, commit.message, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
     const message = commit.message ? ` data-commit-message="${escapeHtml(commit.message)}"` : ''

@@ -260,6 +260,33 @@ test('anchors time-only tasks and the today marker to the same reference day', (
   expect(svg).toContain('>00.090</tspan>')
 })
 
+test('schedules unpadded elapsed second input and applies opt-in calendar duration rules', () => {
+  const now = Date.UTC(2026, 2, 6, 14)
+  const midnight = Date.UTC(2026, 2, 6)
+  const seconds = { now, dateFormat: 'ss', tickInterval: '10second', sections: [{ tasks: [
+    { id: 'sample', name: 'Sample', start: '0', end: '20' },
+    { name: 'Follow up', after: ['sample'], duration: '0.5s' },
+  ] }] }
+  const schedule = scheduleGantt(seconds)!
+  expect(schedule.axisFormat).toBe('%S')
+  expect(schedule.tasks.map(task => [task.start - midnight, task.end - midnight])).toEqual([[0, 20_000], [20_000, 20_500]])
+  expect(ganttChart(seconds)).toMatch(/>00<\/tspan>.*>10<\/tspan>.*>20<\/tspan>/s)
+  expect(ganttDateParser('ss', now)('60')).toBeUndefined()
+  expect(ganttDateParser('HH:mm:ss', now)('00:00:0')).toBeUndefined()
+
+  const chart: GanttChartOptions = { sections: [{ tasks: [
+    { id: 'first', name: 'First', start: '2024-02-29', duration: '1.5d' },
+    { id: 'second', name: 'Second', after: ['first'], duration: '0.5w' },
+    { name: 'Month end', start: '2024-01-31', duration: '1.5M' },
+    { name: 'Leap year', start: '2024-02-29', duration: '1.5y' },
+  ] }] }
+  const ends = (settings: GanttChartOptions) => scheduleGantt(settings)?.tasks.map(task => new Date(task.end).toISOString())
+  expect(ends({ ...chart, durationMode: 'calendar' })).toEqual([
+    '2024-03-02T00:00:00.000Z', '2024-03-06T00:00:00.000Z', '2024-02-29T00:00:00.000Z', '2025-02-28T00:00:00.000Z',
+  ])
+  expect(ends(chart)?.[0]).toBe('2024-03-01T12:00:00.000Z')
+})
+
 test('replays structured Git history with merge ordering, orientation, and cherry-pick validation', () => {
   const chart: GitGraphOptions = {
     idPrefix: 'history', accessibleTitle: 'Project history', direction: 'TB', parallelCommits: true,
@@ -324,6 +351,34 @@ test('keeps styled merges connected and preserves commit messages alongside IDs'
   expect(svg).toMatch(/data-commit-id="fix"[^>]*><title>[^<]*<\/title><circle[^>]+fill="#775599"\/><path class="diagram-git-reverse-mark"[^>]+stroke="#eeeeee"/)
   expect(svg).toMatch(/data-commit-id="signed" data-parent-ids="base, fix"[^>]*><title>[^<]*<\/title><circle[^>]*\/><text/)
   expect(svg).toMatch(/data-commit-id="release"[^>]*><title>[^<]*<\/title><rect[^>]+fill="#ddccbb"\/><rect class="diagram-git-highlight-inner"[^>]+fill="#225566"/)
+})
+
+test('shows authored Git labels below horizontal commits and keeps generated operation metadata', () => {
+  const chart: GitGraphOptions = { showGeneratedOperationLabels: false, operations: [
+    { op: 'commit', id: 'root', tags: ['v1'] },
+    { op: 'branch', name: 'review' },
+    { op: 'commit', id: 'patch' },
+    { op: 'checkout', name: 'main' },
+    { op: 'cherry-pick', commit: 'patch' },
+    { op: 'merge', branch: 'review' },
+    { op: 'checkout', name: 'review' },
+    { op: 'commit', id: 'docs' },
+    { op: 'checkout', name: 'main' },
+    { op: 'merge', branch: 'review', id: 'release' },
+  ] }
+  const svg = gitGraphChart(chart)!
+  const labels = (markup: string) =>
+    [...markup.matchAll(/class="diagram-git-label"[^>]*><tspan[^>]*>([^<]+)/g)].map(match => match[1])
+  expect(labels(svg)).toEqual(['root', 'patch', 'docs', 'release'])
+  expect(labels(gitGraphChart({ ...chart, showGeneratedOperationLabels: true })!)).toEqual(['root', 'patch', 'c3', 'c4', 'docs', 'release'])
+  expect(svg).toContain('data-commit-id="c3" data-parent-ids="root" data-picked-id="patch"')
+  expect(svg).toContain('data-commit-id="c4" data-parent-ids="c3, patch"')
+  expect(svg).toContain('>cherry-pick:patch</tspan>')
+  const coordinates = /data-commit-id="root"[^>]*><title>[^<]*<\/title><circle[^>]*cy="([\d.]+)"[^>]*\/><text[^>]*y="([\d.]+)" class="diagram-git-label"[^>]*>.*?<\/text><text[^>]*y="([\d.]+)" class="diagram-git-tag"/s.exec(svg)
+  expect(coordinates).not.toBeNull()
+  const [dot, label, tag] = coordinates!.slice(1).map(Number)
+  expect(label).toBeGreaterThan(dot)
+  expect(tag).toBeLessThan(dot)
 })
 
 test('accepts ISO holidays with custom task dates and packs touching bars around milestones', () => {
