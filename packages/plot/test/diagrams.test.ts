@@ -1036,6 +1036,16 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
 })
 
+test('reserves room above GitGraph commits for every title line', () => {
+  const options: GitGraphOptions = { operations: [{ op: 'commit', id: 'root' }], titleTopMargin: 0 }
+  const short = gitGraphChart({ ...options, title: 'Release' })!
+  const multiline = gitGraphChart({ ...options, title: 'Release<br>Preparation<br>Validation<br>Publication' })!
+  expect(multiline).toMatch(/y="34" class="diagram-title".*?dy="-24">Release<\/tspan>/)
+  expect(multiline).toMatch(/dy="16">Publication<\/tspan>/)
+  const commitY = (svg: string) => Number(/class="diagram-git-dot"[^>]* cy="([\d.]+)"/.exec(svg)?.[1])
+  expect(commitY(multiline) - commitY(short)).toBe(48)
+})
+
 test('renders GitGraph geometry, branch lines, and independent styles for more than eight lanes', () => {
   const operations: GitGraphOptions['operations'] = [
     { op: 'commit', id: 'root' },

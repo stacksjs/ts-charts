@@ -422,8 +422,10 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const laneBefore = horizontal ? Math.max(-extent.top, extraBranchHeight / 2 + 12) : Math.max(-extent.left, branchLabelWidth / 2)
   const laneAfter = horizontal ? Math.max(extent.bottom, extraBranchHeight / 2 + 12) : Math.max(extent.right, branchLabelWidth / 2)
   const laneWidth = Math.max(horizontal ? 71 : 146, Math.ceil(laneBefore + laneAfter) + 20)
-  const titleY = titlePosition(chart.titleTopMargin)
-  const pad = title ? Math.max(54, titleY + 26) : 23
+  const extraTitleHeight = (labelLines(title).length - 1) * 16
+  const titleTop = Math.max(10, titlePosition(chart.titleTopMargin))
+  const titleY = titleTop + extraTitleHeight / 2
+  const pad = title ? Math.max(54, titleTop + 26) + extraTitleHeight : 23
   const topBranchHeight = direction === 'TB' ? extraBranchHeight : 0
   const start = horizontal ? (showBranches ? branchLabelWidth : 0) - extent.left + 20
     : pad + topBranchHeight - extent.top + (showBranches && direction === 'TB' ? 33 : 20)
