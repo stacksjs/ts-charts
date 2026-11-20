@@ -648,6 +648,21 @@ test('supports linked Gantt tasks, marker styling, chart dimensions, and week st
   expect(svg).not.toContain('>sunday</tspan>')
 })
 
+test('renders Gantt today markers with functional colors and custom stroke patterns', () => {
+  const chart: GanttChartOptions = {
+    now: Date.UTC(2026, 2, 9),
+    sections: [{ tasks: [{ name: 'Build', start: '2026-03-06', duration: '8d' }] }],
+    todayMarkerStyle: {
+      stroke: 'rgb(16, 128, 90)', strokeWidth: 1.5, opacity: 0.8, strokeOpacity: 0.6,
+      strokeDasharray: [5, 3], strokeDashoffset: -1, strokeLinecap: 'round',
+    },
+  }
+  expect(ganttChart(chart)).toContain('style="stroke:rgb(16, 128, 90);stroke-width:1.5px;opacity:0.8;stroke-opacity:0.6;stroke-dasharray:5 3;stroke-dashoffset:-1;stroke-linecap:round"')
+  expect(ganttChart({ ...chart, todayMarkerStyle: { strokeDasharray: 'none' } })).toContain('style="stroke-dasharray:none"')
+  expect(ganttChart({ ...chart, todayMarkerStyle: { stroke: 'url(#paint)', strokeDasharray: [5, -1], strokeOpacity: 2 } }))
+    .toMatch(/class="diagram-gantt-today" stroke="#d66550" fill="none" d=/)
+})
+
 test('rotates Git commit labels in horizontal and vertical graphs and retains tags', () => {
   const operations = [{ op: 'commit', id: 'start', label: 'A descriptive label for a commit', tags: ['v1'] }] as const
   const sideways = gitGraphChart({ operations, rotateCommitLabel: true })

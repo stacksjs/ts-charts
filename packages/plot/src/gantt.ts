@@ -1,4 +1,5 @@
 import type { ChartLabels } from './chronology.ts'
+import { color } from '../../color/src/color.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
 import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
@@ -31,7 +32,15 @@ export interface GanttTask {
 }
 
 export interface GanttSection { name?: string, tasks: readonly GanttTask[] }
-export interface GanttMarkerStyle { stroke?: string, strokeWidth?: number, opacity?: number }
+export interface GanttMarkerStyle {
+  stroke?: string
+  strokeWidth?: number
+  opacity?: number
+  strokeOpacity?: number
+  strokeDasharray?: readonly number[] | 'none'
+  strokeDashoffset?: number
+  strokeLinecap?: 'butt' | 'round' | 'square'
+}
 export interface GanttTaskPaint { fill?: string, border?: string }
 export interface GanttPalette {
   background?: string
@@ -310,12 +319,25 @@ function validReferences(values: readonly string[]): boolean {
 }
 
 function todayStyle(style: GanttMarkerStyle | undefined): string {
-  const stroke = safeColor(style?.stroke)
-  const thickness = boundedNumber(style?.strokeWidth, 0, 64)
-  const opacity = boundedNumber(style?.opacity, 0, 1)
-  const rules = [stroke && `stroke:${stroke}`, thickness !== undefined && `stroke-width:${thickness}px`, opacity !== undefined && `opacity:${opacity}`]
-    .filter(Boolean).join(';')
-  return rules ? ` style="${rules}"` : ''
+  if (!style) return ''
+  const { stroke: paint, strokeDasharray, strokeLinecap } = style
+  const stroke = safeColor(paint) ?? (typeof paint === 'string' && paint.length <= 120 ? color(paint)?.formatRgb() : undefined)
+  const thickness = boundedNumber(style.strokeWidth, 0, 64)
+  const opacity = boundedNumber(style.opacity, 0, 1)
+  const strokeOpacity = boundedNumber(style.strokeOpacity, 0, 1)
+  const offset = boundedNumber(style.strokeDashoffset, -10000, 10000)
+  const rules: string[] = []
+  if (stroke) rules.push(`stroke:${stroke}`)
+  if (thickness !== undefined) rules.push(`stroke-width:${thickness}px`)
+  if (opacity !== undefined) rules.push(`opacity:${opacity}`)
+  if (strokeOpacity !== undefined) rules.push(`stroke-opacity:${strokeOpacity}`)
+  if (strokeDasharray === 'none') rules.push('stroke-dasharray:none')
+  else if (Array.isArray(strokeDasharray) && strokeDasharray.length > 0 && strokeDasharray.length <= 32
+    && strokeDasharray.every(value => boundedNumber(value, 0, 2000) !== undefined))
+    rules.push(`stroke-dasharray:${strokeDasharray.join(' ')}`)
+  if (offset !== undefined) rules.push(`stroke-dashoffset:${offset}`)
+  if (strokeLinecap === 'butt' || strokeLinecap === 'round' || strokeLinecap === 'square') rules.push(`stroke-linecap:${strokeLinecap}`)
+  return rules.length ? ` style="${rules.join(';')}"` : ''
 }
 
 function taskLink(value: unknown): string | undefined {
