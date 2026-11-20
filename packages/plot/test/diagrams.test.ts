@@ -240,12 +240,34 @@ test('keeps whole-day exclusions between bars while advancing dependent tasks', 
     [march(12), march(13), undefined],
   ])
   const svg = ganttChart(chart)!
+  expect(svg.match(/class="diagram-gantt-excluded"/g)).toHaveLength(3)
   expect(svg).toContain('data-task-end="2026-03-09T00:00:00.000Z" data-task-bar-end="2026-03-07T00:00:00.000Z"')
   const bars = [...svg.matchAll(/class="diagram-gantt-bar"[^>]* x="([\d.]+)"[^>]* width="([\d.]+)"/g)]
     .map(([, x, width]) => ({ x: Number(x), width: Number(width) }))
   expect(bars).toHaveLength(3)
   expect(bars[1].x - (bars[0].x + bars[0].width)).toBeCloseTo(bars[0].width * 2)
   expect(bars[1].width).toBeCloseTo(bars[0].width * 3)
+})
+
+test('coalesces exclusion ranges through the last scheduled day on long Gantt charts', () => {
+  const chart: GanttChartOptions = {
+    excludes: ['weekends'],
+    includes: ['2024-01-07'],
+    exclusionBands: 'ranges',
+    sections: [{ tasks: [{ name: 'Launch', start: '2024-01-05', end: '2025-01-05' }] }],
+  }
+  const ranges = (options: GanttChartOptions) =>
+    [...ganttChart(options)!.matchAll(/data-excluded-start="([^"]+)" data-excluded-end="([^"]+)"/g)]
+      .map(([, start, end]) => [start, end])
+  const bands = ranges(chart)
+  expect(bands).toHaveLength(53)
+  expect(bands.slice(0, 2)).toEqual([['2024-01-06', '2024-01-07'], ['2024-01-13', '2024-01-15']])
+  expect(bands.at(-1)).toEqual(['2025-01-04', '2025-01-06'])
+  expect(ganttChart({ ...chart, exclusionBands: undefined })).not.toContain('diagram-gantt-excluded')
+
+  const through = (end: string) => ({ ...chart, sections: [{ tasks: [{ ...chart.sections[0].tasks[0], end }] }] })
+  expect(ranges(through('2029-12-05')).length).toBeGreaterThan(300)
+  expect(ranges(through('2030-01-05'))).toEqual([])
 })
 
 test('adjusts custom end dates and until targets when a fixed date format is supplied', () => {

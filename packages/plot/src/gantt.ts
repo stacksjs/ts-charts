@@ -61,6 +61,8 @@ export interface GanttChartOptions extends ChartLabels {
   includes?: readonly string[]
   /** Match custom inclusion and exclusion entries against the full formatted timestamp. */
   calendarMatch?: 'formatted'
+  /** Coalesce consecutive excluded days within the scheduled date range. */
+  exclusionBands?: 'ranges'
   /** Shift adjustable endpoints by whole excluded dates, preserving gaps between tasks. */
   exclusionMode?: 'working-time' | 'whole-days'
   /** When set, only end dates matching this format stay fixed through exclusions. Other explicit dates and until targets can move. */
@@ -449,15 +451,28 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const bands: string[] = []
   const excludedColor = safeColor(palette?.excluded)
   const excludedStyle = excludedColor ? ` style="fill:${excludedColor}"` : ''
-  // At extremely broad date ranges individual exclusion days are too narrow to show.
-  if ((end - start) / dayMs <= 180) {
+  const combineExclusions = chart.exclusionBands === 'ranges'
+  const exclusionCutoff = combineExclusions ? durationEnd(start, '6y', 'calendar') : undefined
+  const showExclusions = combineExclusions
+    ? !(exclusionCutoff !== undefined && latest >= exclusionCutoff)
+    : (end - start) / dayMs <= 180
+  if (showExclusions && chart.excludes?.length) {
     const firstDay = Math.floor(start / dayMs) * dayMs
     const timeOfDay = chart.calendarMatch === 'formatted' ? start - firstDay : 0
-    for (let day = firstDay; day < end; day += dayMs) {
+    const ranges: { start: number, end: number }[] = []
+    for (let day = firstDay; combineExclusions ? day + timeOfDay <= latest : day < end; day += dayMs) {
       if (!isExcluded(day + timeOfDay)) continue
-      const left = xAt(Math.max(start, day))
-      const right = xAt(Math.min(end, day + dayMs))
-      bands.push(`<rect class="diagram-gantt-excluded" fill="#869eb6" fill-opacity="0.15"${excludedStyle} x="${left}" y="${gridStart}" width="${right - left}" height="${bottom - gridStart}"/>`)
+      const previous = ranges.at(-1)
+      if (combineExclusions && previous?.end === day) previous.end += dayMs
+      else ranges.push({ start: day, end: day + dayMs })
+    }
+    for (const range of ranges) {
+      const left = xAt(Math.max(start, range.start))
+      const right = xAt(Math.min(end, range.end))
+      const dates = combineExclusions
+        ? ` data-excluded-start="${new Date(range.start).toISOString().split('T')[0]}" data-excluded-end="${new Date(range.end).toISOString().split('T')[0]}"`
+        : ''
+      bands.push(`<rect class="diagram-gantt-excluded"${dates} fill="#869eb6" fill-opacity="0.15"${excludedStyle} x="${left}" y="${gridStart}" width="${right - left}" height="${bottom - gridStart}"/>`)
     }
   }
   const gridColor = safeColor(palette?.grid)
