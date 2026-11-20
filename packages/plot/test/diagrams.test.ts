@@ -770,6 +770,34 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
 })
 
+test('renders GitGraph geometry, branch lines, and independent styles for more than eight lanes', () => {
+  const operations: GitGraphOptions['operations'] = [
+    { op: 'commit', id: 'root' },
+    ...Array.from({ length: 8 }, (_, index) => [
+      { op: 'checkout', name: 'main' } as const,
+      { op: 'branch', name: `branch${index + 1}` } as const,
+    ]).flat(),
+    { op: 'commit', id: 'ready', style: 'HIGHLIGHT' },
+    { op: 'checkout', name: 'main' },
+    { op: 'merge', branch: 'branch8', id: 'released' },
+  ]
+  const graph: GitGraphOptions = {
+    operations, geometry: 'compact', colors: ['#111111', ...Array(7).fill(undefined), '#336699'],
+    highlightColors: ['#ff6633', ...Array(7).fill(undefined), '#7666bb'],
+    branchLine: { color: '#bdbccc', width: 2, pattern: 'dashed' },
+    edgeWidth: 3, branchLabelBorders: Array(9).fill('#765432'), symbolDetailColor: '#dedede',
+  }
+  const svg = gitGraphChart(graph)!
+  const rails = [...svg.matchAll(/<path d="M([\d.]+) [\d.]+H[\d.]+" fill="none" stroke-opacity="1" stroke="#bdbccc" stroke-width="2" stroke-dasharray="4 2"/g)]
+  expect(rails).toHaveLength(9)
+  expect(new Set(rails.map(([, start]) => start)).size).toBe(1)
+  expect(svg).toMatch(/data-commit-id="root"[^>]*>.*?<circle class="diagram-git-dot"[^>]*r="7" fill="#111111"/)
+  expect(svg).toMatch(/class="diagram-git-dot"[^>]*width="14" height="14" rx="0" fill="#7666bb"/)
+  expect(svg).toMatch(/class="diagram-git-ring" fill="#dedede"[^>]*r="5"/)
+  expect(svg).toMatch(/class="diagram-git-branch-label-box"[^>]*rx="0"[^>]*stroke="#765432"/)
+  expect(svg).toMatch(/class="diagram-git-edge"[^>]*stroke-width="3" stroke-linecap="round"[^>]*stroke="#336699"/)
+})
+
 test('renders branch-only histories and snapshots duplicate commit IDs for cherry-picks', () => {
   const empty = { operations: [{ op: 'branch', name: 'draft' }, { op: 'checkout', name: 'draft' }] } as const
   expect(buildGitHistory(empty)?.commits).toEqual([])
