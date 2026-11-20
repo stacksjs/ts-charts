@@ -243,7 +243,7 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     }
     const label = horizontal ? decorateLabel(branchText(branch), 13, axis, 'diagram-git-branch-label', 'start', appearance)
       : decorateLabel(branchText(branch), axis, pad + 8 + extraBranchHeight / 2, 'diagram-git-branch-label', 'middle', appearance)
-    return `<g class="diagram-git-branch"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
+    return `<g class="diagram-git-branch" data-git-branch-index="${lanes.get(branch)}"><title>${escapeHtml(branch.name)}</title><path d="${line}" fill="none" stroke-opacity="0.65" stroke="${color(branch)}"/>${label}</g>`
   }).join('') : ''
   const ringColor = safeColor(chart.background) ?? 'currentColor'
   const edges = commits.map((commit) => {
@@ -255,7 +255,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
       const curve = horizontal
         ? `M${from.x} ${from.y}C${middleX} ${from.y} ${middleX} ${to.y} ${to.x} ${to.y}`
         : `M${from.x} ${from.y}C${from.x} ${middleY} ${to.x} ${middleY} ${to.x} ${to.y}`
-      const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" stroke-width="2" d="${curve}" stroke="${color(parent.branch)}"`
+      const branch = copy || (commit.kind === 'merge' && parent !== commit.parents[0]) ? parent.branch : commit.branch
+      const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" stroke-width="2" d="${curve}" stroke="${color(branch)}" data-git-branch-index="${lanes.get(branch)}"`
       if (!copy) return `${path}/>`
       return `${path} stroke-dasharray="5 3" data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
     }
@@ -291,7 +292,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const detail = [commit.branch.name, commit.id, commit.message, commit.picked, commit.pickedParent, tag].filter(Boolean).join(' / ')
     const message = commit.message ? ` data-commit-message="${escapeHtml(commit.message)}"` : ''
     const provenance = commit.picked ? ` data-picked-id="${escapeHtml(commit.picked)}"${commit.pickedParent ? ` data-picked-parent="${escapeHtml(commit.pickedParent)}"` : ''}` : ''
-    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}${message}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
+    const symbol = commit.symbol.toLowerCase().replace('_', '-')
+    return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}${message} data-git-branch-index="${lanes.get(commit.branch)}" data-git-symbol="${symbol}"><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
   const padding = boundedNumber(chart.diagramPadding, 0, 2000) ?? 0
   const transform = padding ? ` transform="translate(${padding} ${padding})"` : ''

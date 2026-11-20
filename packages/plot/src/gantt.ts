@@ -338,6 +338,9 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const rowHeight = Math.max((fontSize ?? 0) + 4, barHeight + (boundedNumber(chart.barGap, 0, 200) ?? 18))
   const sectionLineHeight = sectionFontSize === undefined ? 16 : sectionFontSize * 1.15
   const sectionStyles = Math.floor(boundedNumber(chart.numberSectionStyles, 1, 12) ?? (Math.min(chart.sectionColors?.length ?? 0, 12) || 1))
+  const sectionSlots = new Map([...new Set(visibleTasks.map(task => sections[task.section]))]
+    .map((name, index) => [name, index % sectionStyles]))
+  const sectionSlot = (section: number) => sectionSlots.get(sections[section]) ?? 0
   const start = Math.min(...tasks.map(task => task.start))
   const latest = Math.max(...tasks.map(task => task.end))
   const end = latest > start ? latest + Math.max(1, (latest - start) / 12) : start + dayMs
@@ -368,11 +371,11 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
       taskY.set(task, y + (lane + 0.5) * rowHeight)
     }
     y += lanes.length * rowHeight
-    const slot = groups.length % sectionStyles
+    const slot = sectionSlot(index)
     const sectionColor = safeColor(chart.sectionColors?.[slot]) ?? (sectionStyles > 1 ? chronologyColor(slot) : undefined)
     const styledFill = sectionColor ? ` style="fill:${sectionColor};opacity:0.2"` : ''
     const heading = section ? svgText(section, 20, sectionTop + sectionHeight / 2, 'diagram-gantt-section-label', 'start', { fontSize: sectionFontSize, color: safeColor(palette?.sectionText) }) : ''
-    groups.push(`<g class="diagram-gantt-section"><rect class="diagram-gantt-band" fill="#869eb6" fill-opacity="${sectionColor ? 1 : 0.1}"${styledFill} x="9" y="${sectionTop}" width="${width - 18}" height="${y - sectionTop}" rx="4"/>${heading}</g>`)
+    groups.push(`<g class="diagram-gantt-section" data-gantt-style-index="${slot}"><rect class="diagram-gantt-band" fill="#869eb6" fill-opacity="${sectionColor ? 1 : 0.1}"${styledFill} x="9" y="${sectionTop}" width="${width - 18}" height="${y - sectionTop}" rx="4"/>${heading}</g>`)
     y += 6
   }
   const bottom = Math.max(top + 33, y)
@@ -415,6 +418,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const referenceFont = Math.min(fontSize ?? 14, 24)
   const referenceLineHeight = referenceFont + 5
   const referenceKeys = new Set<string>()
+  const taskClasses = (task: ScheduledGanttTask) => task.tags.map(tag => ` diagram-gantt-${tag}`).join('')
   const markers = tasks.filter(task => {
     if (!task.tags.includes('vert')) return false
     if (!task.id) return true
@@ -433,7 +437,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     if (lane === -1) lane = referenceLanes.length
     referenceLanes[lane] = center + halfWidth
     const caption = svgText(text, center, bottom + 31 + lane * referenceLineHeight, 'diagram-gantt-reference-label', 'middle', { fontSize: referenceFont, color: reference })
-    return withInteraction(task, `<g class="diagram-gantt-marker" data-task-id="${escapeHtml(task.id)}" data-task-start="${new Date(task.start).toISOString()}"><path class="diagram-gantt-reference" stroke="#548ba9" fill="none"${referenceStyle} d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>${caption}</g>`)
+    return withInteraction(task, `<g class="diagram-gantt-marker${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${new Date(task.start).toISOString()}" data-gantt-style-index="${sectionSlot(task.section)}"><path class="diagram-gantt-reference" stroke="#548ba9" fill="none"${referenceStyle} d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>${caption}</g>`)
   })
   if (schedule.todayMarker && now >= start && now <= end) {
     const x = xAt(now)
@@ -445,7 +449,6 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const barEnd = task.barEnd ?? task.end
     const right = xAt(barEnd)
     const date = (stamp: number) => new Date(stamp).toISOString()
-    const kind = task.tags.map(tag => `diagram-gantt-${tag}`).join(' ')
     const middle = (left + right) / 2
     const critical = task.tags.includes('crit')
     const active = task.tags.includes('active')
@@ -491,7 +494,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
         { fontSize, color: clickableColor ?? safeColor(textColor) ?? (centerLabel ? chronologyInk : undefined) })
     }
     const barEndpoint = task.barEnd === undefined ? '' : ` data-task-bar-end="${date(barEnd)}"`
-    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"${barEndpoint}><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(barEnd)})</title>${shape}${label}</g>`
+    const content = `<g class="diagram-gantt-task${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"${barEndpoint} data-gantt-style-index="${sectionSlot(task.section)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(barEnd)})</title>${shape}${label}</g>`
     return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`

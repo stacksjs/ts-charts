@@ -331,6 +331,23 @@ test('schedules unpadded elapsed second input and applies opt-in calendar durati
   expect(ends(chart)?.[0]).toBe('2024-03-01T12:00:00.000Z')
 })
 
+test('shares Gantt style indices across repeated sections and their tasks', () => {
+  const at = '2026-03-02'
+  const svg = ganttChart({
+    numberSectionStyles: 2, sectionColors: ['red', 'blue'],
+    sections: [
+      { name: 'Plan', tasks: [{ id: 'draft', name: 'Draft', start: at, duration: '1d' }] },
+      { name: 'Events', tasks: [{ id: 'note', name: 'Note', start: at, duration: '0d', tags: ['vert'] }] },
+      { name: 'Review', tasks: [{ id: 'check', name: 'Check', start: at, duration: '1d', tags: ['active'] }] },
+      { name: 'Plan', tasks: [{ id: 'revise', name: 'Revise', start: at, duration: '1d' }] },
+    ],
+  })!
+  const sections = [...svg.matchAll(/class="diagram-gantt-section" data-gantt-style-index="(\d)"[^]*?style="fill:(\w+);/g)]
+  expect(sections.map(([, index, color]) => [index, color])).toEqual([['0', 'red'], ['1', 'blue'], ['0', 'red']])
+  const tasks = [...svg.matchAll(/data-task-id="(\w+)"[^>]*data-gantt-style-index="(\d)"/g)]
+  expect(Object.fromEntries(tasks.map(([, id, index]) => [id, index]))).toEqual({ note: '0', draft: '0', check: '1', revise: '0' })
+})
+
 test('replays structured Git history with merge ordering, orientation, and cherry-pick validation', () => {
   const chart: GitGraphOptions = {
     idPrefix: 'history', accessibleTitle: 'Project history', direction: 'TB', parallelCommits: true,
@@ -362,6 +379,12 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   expect(svg).toContain('>v1.0</tspan>')
   expect(svg).toContain('data-commit-id="backport" data-parent-ids="draft" data-picked-id="release" data-picked-parent="draft"')
   expect(svg).toMatch(/class="diagram-git-edge diagram-git-pick-edge"[^>]*stroke-dasharray="5 3" data-from-commit="release" data-to-commit="backport"/)
+  expect(svg).toMatch(/class="diagram-git-branch" data-git-branch-index="1"><title>review<\/title>/)
+  expect(svg).toMatch(/data-commit-id="release"[^>]*data-git-branch-index="0" data-git-symbol="merge"/)
+  expect([...svg!.matchAll(/class="diagram-git-edge[^"]*"[^>]*stroke="([^"]+)" data-git-branch-index="(\d)"/g)]
+    .map(([, stroke, index]) => [index, stroke])).toEqual([
+    ['1', '#e7b76f'], ['0', '#6ba2db'], ['0', '#6ba2db'], ['1', '#e7b76f'], ['1', '#e7b76f'], ['0', '#6ba2db'],
+  ])
   const withoutEmptyTags: GitGraphOptions = { ...chart, operations: [...chart.operations.slice(0, -1),
     { op: 'cherry-pick', commit: 'release', parent: 'draft', tags: ['', 'backport', ''] },
   ] }
