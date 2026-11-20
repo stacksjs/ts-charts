@@ -139,7 +139,7 @@ test('paints critical task borders independently of status and labels vertical r
   expect(svg).toContain('style="stroke:#123456"')
   expect(svg).toMatch(/class="diagram-gantt-label"[^>]*style="fill:#eee;"[^>]*><tspan[^>]*>Build</)
   const markerX = [...svg.matchAll(/class="diagram-gantt-reference"[^>]*style="stroke:#abcdef" d="M([\d.]+)/g)].map(match => match[1])
-  const barX = /class="diagram-gantt-bar"[^>]*\bx="([\d.]+)"/.exec(svg)?.[1]
+  const barX = /class="diagram-gantt-bar"[^>]*\bx="([\d.]+)"/.exec(svg)![1]
   expect(markerX).toEqual([barX, barX])
   expect(svg).toMatch(/data-task-id="opens"[^>]*data-task-start="2026-03-06T00:00:00.000Z"/)
   const captions = [...svg.matchAll(/ y="([\d.]+)" class="diagram-gantt-reference-label"[^>]*><tspan[^>]*>([^<]+)</g)]
@@ -182,6 +182,31 @@ test('schedules structured tasks across exclusions and resolves multiple depende
     { name: 'Second', id: 'b', after: ['a'], duration: '1d' },
   ] }] })).toBeUndefined()
   expect(scheduleGantt({ sections: [{ tasks: [{ name: 'Conflicting end', end: '2026-03-06', duration: '1d' }] }] })).toBeUndefined()
+})
+
+test('keeps whole-day exclusions between bars while advancing dependent tasks', () => {
+  const chart: GanttChartOptions = {
+    exclusionMode: 'whole-days',
+    excludes: ['weekends', '2026-03-10'],
+    sections: [{ tasks: [
+      { name: 'Draft', id: 'draft', start: '2026-03-06', duration: '1d' },
+      { name: 'Review', id: 'review', after: ['draft'], duration: '2d' },
+      { name: 'Final check', id: 'check', after: ['review'], duration: '1d' },
+    ] }],
+  }
+  const march = (day: number) => Date.UTC(2026, 2, day)
+  expect(scheduleGantt(chart)?.tasks.map(({ start, end, barEnd }) => [start, end, barEnd])).toEqual([
+    [march(6), march(9), march(7)],
+    [march(9), march(12), undefined],
+    [march(12), march(13), undefined],
+  ])
+  const svg = ganttChart(chart)!
+  expect(svg).toContain('data-task-end="2026-03-09T00:00:00.000Z" data-task-bar-end="2026-03-07T00:00:00.000Z"')
+  const bars = [...svg.matchAll(/class="diagram-gantt-bar"[^>]* x="([\d.]+)"[^>]* width="([\d.]+)"/g)]
+    .map(([, x, width]) => ({ x: Number(x), width: Number(width) }))
+  expect(bars).toHaveLength(3)
+  expect(bars[1].x - (bars[0].x + bars[0].width)).toBeCloseTo(bars[0].width * 2)
+  expect(bars[1].width).toBeCloseTo(bars[0].width * 3)
 })
 
 test('replays structured Git history with merge ordering, orientation, and cherry-pick validation', () => {

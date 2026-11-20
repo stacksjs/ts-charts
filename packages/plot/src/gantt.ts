@@ -55,6 +55,8 @@ export interface GanttChartOptions extends ChartLabels {
   tickInterval?: string
   excludes?: readonly string[]
   includes?: readonly string[]
+  /** Shift duration endpoints by whole excluded dates, preserving gaps between tasks. */
+  exclusionMode?: 'working-time' | 'whole-days'
   weekend?: 'friday' | 'saturday'
   weekday?: GanttWeekday
   topAxis?: boolean
@@ -91,7 +93,10 @@ interface TaskDefinition {
 
 export interface ScheduledGanttTask extends TaskDefinition {
   start: number
+  /** The endpoint used by scheduling dependencies. */
   end: number
+  /** The visible bar ends here when a run of excluded days delays the next task. */
+  barEnd?: number
 }
 
 export interface GanttSchedule {
@@ -163,8 +168,8 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     const weekday = ((day / dayMs + 4) % 7 + 7) % 7
     return excludedDates.has(day) || excludedWeekdays.has(weekday)
   }
+  const hasExclusions = excludedDates.size > 0 || excludedWeekdays.size > 0
   function applyDuration(start: number, target: number): number | undefined {
-    if (target === start || (!excludedDates.size && !excludedWeekdays.size)) return target
     let remaining = target - start
     let cursor = start
     for (let days = 0; days < 20_000; days++) {
@@ -178,7 +183,23 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     }
   }
 
+  // Count excluded dates at the task's time of day. Keep trailing exclusions
+  // out of the visible bar while advancing the dependency endpoint past them.
+  function shiftByExcludedDays(start: number, target: number): { end: number, barEnd: number } | undefined {
+    let end = target
+    let barEnd = target
+    let previousExcluded = false
+    for (let date = start + dayMs, days = 0; date <= end; date += dayMs, days++) {
+      if (days >= 20_000) return
+      if (!previousExcluded) barEnd = end
+      previousExcluded = isExcluded(date)
+      if (previousExcluded) end += dayMs
+    }
+    return { end, barEnd }
+  }
+
   const values = new Map<string, number>()
+  const barEnds = new Map<number, number>()
   const calculating = new Set<string>()
   function resolve(task: TaskDefinition, endpoint: 'start' | 'end'): number | undefined {
     const key = `${task.index}:${endpoint}`
@@ -215,14 +236,21 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
     const start = resolve(task, 'start')
     if (start === undefined || task.input.duration === undefined) return
     const target = durationEnd(start, task.input.duration)
-    if (target !== undefined) return applyDuration(start, target)
+    if (target === undefined || !hasExclusions || target === start) return target
+    if (chart.exclusionMode !== 'whole-days') return applyDuration(start, target)
+    const adjusted = shiftByExcludedDays(start, target)
+    if (adjusted && adjusted.barEnd !== adjusted.end && !task.tags.includes('milestone')) {
+      barEnds.set(task.index, adjusted.barEnd)
+    }
+    return adjusted?.end
   }
   const tasks: ScheduledGanttTask[] = []
   for (const task of definitions) {
     const start = resolve(task, 'start')
     const end = resolve(task, 'end')
+    const barEnd = barEnds.get(task.index)
     if (start === undefined || end === undefined || end < start) return
-    tasks.push({ ...task, start, end })
+    tasks.push({ ...task, start, end, ...(barEnd === undefined ? {} : { barEnd }) })
   }
   return { tasks, sections, title, axisFormat, ticks, topAxis, todayMarker, isExcluded }
 }
@@ -300,7 +328,10 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const ordered = compact ? [...children].sort((a, b) => a.start - b.start) : children
     for (const [row, task] of ordered.entries()) {
       const point = task.start === task.end || task.tags.includes('milestone')
-      let lane = compact ? lanes.findIndex(last => last.task.end < task.start || (last.task.end === task.start && !last.point && !point)) : row
+      let lane = compact ? lanes.findIndex(({ task: prior, point: priorPoint }) => {
+        const priorEnd = prior.barEnd ?? prior.end
+        return priorEnd < task.start || (priorEnd === task.start && !priorPoint && !point)
+      }) : row
       if (lane === -1) lane = lanes.length
       if (lanes[lane]) nextInLane.set(lanes[lane].task, task.start)
       lanes[lane] = { task, point }
@@ -373,7 +404,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const bars = visibleTasks.map((task) => {
     const center = taskY.get(task)!
     const left = xAt(task.start)
-    const right = xAt(task.end)
+    const barEnd = task.barEnd ?? task.end
+    const right = xAt(barEnd)
     const date = (stamp: number) => new Date(stamp).toISOString()
     const kind = task.tags.map(tag => `diagram-gantt-${tag}`).join(' ')
     const middle = (left + right) / 2
@@ -406,7 +438,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
       label = svgText(name, x, center, 'diagram-gantt-label', centerLabel ? 'middle' : 'start',
         { fontSize, color: clickableColor ?? safeColor(textColor) ?? (centerLabel ? chronologyInk : undefined) })
     }
-    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(task.end)})</title>${shape}${label}</g>`
+    const barEndpoint = task.barEnd === undefined ? '' : ` data-task-bar-end="${date(barEnd)}"`
+    const content = `<g class="diagram-gantt-task${kind ? ` ${kind}` : ''}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"${barEndpoint}><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(barEnd)})</title>${shape}${label}</g>`
     return withInteraction(task, content)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
