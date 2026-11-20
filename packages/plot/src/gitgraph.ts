@@ -32,6 +32,8 @@ export interface GitGraphOptions extends ChartLabels {
   mainBranchName?: string
   mainBranchOrder?: number
   titleTopMargin?: number
+  /** Extra space around the graph, including its title. */
+  diagramPadding?: number
   parallelCommits?: boolean
   showCommitLabel?: boolean
   /** Include generated IDs as visible labels for merges and cherry-picks. */
@@ -281,6 +283,8 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
     const provenance = commit.picked ? ` data-picked-id="${escapeHtml(commit.picked)}"${commit.pickedParent ? ` data-picked-parent="${escapeHtml(commit.pickedParent)}"` : ''}` : ''
     return `<g class="diagram-git-node diagram-git-${commit.kind}" data-commit-id="${escapeHtml(commit.id)}" data-parent-ids="${escapeHtml(commit.parents.map(commit => commit.id).join(', '))}"${provenance}${message}><title>${escapeHtml(detail)}</title>${node}${label}${tagLabel}</g>`
   }).join('')
-  const body = `<g data-diagram-kind="gitgraph">${rails}${edges}${nodes}</g>`
-  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width, height, body, titleY, chart)
+  const padding = boundedNumber(chart.diagramPadding, 0, 2000) ?? 0
+  const transform = padding ? ` transform="translate(${padding} ${padding})"` : ''
+  const body = `<g data-diagram-kind="gitgraph"${transform}>${rails}${edges}${nodes}</g>`
+  return chronologySvg(chart, chartPrefix(chart.idPrefix), 'Git graph', width + padding * 2, height + padding * 2, body, titleY + padding, chart)
 }

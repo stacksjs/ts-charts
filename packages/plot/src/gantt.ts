@@ -1,7 +1,7 @@
 import type { ChartLabels } from './chronology.ts'
 import { utcFormat } from '../../time-format/src/defaultLocale.ts'
 import { boundedNumber, chartPrefix, chronologyColor, chronologyInk, chronologySvg, safeColor, titlePosition } from './chronology.ts'
-import { escapeHtml, svgText } from './diagram-svg.ts'
+import { escapeHtml, labelLines, svgText, svgTextLines } from './diagram-svg.ts'
 import { dayMs, defaultGanttAxisFormat, durationEnd, ganttDateParser, ganttTicks, weekdays } from './gantt-time.ts'
 
 export type GanttTaskTag = 'active' | 'done' | 'crit' | 'milestone' | 'vert'
@@ -66,6 +66,8 @@ export interface GanttChartOptions extends ChartLabels {
   todayMarkerStyle?: GanttMarkerStyle
   inclusiveEndDates?: boolean
   displayMode?: 'compact'
+  /** Position labels inside or beside their bars in the standard layout. */
+  taskLabelPlacement?: 'bar' | 'gutter'
   barHeight?: number
   barGap?: number
   width?: number
@@ -287,12 +289,25 @@ function callbackAttributes(callback: GanttTaskCallback | undefined, id: string)
   return ` data-gantt-callback="${escapeHtml(name)}" data-gantt-args="${escapeHtml(JSON.stringify(args.length ? args : [id]))}"`
 }
 
+function barLabel(left: number, right: number, width: number, textWidth: number, milestone: boolean) {
+  const gap = 8
+  const inside = right - left - gap * 2
+  if (!milestone && textWidth <= inside)
+    return { x: (left + right) / 2, anchor: 'middle', space: inside }
+  const after = width - right - gap * 2
+  const before = left - gap * 2
+  if (textWidth <= after || after >= before)
+    return { x: right + gap, anchor: 'start', space: after }
+  return { x: left - gap, anchor: 'end', space: before }
+}
+
 export function ganttChart(chart: GanttChartOptions): string | undefined {
   const now = chart.now ?? Date.now()
   const schedule = scheduleGantt({ ...chart, now })
   if (!schedule) return
   const { tasks, sections, title, axisFormat, ticks, isExcluded } = schedule
   const compact = chart.displayMode === 'compact'
+  const barLabels = !compact && chart.taskLabelPlacement === 'bar'
   const palette = chart.palette
   const visibleTasks = tasks.filter(task => !task.tags.includes('vert'))
   const tasksBySection: ScheduledGanttTask[][] = sections.map(() => [])
@@ -300,7 +315,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const fontSize = boundedNumber(chart.fontSize, 6, 96)
   const sectionFontSize = boundedNumber(chart.sectionFontSize, 6, 96)
   const letterWidth = (fontSize ?? 14) / 2
-  const labelWidth = compact ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * letterWidth)) + 28))
+  const labelWidth = compact || barLabels ? 140 : Math.max(132, Math.min(288, Math.max(0, ...visibleTasks.map(task => task.name.length * letterWidth)) + 28))
   const x0 = boundedNumber(chart.leftPadding, 20, 2000) ?? labelWidth
   const rightPadding = boundedNumber(chart.rightPadding, 0, 2000) ?? 30
   const width = Math.max(x0 + rightPadding + 48, boundedNumber(chart.width, 1, 10000) ?? x0 + 710 + rightPadding)
@@ -431,12 +446,26 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const centerLabel = compact && !milestone && inside > 0 && (inside >= task.name.length * letterWidth || inside >= after)
     const available = !compact ? x0 - 22 : centerLabel ? inside : after
     const capacity = Math.max(compact ? 0 : 1, Math.floor(available / letterWidth))
+    const clickableColor = task.input.href || task.input.callback ? safeColor(palette?.clickableText) : undefined
     let label = ''
-    if (capacity) {
+    if (barLabels) {
+      const lines = labelLines(task.name).map(line => Array.from(line))
+      const glyphWidth = (fontSize ?? 14) * 0.6
+      const longest = Math.max(...lines.map(line => line.length))
+      const placement = barLabel(milestone ? middle - half : left, milestone ? middle + half : right, width, longest * glyphWidth, milestone)
+      const limit = Math.floor(placement.space / glyphWidth)
+      if (limit > 0) {
+        const fitted = lines.map(line => line.length > limit ? `${line.slice(0, limit - 1).join('')}…` : line.join(''))
+        const insideText = active || done ? palette?.statusText ?? palette?.insideText : palette?.insideText
+        const themedText = placement.anchor === 'middle' ? safeColor(insideText) ?? chronologyInk : safeColor(palette?.outsideText)
+        label = svgTextLines(fitted, placement.x, center, 'diagram-gantt-label', placement.anchor, 'currentColor',
+          { fontSize, color: clickableColor ?? themedText })
+      }
+    }
+    else if (capacity) {
       const name = task.name.length > capacity ? `${task.name.slice(0, capacity - 1)}…` : task.name
       const x = !compact ? 20 : centerLabel ? middle : right + 13
       const textColor = centerLabel ? (active || done ? palette?.statusText ?? palette?.insideText : palette?.insideText) : palette?.outsideText
-      const clickableColor = task.input.href || task.input.callback ? safeColor(palette?.clickableText) : undefined
       label = svgText(name, x, center, 'diagram-gantt-label', centerLabel ? 'middle' : 'start',
         { fontSize, color: clickableColor ?? safeColor(textColor) ?? (centerLabel ? chronologyInk : undefined) })
     }

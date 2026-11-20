@@ -471,6 +471,26 @@ test('renders Gantt geometry, typography, and alternating section colors', () =>
   expect(heightOf(svg) - heightOf(ganttChart({ ...chart, bottomMarginAdj: 0 })!)).toBe(12)
 })
 
+test('fits Gantt labels inside bars or puts them on the available side of the task', () => {
+  const chart: GanttChartOptions = {
+    taskLabelPlacement: 'bar', width: 460, leftPadding: 80, fontSize: 16,
+    palette: { insideText: '#223355', statusText: '#113300', outsideText: '#554433' },
+    sections: [{ tasks: [
+      { name: 'Wide task', id: 'wide', start: '2026-01-01', duration: '8d', tags: ['active'] },
+      { name: 'Early short task', id: 'early', start: '2026-01-01', duration: '1h' },
+      { name: 'Late short task', id: 'late', start: '2026-01-09', duration: '1h' },
+      { name: 'Early milestone', id: 'milestone', start: '2026-01-02', duration: '0d', tags: ['milestone'] },
+    ] }],
+  }
+  const svg = ganttChart(chart)!
+  const task = (id: string) => new RegExp(`data-task-id="${id}"[^>]*>(.*?)</g>`).exec(svg)?.[1]
+  expect(task('wide')).toMatch(/class="diagram-gantt-label" text-anchor="middle"[^>]*style="fill:#113300;/)
+  expect(task('early')).toMatch(/class="diagram-gantt-label" text-anchor="start"[^>]*style="fill:#554433;/)
+  expect(task('late')).toMatch(/class="diagram-gantt-label" text-anchor="end"[^>]*style="fill:#554433;/)
+  expect(task('milestone')).toContain('text-anchor="start"')
+  expect(ganttChart({ ...chart, taskLabelPlacement: 'gutter' })).toMatch(/<text[^>]*x="20"[^>]*class="diagram-gantt-label" text-anchor="start"/)
+})
+
 test('applies independent GitGraph palettes, label typography, and tag borders', () => {
   const graph: GitGraphOptions = {
     title: 'History', titleTopMargin: 35, rotateCommitLabel: true,
@@ -497,4 +517,16 @@ test('applies independent GitGraph palettes, label typography, and tag borders',
   expect(svg).toMatch(/class="diagram-git-label-box"[^>]*fill="#eee6f1"/)
   expect(svg).toMatch(/class="diagram-git-tag-box"[^>]*fill="#fbe7d5" stroke="#dc7854"/)
   expect(gitGraphChart({ ...graph, tagLabel: { color: 'url(#unsafe)' } })).not.toContain('url(#unsafe)')
+})
+
+test('includes GitGraph padding in the title position and view box for every direction', () => {
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    const graph: GitGraphOptions = { title: 'Work', direction, operations: [{ op: 'commit', id: 'first' }] }
+    const normal = gitGraphChart(graph)!
+    const padded = gitGraphChart({ ...graph, diagramPadding: 32 })!
+    const size = (svg: string) => /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg)!.slice(1).map(Number)
+    expect(size(padded)).toEqual(size(normal).map(value => value + 64))
+    expect(padded).toContain('data-diagram-kind="gitgraph" transform="translate(32 32)"')
+    expect(padded).toMatch(/y="52" class="diagram-title"/)
+  }
 })
