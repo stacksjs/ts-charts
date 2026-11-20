@@ -2,6 +2,7 @@ import { expect, spyOn, test } from 'bun:test'
 import type { GanttChartOptions, GitGraphOptions } from '../src/diagrams.ts'
 import { buildGitHistory, flowchartDiagram, ganttChart, ganttDateParser, gitGraphChart, journeyChart, pieChart, relationshipChart, scheduleGantt, sequenceChart, timelineChart } from '../src/diagrams.ts'
 import { ganttTicks } from '../src/gantt-time.ts'
+import { quadrantChart } from '../src/quadrant.ts'
 
 test('anchors Gantt ticks to the calendar field and keeps crowded axes bounded', () => {
   expect(ganttTicks(Date.UTC(2026, 1, 15), Date.UTC(2026, 10, 1), '3month')).toEqual([
@@ -126,6 +127,28 @@ test('renders full-circle donuts, raw legend values, and validated slice colors'
   const wedge = /<path d="([^"]+)"/.exec(svg ?? '')?.[1] ?? ''
   expect(wedge).toMatch(/^M.*A130,130.*M.*A65,65.*Z$/)
   expect(pieChart({ slices: [{ label: 'Review', value: Number.NaN }] })).toBeUndefined()
+})
+
+test('draws quadrant points on normalized coordinates with styled and accessible labels', () => {
+  const svg = quadrantChart({
+    chartWidth: 400,
+    chartHeight: 320,
+    useMaxWidth: false,
+    accessibleTitle: 'Assessment',
+    description: 'Effort against reach',
+    idPrefix: 'rubric',
+    xAxis: ['Low effort', 'High effort'],
+    yAxis: ['Low reach', 'High reach'],
+    quadrants: ['Plan', 'Expand', 'Review', 'Defer'],
+    points: [{ label: 'Review <later>', x: 1, y: 0, radius: 8, color: '#345678', strokeColor: '#123456', strokeWidth: 3 }],
+  })!
+  expect(svg).toMatch(/^<svg width="400" height="320"/)
+  expect(svg).toContain('aria-labelledby="rubric-title" aria-describedby="rubric-description"')
+  expect(svg.match(/data-quadrant="[1-4]"/g)).toHaveLength(4)
+  expect(svg).toContain('cx="395" cy="289" r="8" fill="#345678" stroke="#123456" stroke-width="3"')
+  expect(svg).toContain('Review &lt;later&gt;')
+  expect(svg).toContain('>High reach</tspan>')
+  expect(quadrantChart({ points: [{ label: 'Out', x: 1.1, y: 0 }] })).toBeUndefined()
 })
 
 test('plots native journey scores and deduplicates actors per task', () => {

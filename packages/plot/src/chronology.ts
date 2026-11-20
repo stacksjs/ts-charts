@@ -45,11 +45,12 @@ export function wrappedLabel(label: string, limit: number): string[] {
   })
 }
 
-export function chronologySvg(chart: ChartLabels, marker: string, kind: string, width: number, height: number, body: string, titleY = 20, appearance: { titleColor?: string, background?: string } = {}): string {
+export function chronologySvg(chart: ChartLabels, marker: string, kind: string, width: number, height: number, body: string, titleY = 20, appearance: { titleColor?: string, titleFontSize?: number, background?: string } = {}): string {
   const id = escapeHtml(marker)
   const background = safeColor(appearance.background)
   const surface = background ? `<rect width="${width}" height="${height}" fill="${background}"/>` : ''
-  const title = chart.title ? svgText(chart.title, width / 2, titleY, 'diagram-title', 'middle', { color: safeColor(appearance.titleColor) }) : ''
+  const title = chart.title ? svgText(chart.title, width / 2, titleY, 'diagram-title', 'middle',
+    { color: safeColor(appearance.titleColor), fontSize: boundedNumber(appearance.titleFontSize, 4, 96) }) : ''
   const accessibleTitle = chart.accessibleTitle ? `<title id="${id}-title">${escapeHtml(chart.accessibleTitle)}</title>` : ''
   const description = chart.description ? `<desc id="${id}-description">${escapeHtml(chart.description)}</desc>` : ''
   const label = chart.accessibleTitle || chart.title || kind
