@@ -33,6 +33,7 @@ export interface GanttSection { name?: string, tasks: readonly GanttTask[] }
 export interface GanttMarkerStyle { stroke?: string, strokeWidth?: number, opacity?: number }
 export interface GanttTaskPaint { fill?: string, border?: string }
 export interface GanttPalette {
+  background?: string
   task?: GanttTaskPaint
   active?: GanttTaskPaint
   done?: GanttTaskPaint
@@ -495,6 +496,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${grid.join('')}${markers.join('')}${bars.join('')}</g>`
   const height = bottom + 31 + referenceLanes.length * referenceLineHeight + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)
-  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY, { titleColor: palette?.title })
+  const svg = chronologySvg(chart, chartPrefix(chart.idPrefix), 'Gantt chart', width, height, body, titleY,
+    { titleColor: palette?.title, background: palette?.background })
   return interactive ? svg.replace('role="img"', 'role="group"') : svg
 }

@@ -489,6 +489,19 @@ test('exposes accessible Gantt callback targets and escapes the serialized argum
   expect(svg).not.toContain('onclick=')
 })
 
+test('paints a Gantt canvas with the selected background in a standalone SVG', () => {
+  const chart: GanttChartOptions = {
+    title: 'Release',
+    sections: [{ tasks: [{ name: 'Draft', start: '2026-01-01', duration: '1d' }] }],
+    palette: { background: '#333333', title: '#f9fffe' },
+  }
+  const svg = ganttChart(chart)!
+  expect(svg).toContain('style="--diagram-background:#333333"')
+  expect(svg).toMatch(/<rect width="[\d.]+" height="[\d.]+" fill="#333333"\/>/)
+  expect(svg).toMatch(/class="diagram-title"[^>]*style="fill:#f9fffe;"/)
+  expect(ganttChart({ ...chart, palette: { background: 'red" invalid' } })).not.toContain('--diagram-background')
+})
+
 test('renders Gantt geometry, typography, and alternating section colors', () => {
   const chart: GanttChartOptions = {
     title: 'Plan', titleTopMargin: 30, width: 480, leftPadding: 112, fontSize: 16, sectionFontSize: 24,
