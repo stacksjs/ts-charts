@@ -62,6 +62,7 @@
     "./force": "./packages/force/src/index.ts",
     "./format": "./packages/format/src/index.ts",
     "./graph": "./packages/graph/src/index.ts",
+    "./hierarchy": "./packages/hierarchy/src/index.ts",
     "./layered": "./packages/graph/src/layered.ts",
     "./interpolate": "./packages/interpolate/src/index.ts",
     "./path": "./packages/path/src/index.ts",
