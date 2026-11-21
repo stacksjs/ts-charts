@@ -159,7 +159,7 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
       const { name, id = '', tags = [], start, after, end, duration, until } = input
       if (!name?.trim() || definitions.length >= 180 || tags.some(tag => !taskTags.has(tag))) return
       const previous = id ? byId.get(id) : undefined
-      if (id && (!/^[\w.-]+$/.test(id) || (previous && !(tags.includes('vert') && previous.tags.includes('vert'))))) return
+      if (id && (!validTaskId(id) || (previous && !(tags.includes('vert') && previous.tags.includes('vert'))))) return
       if ((start !== undefined && after !== undefined) || (after !== undefined && !validReferences(after))) return
       if ([end, duration, until].filter(value => value !== undefined).length !== 1 || (until !== undefined && !validReferences(until))) return
       const definition = { name, section, id, input, tags, index: definitions.length }
@@ -331,8 +331,12 @@ export function scheduleGantt(chart: GanttChartOptions): GanttSchedule | undefin
   return { tasks, sections, title, axisFormat, ticks, topAxis, todayMarker, isExcluded }
 }
 
+function validTaskId(value: unknown): value is string {
+  return typeof value === 'string' && /^[\p{L}\p{M}\p{N}_.:+/-]+$/u.test(value)
+}
+
 function validReferences(values: readonly string[]): boolean {
-  return Array.isArray(values) && values.length > 0 && values.every(id => typeof id === 'string' && /^[\w.-]+$/.test(id))
+  return Array.isArray(values) && values.length > 0 && values.every(validTaskId)
 }
 
 function todayStyle(style: GanttMarkerStyle | undefined): string {

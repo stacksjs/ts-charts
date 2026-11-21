@@ -509,6 +509,28 @@ test('matches complete Gantt calendar tokens without expanding them into full-da
   ])
 })
 
+test('preserves Unicode and namespaced Gantt task IDs in dependencies and SVG metadata', () => {
+  const chart: GanttChartOptions = {
+    sections: [
+      { tasks: [{ id: 'release/setup', name: 'Prepare', start: '2026-06-01', duration: '1d' }] },
+      { tasks: [
+        { id: 'révision', name: 'Review', after: ['release/setup'], until: ['deploy:eu+west'] },
+        { id: 'deploy:eu+west', name: 'Ship', start: '2026-06-06', duration: '1d' },
+      ] },
+    ],
+  }
+  expect(scheduleGantt(chart)?.tasks.map(({ id, start, end }) => [id, start, end])).toEqual([
+    ['release/setup', Date.UTC(2026, 5, 1), Date.UTC(2026, 5, 2)],
+    ['révision', Date.UTC(2026, 5, 2), Date.UTC(2026, 5, 6)],
+    ['deploy:eu+west', Date.UTC(2026, 5, 6), Date.UTC(2026, 5, 7)],
+  ])
+  const svg = ganttChart(chart)
+  expect(svg).toContain('data-task-id="release/setup"')
+  expect(svg).toContain('data-task-id="révision"')
+  expect(svg).toContain('data-task-id="deploy:eu+west"')
+  expect(scheduleGantt({ sections: [{ tasks: [{ id: 'two words', name: 'Invalid ID', duration: '1d' }] }] })).toBeUndefined()
+})
+
 test('recovers missing Gantt references when requested and rejects cycles', () => {
   const chart: GanttChartOptions = {
     now: Date.UTC(2026, 2, 6, 15),
