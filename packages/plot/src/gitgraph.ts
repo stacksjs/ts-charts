@@ -301,6 +301,36 @@ function decorateTag(label: string, x: number, y: number, width: number, anchor:
 
 type EdgePoint = [time: number, lane: number]
 
+interface GitCrossing { afterRank: number, from: number, to: number, offset: number }
+
+function spaceCrossings(crossings: readonly GitCrossing[], clearance: number): void {
+  const gutters = new Map<number, GitCrossing[]>()
+  for (const crossing of crossings) {
+    const existing = gutters.get(crossing.afterRank)
+    if (existing) existing.push(crossing)
+    else gutters.set(crossing.afterRank, [crossing])
+  }
+  const start = ({ from, to }: GitCrossing) => Math.min(from, to)
+  const end = ({ from, to }: GitCrossing) => Math.max(from, to)
+  for (const edges of gutters.values()) {
+    if (edges.length < 2) continue
+    // Long crossings leave a shared source first. Disjoint spans can reuse
+    // the same track, while touching spans still need distinct corners.
+    edges.sort((a, b) => start(a) - start(b) || end(b) - end(a))
+    const tracks: number[] = []
+    const assignments = edges.map((edge) => {
+      const track = tracks.findIndex(last => last < start(edge))
+      if (track < 0) return tracks.push(end(edge)) - 1
+      tracks[track] = end(edge)
+      return track
+    })
+    if (tracks.length < 2) continue
+    const middle = (tracks.length - 1) / 2
+    const separation = Math.min(8, (clearance / 2) / (tracks.length - 1))
+    for (const [index, edge] of edges.entries()) edge.offset = (assignments[index] - middle) * separation
+  }
+}
+
 function roundedEdge(points: EdgePoint[], horizontal: boolean): string {
   const coordinates = ([time, lane]: EdgePoint) => horizontal ? `${time} ${lane}` : `${lane} ${time}`
   const distance = ([a, b]: EdgePoint, [c, d]: EdgePoint) => Math.abs(a - c) + Math.abs(b - d)
@@ -468,47 +498,63 @@ export function gitGraphChart(chart: GitGraphOptions): string | undefined {
   const ringColor = symbolDetail ?? safeColor(chart.background) ?? 'currentColor'
   const edgeWidth = boundedNumber(chart.edgeWidth, 0, 16)
   const edgeStyle = `stroke-width="${edgeWidth ?? 2}"${edgeWidth === undefined ? '' : ' stroke-linecap="round"'}`
+  const connections = commits.flatMap((commit) => {
+    const incoming = commit.parents.map((parent, index) => ({ parent, commit, secondary: index > 0 }))
+    if (commit.pickedCommit && !chart.cherryPickSourceParent)
+      incoming.push({ parent: commit.pickedCommit, commit, secondary: true })
+    return incoming
+  })
   const orthogonal = chart.edgeLayout === 'orthogonal'
   const branchRanks = branches.map((): number[] => [])
   if (orthogonal) {
     for (const commit of commits) branchRanks[commit.branch.index].push(commit.rank)
   }
-  function routedEdge(parent: Commit, commit: Commit, secondary: boolean): string {
+  function planRoute({ parent, commit, secondary }: typeof connections[number]) {
     const from: EdgePoint = [time(parent.rank), lane(parent.branch)]
     const to: EdgePoint = [time(commit.rank), lane(commit.branch)]
-    if (parent.branch === commit.branch) return roundedEdge([from, to], horizontal)
+    const crossings: GitCrossing[] = []
+    if (parent.branch === commit.branch) return { from, to, crossings }
     const occupied = (branch: Branch) => branchRanks[branch.index].some(rank => rank > parent.rank && rank < commit.rank)
     const sourceBusy = occupied(parent.branch)
     const targetBusy = occupied(commit.branch)
-    // Cross branches in the space between ranks, where there are no commit dots.
-    const early = time(parent.rank + 0.5)
-    const late = time(commit.rank - 0.5)
+    const crossing = (afterRank: number, from: number, to: number) => crossings.push({ afterRank, from, to, offset: 0 })
     if (sourceBusy && targetBusy) {
-      const between = from[1] + Math.sign(to[1] - from[1]) * laneWidth / 2
-      return roundedEdge([from, [early, from[1]], [early, between], [late, between], [late, to[1]], to], horizontal)
+      // The free space between lanes can be off-center with rotated labels
+      // or large tags. Follow its center until the target lane clears.
+      const towardEnd = to[1] > from[1]
+      const side = towardEnd ? laneAfter : laneBefore
+      const between = from[1] + (towardEnd ? 1 : -1) * (side + (laneWidth - laneBefore - laneAfter) / 2)
+      crossing(parent.rank, from[1], between)
+      crossing(commit.rank - 1, between, to[1])
     }
-    const crossing = sourceBusy || (!targetBusy && !secondary) ? early : late
-    return roundedEdge([from, [crossing, from[1]], [crossing, to[1]], to], horizontal)
+    else crossing(sourceBusy || (!targetBusy && !secondary) ? parent.rank : commit.rank - 1, from[1], to[1])
+    return { from, to, crossings }
   }
-  const edges = commits.map((commit) => {
+  const routes = orthogonal ? connections.map(planRoute) : []
+  const gutterWidth = gap - timelineSpan
+  spaceCrossings(routes.flatMap(route => route.crossings), gutterWidth)
+  const rankAfter = horizontal ? extent.right : reverse ? -extent.top : extent.bottom
+  function routedEdge({ from, to, crossings }: typeof routes[number]): string {
+    const points = crossings.flatMap(({ afterRank, from, to, offset }): EdgePoint[] => {
+      const track = time(afterRank) + (reverse ? -1 : 1) * (rankAfter + gutterWidth / 2 + offset)
+      return [[track, from], [track, to]]
+    })
+    return roundedEdge([from, ...points, to], horizontal)
+  }
+  const edges = connections.map(({ parent, commit, secondary }, index) => {
     const to = point(commit)
-    function edge(parent: Commit, secondary: boolean): string {
-      const copy = secondary && commit.kind === 'cherry-pick'
-      const from = point(parent)
-      const middleX = (from.x + to.x) / 2
-      const middleY = (from.y + to.y) / 2
-      const curve = orthogonal ? routedEdge(parent, commit, secondary) : horizontal
-        ? `M${from.x} ${from.y}C${middleX} ${from.y} ${middleX} ${to.y} ${to.x} ${to.y}`
-        : `M${from.x} ${from.y}C${from.x} ${middleY} ${to.x} ${middleY} ${to.x} ${to.y}`
-      const branch = secondary ? parent.branch : commit.branch
-      const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" ${edgeStyle} d="${curve}" stroke="${color(branch)}" data-git-branch-index="${lanes.get(branch)}"`
-      const endpoints = `data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"`
-      if (!copy) return `${path} ${endpoints}/>`
-      return `${path} stroke-dasharray="5 3" ${endpoints}><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
-    }
-    const source = commit.pickedCommit
-    return commit.parents.map((parent, index) => edge(parent, index > 0)).join('')
-      + (source && !chart.cherryPickSourceParent ? edge(source, true) : '')
+    const from = point(parent)
+    const middleX = (from.x + to.x) / 2
+    const middleY = (from.y + to.y) / 2
+    const curve = orthogonal ? routedEdge(routes[index]) : horizontal
+      ? `M${from.x} ${from.y}C${middleX} ${from.y} ${middleX} ${to.y} ${to.x} ${to.y}`
+      : `M${from.x} ${from.y}C${from.x} ${middleY} ${to.x} ${middleY} ${to.x} ${to.y}`
+    const copy = secondary && commit.kind === 'cherry-pick'
+    const branch = secondary ? parent.branch : commit.branch
+    const path = `<path class="diagram-git-edge${copy ? ' diagram-git-pick-edge' : ''}" fill="none" ${edgeStyle} d="${curve}" stroke="${color(branch)}" data-git-branch-index="${lanes.get(branch)}"`
+    const endpoints = `data-from-commit="${escapeHtml(parent.id)}" data-to-commit="${escapeHtml(commit.id)}"`
+    if (!copy) return `${path} ${endpoints}/>`
+    return `${path} stroke-dasharray="5 3" ${endpoints}><title>Cherry-picked from ${escapeHtml(parent.id)}</title></path>`
   }).join('')
   const mergeRadius = compact ? 5 : classic ? 6 : 4.2
   const highlightRadius = compact ? 4 : classic ? 6 : 5

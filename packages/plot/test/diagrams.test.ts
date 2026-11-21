@@ -683,6 +683,27 @@ test('replays structured Git history with merge ordering, orientation, and cherr
   ] })).toBeUndefined()
 })
 
+test('gives branches from the same commit distinct crossing tracks in every GitGraph direction', () => {
+  const operations: GitGraphOptions['operations'] = [
+    { op: 'commit', id: 'fork' },
+    { op: 'branch', name: 'review' },
+    { op: 'commit', id: 'reviewed' },
+    { op: 'checkout', name: 'main' },
+    { op: 'branch', name: 'validation' },
+    { op: 'commit', id: 'validated' },
+  ]
+  for (const direction of ['LR', 'TB', 'BT'] as const) {
+    for (const parallelCommits of [false, true]) {
+      const svg = gitGraphChart({ operations, direction, parallelCommits, edgeLayout: 'orthogonal' })!
+      const crossings = [...svg.matchAll(/d="[^"]*?Q([\d.]+) ([\d.]+)[^"]*"[^>]*data-from-commit="fork"/g)]
+      expect(crossings).toHaveLength(2)
+      const [near, far] = crossings.map(match => Number(match[direction === 'LR' ? 1 : 2]))
+      const progression = direction === 'BT' ? -1 : 1
+      expect((near - far) * progression).toBeGreaterThanOrEqual(6)
+    }
+  }
+})
+
 test('keeps styled merges connected and preserves commit messages alongside IDs', () => {
   const chart: GitGraphOptions = {
     background: '#eeeeee',
