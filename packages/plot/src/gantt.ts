@@ -554,9 +554,10 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     return `<g class="diagram-gantt-axis" data-axis="${position}" font-size="${axisFontSize}">${domain}${ticks}</g>`
   })
   let interactive = false
-  function withInteraction(task: ScheduledGanttTask, content: string): string {
-    const href = taskLink(task.input.href)
-    const callback = callbackAttributes(task.input.callback, task.id)
+  function interaction(task: ScheduledGanttTask) {
+    return { href: taskLink(task.input.href), callback: callbackAttributes(task.input.callback, task.id) }
+  }
+  function withInteraction(task: ScheduledGanttTask, content: string, { href, callback }: ReturnType<typeof interaction>): string {
     if (!href && !callback) return content
     interactive = true
     const label = ` aria-label="${escapeHtml(task.name)}"`
@@ -581,8 +582,10 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
   const referenceLabels = layoutReferenceLabels(references, width, referenceFont, minimumAdvance)
   const markers = references.map(({ task, x }, index) => {
     const label = referenceLabels.labels[index]
-    const caption = svgTextLines(label.lines, label.x, referenceTop + label.y, 'diagram-gantt-reference-label', 'middle', 'currentColor', { fontSize: referenceFont, color: reference })
-    return withInteraction(task, `<g class="diagram-gantt-marker${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${new Date(task.start).toISOString()}" data-gantt-style-index="${sectionSlot(task.section)}"><path class="diagram-gantt-reference" stroke="#548ba9" fill="none"${referenceStyle} d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>${caption}</g>`)
+    const action = interaction(task)
+    const color = action.href || action.callback ? safeColor(palette?.clickableText) ?? reference : reference
+    const caption = svgTextLines(label.lines, label.x, referenceTop + label.y, 'diagram-gantt-reference-label', 'middle', 'currentColor', { fontSize: referenceFont, color })
+    return withInteraction(task, `<g class="diagram-gantt-marker${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${new Date(task.start).toISOString()}" data-gantt-style-index="${sectionSlot(task.section)}"><path class="diagram-gantt-reference" stroke="#548ba9" fill="none"${referenceStyle} d="M${x} ${top}V${bottom}"><title>${escapeHtml(task.name)}</title></path>${caption}</g>`, action)
   })
   if (schedule.todayMarker && now >= start && now <= end) {
     const x = xAt(now)
@@ -615,7 +618,8 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     const centerLabel = compact && !milestone && inside > 0 && (inside >= task.name.length * letterWidth || inside >= after)
     const available = !compact ? x0 - 22 : centerLabel ? inside : after
     const capacity = Math.max(compact ? 0 : 1, Math.floor(available / letterWidth))
-    const clickableColor = task.input.href || task.input.callback ? safeColor(palette?.clickableText) : undefined
+    const action = interaction(task)
+    const clickableColor = action.href || action.callback ? safeColor(palette?.clickableText) : undefined
     let label = ''
     const plan = labelPlans.get(task)?.label
     if (plan) {
@@ -649,7 +653,7 @@ export function ganttChart(chart: GanttChartOptions): string | undefined {
     }
     const barEndpoint = task.barEnd === undefined ? '' : ` data-task-bar-end="${date(barEnd)}"`
     const content = `<g class="diagram-gantt-task${taskClasses(task)}" data-task-id="${escapeHtml(task.id)}" data-task-start="${date(task.start)}" data-task-end="${date(task.end)}"${barEndpoint} data-gantt-style-index="${sectionSlot(task.section)}"><title>${escapeHtml(task.name)} (${date(task.start)} to ${date(barEnd)})</title>${shape}${label}</g>`
-    return withInteraction(task, content)
+    return withInteraction(task, content, action)
   })
   const body = `<g data-diagram-kind="gantt">${groups.join('')}${bands.join('')}${axes.join('')}${markers.join('')}${bars.join('')}</g>`
   const height = referenceTop + 7 + referenceLabels.height + (boundedNumber(chart.bottomMarginAdj, 0, 2000) ?? 0)

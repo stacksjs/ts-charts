@@ -948,6 +948,23 @@ test('exposes accessible Gantt callback targets and escapes the serialized argum
   expect(svg).not.toContain('onclick=')
 })
 
+test('uses the clickable palette only for actionable Gantt labels and markers', () => {
+  const svg = ganttChart({
+    palette: { clickableText: '#c02020', outsideText: '#303030', reference: '#2255bb' },
+    sections: [{ tasks: [
+      { id: 'linked', name: 'Linked task', start: '2026-02-02', duration: '1d', href: 'https://example.test/plan' },
+      { id: 'invalid', name: 'Invalid link', duration: '1d', href: 'ftp://example.test/plan' },
+      { id: 'marker', name: 'Linked milestone', start: '2026-02-03', duration: '0d', tags: ['vert'], href: '#details' },
+      { id: 'plain', name: 'Plain milestone', start: '2026-02-04', duration: '0d', tags: ['vert'] },
+    ] }],
+  })!
+  expect(svg.match(/<a class="diagram-gantt-link"/g)).toHaveLength(2)
+  expect(svg.match(/style="fill:#c02020;/g)).toHaveLength(2)
+  expect(svg).toMatch(/class="diagram-gantt-reference-label"[^>]*style="fill:#c02020;[^"]*"[^>]*><tspan[^>]*>Linked milestone</)
+  expect(svg).toMatch(/class="diagram-gantt-reference-label"[^>]*style="fill:#2255bb;[^"]*"[^>]*><tspan[^>]*>Plain milestone</)
+  expect(svg).not.toContain('href="ftp:')
+})
+
 test('paints a Gantt canvas with the selected background in a standalone SVG', () => {
   const chart: GanttChartOptions = {
     title: 'Release',
